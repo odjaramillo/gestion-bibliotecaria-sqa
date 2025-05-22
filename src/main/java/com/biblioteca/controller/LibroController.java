@@ -4,6 +4,7 @@ import com.biblioteca.model.Libro;
 import com.biblioteca.repository.LibroRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,6 +22,7 @@ public class LibroController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('BIBLIOTECARIO')")
     public ResponseEntity<?> registrarLibro(@RequestBody Libro libro) {
         if (libroRepository.findByIsbn(libro.getIsbn()).isPresent()) {
             return ResponseEntity.badRequest().body("El libro con ese ISBN ya existe.");

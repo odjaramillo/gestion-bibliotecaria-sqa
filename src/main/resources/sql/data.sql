@@ -1,5 +1,2 @@
--- Insertar usuario administrador inicial
-INSERT IGNORE INTO usuarios (nombre, email, password, es_bibliotecario) 
-VALUES ('Administrador', 'admin@biblioteca.com', 
-        '$2a$10$zRtUyXNlQkYnqoLWwPvVH.7mOuM0rZiZkZjM0rZiZkZjM0rZiZkZjM0rZ',
-        true);
+INSERT INTO usuarios (nombre, correo, contrasena, rol)
+VALUES ('Bibliotecario1', 'biblio1@tubiblioteca.com', '<contraseña_hasheada>', 'BIBLIOTECARIO');
