@@ -12,9 +12,11 @@ public class Prestamo {
     private Integer id;
 
     @ManyToOne(optional = false)
+    @JoinColumn(name = "usuario_id")
     private Usuario usuario;
 
     @ManyToOne(optional = false)
+    @JoinColumn(name = "libro_id")
     private Libro libro;
 
     private LocalDate fechaPrestamo;

@@ -1,7 +1,7 @@
 package com.biblioteca.model;
 
 import jakarta.persistence.*;
-import java.util.List;
+
 
 @Entity
 @Table(name = "libros")

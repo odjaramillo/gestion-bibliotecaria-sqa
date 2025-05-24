@@ -1,7 +1,7 @@
 package com.biblioteca.model;
 
 import jakarta.persistence.*;
-import java.time.LocalDate;
+
 @Entity
 @Table(name = "usuarios")
 public class Usuario {

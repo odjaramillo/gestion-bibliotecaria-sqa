@@ -3,9 +3,19 @@ package com.biblioteca.controller;
 import com.biblioteca.model.Libro;
 import com.biblioteca.model.Usuario;
 import com.biblioteca.model.Prestamo;
+import com.biblioteca.model.Resena;
+import com.biblioteca.model.ComentarioResena;
+
+import com.biblioteca.dto.ResenaRequest;
+import com.biblioteca.dto.ComentarioResenaRequest;
+import com.biblioteca.dto.PrestamoRequest;
+
+import com.biblioteca.service.ComentarioResenaService;
 import com.biblioteca.service.LibroService;
 import com.biblioteca.service.UsuarioService;
 import com.biblioteca.service.PrestamoService;
+import com.biblioteca.service.ResenaService;
+
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +37,12 @@ public class Controller {
 
     @Autowired
     private PrestamoService prestamoService;
+
+     @Autowired
+    private ResenaService resenaService;
+
+    @Autowired
+    private ComentarioResenaService comentarioResenaService;
 
     // Libros
 
@@ -63,8 +79,8 @@ public class Controller {
 
     // Crear préstamo
     @PostMapping("/prestamos")
-    public ResponseEntity<String> crearPrestamo(@RequestParam Integer usuarioId, @RequestParam Long isbn) {
-        String respuesta = prestamoService.crearPrestamo(usuarioId, isbn);
+    public ResponseEntity<String> crearPrestamo(@RequestBody PrestamoRequest request) {
+        String respuesta = prestamoService.crearPrestamo(request.getUsuarioId(), request.getIsbn());
         return ResponseEntity.ok(respuesta);
     }
 
@@ -92,4 +108,33 @@ public class Controller {
     public List<Prestamo> obtenerPrestamosPorUsuario(@PathVariable Integer usuarioId) {
         return prestamoService.obtenerPrestamosPorUsuario(usuarioId);
     }
+
+    // Reseñas
+
+    // Crear reseña
+    @PostMapping("/resenas")
+    public ResponseEntity<Resena> crearResena(@RequestBody ResenaRequest request) {
+        Resena resena = resenaService.save(request.getLibroId(), request.getUsuarioId(), request.getTexto());
+        return ResponseEntity.ok(resena);
+    }
+
+    // Listar reseñas de un libro
+    @GetMapping("/resenas/libro/{libroId}")
+    public List<Resena> listarResenasPorLibro(@PathVariable Integer libroId) {
+        return resenaService.findByLibro(libroId);
+    }
+
+    // Crear comentario en reseña
+    @PostMapping("/comentarios-resena")
+    public ResponseEntity<ComentarioResena> crearComentarioResena(@RequestBody ComentarioResenaRequest request) {
+        ComentarioResena comentario = comentarioResenaService.save(request.getResenaId(), request.getUsuarioId(), request.getTexto());
+        return ResponseEntity.ok(comentario);
+    }
+
+    // Listar comentarios de una reseña
+    @GetMapping("/comentarios-resena/resena/{resenaId}")
+    public List<ComentarioResena> listarComentariosPorResena(@PathVariable Integer resenaId) {
+        return comentarioResenaService.findByResena(resenaId);
+    }
+
 }
