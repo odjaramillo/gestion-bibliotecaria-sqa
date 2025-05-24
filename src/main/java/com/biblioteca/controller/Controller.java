@@ -30,7 +30,7 @@ public class Controller {
 
     // Libros
 
-    // Consultar todos los libros (acceso público)
+    // Consultar todos los libros
     @GetMapping("/libros")
     public List<Libro> obtenerLibros() {
         return libroService.listarLibros();
@@ -59,24 +59,37 @@ public class Controller {
         return ResponseEntity.ok(respuesta);
     }
 
-    /* // Préstamos
+    // Préstamos
+
+    // Crear préstamo
     @PostMapping("/prestamos")
-    public ResponseEntity<?> crearPrestamo(@RequestParam Long usuarioId, @RequestParam String isbn) {
-        return prestamoService.crearPrestamo(usuarioId, isbn);
+    public ResponseEntity<String> crearPrestamo(@RequestParam Integer usuarioId, @RequestParam Long isbn) {
+        String respuesta = prestamoService.crearPrestamo(usuarioId, isbn);
+        return ResponseEntity.ok(respuesta);
     }
 
+    // Devolver préstamo
+    @PostMapping("/prestamos/devolver")
+    public ResponseEntity<String> devolverPrestamo(@RequestParam Integer prestamoId) {
+        String respuesta = prestamoService.devolverPrestamo(prestamoId);
+        return ResponseEntity.ok(respuesta);
+    }
+
+    // Listar todos los préstamos
     @GetMapping("/prestamos")
     public List<Prestamo> obtenerPrestamos() {
         return prestamoService.obtenerPrestamos();
     }
 
-    @PostMapping("/prestamos/devolver")
-    public ResponseEntity<?> devolverPrestamo(@RequestParam Long prestamoId) {
-        return prestamoService.devolverPrestamo(prestamoId);
+    // Listar préstamos activos
+    @GetMapping("/prestamos/activos")
+    public List<Prestamo> obtenerPrestamosActivos() {
+        return prestamoService.obtenerPrestamosActivos();
     }
 
+    // Listar préstamos activos de un usuario
     @GetMapping("/prestamos/usuario/{usuarioId}")
-    public List<Prestamo> obtenerPrestamosPorUsuario(@PathVariable Long usuarioId) {
+    public List<Prestamo> obtenerPrestamosPorUsuario(@PathVariable Integer usuarioId) {
         return prestamoService.obtenerPrestamosPorUsuario(usuarioId);
-    } */
+    }
 }

@@ -16,6 +16,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/usuarios/registro", "/api/usuarios/login").permitAll()
                 .requestMatchers("/api/libros").permitAll()
                 .requestMatchers("/api/libros").hasAuthority("BIBLIOTECARIO") 
+                .requestMatchers("/api/prestamos/**").hasAuthority("BIBLIOTECARIO")
                 .anyRequest().authenticated()
             );
         return http.build();

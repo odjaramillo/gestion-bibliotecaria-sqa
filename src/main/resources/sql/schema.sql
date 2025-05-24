@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS libros (
     autor VARCHAR(255) NOT NULL,
     editorial VARCHAR(255) NOT NULL,
     genero VARCHAR(100) NOT NULL,
-    isbn VARCHAR(50) NOT NULL UNIQUE,
+    isbn BIGINT NOT NULL UNIQUE,
     anio INT NOT NULL,
     cantidad INT NOT NULL,
     sinopsis VARCHAR(1000),

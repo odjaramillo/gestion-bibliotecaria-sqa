@@ -35,6 +35,10 @@ public class LibroService {
         if (libroRepository.findByIsbn(libro.getIsbn()).isPresent()) {
             return "El libro con ese ISBN ya existe.";
         }
+        // Validación de 13 dígitos
+        if (libro.getIsbn() == null || String.valueOf(libro.getIsbn()).length() != 13) {
+            return "El ISBN debe tener exactamente 13 dígitos.";
+        }
         if (libro.getCantidad() <= 0) {
             return "Debe haber al menos una copia física del libro.";
         }
