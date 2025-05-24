@@ -5,7 +5,6 @@ import com.biblioteca.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.security.access.AccessDeniedException;
 
 @Service
 public class UsuarioService {
@@ -15,23 +14,31 @@ public class UsuarioService {
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
+    // Registro de usuario
     public String registrarUsuario(Usuario usuario) {
         if (usuarioRepository.existsByCorreo(usuario.getCorreo())) {
             return "Correo ya registrado.";
         }
-
-        if (!usuario.getContrasena().matches("^(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$")) {
-            return "La contraseña no cumple con los requisitos de seguridad.";
-        }
-
+        // Encripta la contraseña antes de guardar
         usuario.setContrasena(passwordEncoder.encode(usuario.getContrasena()));
+        // Asigna rol USUARIO
+        if (usuario.getRol() == null || usuario.getRol().isEmpty()) {
+            usuario.setRol("USUARIO");
+        }
         usuarioRepository.save(usuario);
         return "Usuario registrado con éxito.";
     }
 
-    public void accionSoloBibliotecario(Usuario usuario) {
-    if (!"BIBLIOTECARIO".equals(usuario.getRol())) {
-        throw new AccessDeniedException("No tienes permisos para esta acción.");
+    // Autenticación de usuario
+    public String autenticarUsuario(String correo, String contrasena) {
+        return usuarioRepository.findByCorreo(correo)
+                .map(usuario -> {
+                    if (passwordEncoder.matches(contrasena, usuario.getContrasena())) {
+                        return "Login exitoso. Rol: " + usuario.getRol();
+                    } else {
+                        return "Contraseña incorrecta.";
+                    }
+                })
+                .orElse("Usuario no encontrado.");
     }
-}
 }

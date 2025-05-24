@@ -72,4 +72,4 @@ CREATE TABLE IF NOT EXISTS comentario_resena (
     fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (resena_id) REFERENCES resenas(id),
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
-);
+); 

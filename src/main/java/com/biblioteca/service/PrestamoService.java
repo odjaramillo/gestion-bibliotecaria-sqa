@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.Optional;
 
+import java.util.List;
+
 @Service
 public class PrestamoService {
 
@@ -20,7 +22,7 @@ public class PrestamoService {
     @Autowired
     private LibroRepository libroRepository;
 
-    public String crearPrestamo(Long usuarioId, String isbn) {
+    /* public String crearPrestamo(Integer usuarioId, String isbn) {
         Optional<Usuario> usuario = usuarioRepository.findById(usuarioId);
         if (usuario.isEmpty()) return "Usuario no registrado.";
 
@@ -40,5 +42,9 @@ public class PrestamoService {
 
         prestamoRepository.save(prestamo);
         return "Préstamo registrado con éxito.";
-    }
+    } */
+
+    public List<Prestamo> obtenerPrestamos() {
+    return prestamoRepository.findAll();
+}
 }
