@@ -13,7 +13,7 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/usuarios/registro", "/api/usuarios/login").permitAll()
+                .requestMatchers("/api/usuarios/registro", "/api/login").permitAll()
                 .requestMatchers("/api/libros").permitAll()
                 .requestMatchers("/api/libros").hasAuthority("BIBLIOTECARIO") 
                 .requestMatchers("/api/prestamos/**").hasAuthority("BIBLIOTECARIO")

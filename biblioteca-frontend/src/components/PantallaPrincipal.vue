@@ -4,9 +4,9 @@
     <p class="text-gray-600 text-lg mb-10 text-center">Explora nuestra vasta colección de libros y encuentra tu próxima lectura.</p>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-      <div v-for="libro in librosDeEjemplo" :key="libro.id"
+      <div v-for="libro in libros" :key="libro.id"
         class="bg-gray-50 rounded-lg shadow-lg overflow-hidden transform hover:scale-105 transition-transform duration-300">
-        <img :src="libro.portadaUrl" alt="Portada del libro" class="w-full h-64 object-cover">
+        <img :src="libro.image || libro.portadaUrl" alt="Portada del libro" class="w-full h-64 object-cover">
         <div class="p-4">
           <h3 class="text-lg font-semibold text-gray-700">{{ libro.titulo }}</h3>
           <p class="text-sm text-gray-500">{{ libro.autor }}</p>
@@ -23,6 +23,29 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue'
+import axios from 'axios'
+
+const libros = ref([])
+
+const emit = defineEmits(['ver-libro'])
+
+const verDetalles = (libro) => {
+  emit('ver-libro', { ...libro })
+}
+
+onMounted(async () => {
+  try {
+    const res = await axios.get('/api/libros')
+    libros.value = res.data
+  } catch (e) {
+    libros.value = []
+  }
+})
+</script>
+
+
+<!-- <script setup>
 import { ref , defineEmits} from 'vue';
 
 
@@ -78,4 +101,4 @@ const verDetalles = (libro) => {
 .animate-fadeIn {
   animation: fadeIn 0.5s ease-out forwards;
 }
-</style>
+</style> -->

@@ -46,7 +46,8 @@
         :is="activeComponent" 
         @login="handleLogin"
         @ver-libro="mostrarPantallaLibro"
-        
+        @volver="irAPantallaPrincipal"
+        :libro="libroSeleccionado"
       />
     </main>
 
@@ -113,7 +114,7 @@ const irAPantallaPrincipal = () => {
 
 const handleLogin = (userData) => {
   user.value = userData;
-  if (userData.role === 'librarian') {
+  if (userData.role === 'bibliotecario') {
     currentComponent.value = 'PantallaBibliotecario';
   } else {
     currentComponent.value = 'PantallaUsuario';

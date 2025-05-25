@@ -4,7 +4,7 @@
     <div class="flex justify-between items-start mb-6">
       <h1 class="text-3xl font-bold text-slate-700">{{ libro.titulo }}</h1>
       <button 
-        @click="$router.go(-1)"
+        @click="$emit('volver')"
         class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
       >
         Volver
@@ -28,9 +28,9 @@
           <p><span class="font-semibold">ISBN:</span> {{ libro.isbn }}</p>
           <div class="flex items-center mt-2">
             <span class="font-semibold mr-2">Estado:</span>
-            <span :class="libro.disponible ? 'text-green-600' : 'text-red-600'">
-              {{ libro.disponible ? 'Disponible' : 'Prestado' }}
-            </span>
+            <span :class="(libro.cantidad && libro.cantidad >= 1) ? 'text-green-600' : 'text-red-600'">
+              {{ (libro.cantidad && libro.cantidad >= 1) ? 'Disponible' : 'Prestado' }}
+          </span>
           </div>
         </div>
       </div>
@@ -39,7 +39,7 @@
       <div class="md:w-2/3">
         <div class="mb-8">
           <h2 class="text-xl font-semibold text-slate-700 mb-2">Descripción</h2>
-          <p class="text-gray-700">{{ libro.descripcion }}</p>
+          <p class="text-gray-700">{{ libro.sinopsis }}</p>
         </div>
 
         <!-- Sección de comentarios -->
@@ -129,10 +129,17 @@
 
 <script setup>
 import { ref, reactive } from 'vue';
+const props = defineProps({
+  libro: {
+    type: Object,
+    required: true
+  }
+});
 
+const emit = defineEmits(['volver']);
 
 // Datos del libro (simulados)
-const libro = reactive({
+/* const libro = reactive({
   titulo: 'El nombre del viento',
   autor: 'Patrick Rothfuss',
   genero: 'Fantasía épica',
@@ -141,7 +148,7 @@ const libro = reactive({
   descripcion: 'La historia de Kvothe, un personaje legendario que relata su propia biografía. Una obra maestra de la fantasía contemporánea que ha cautivado a millones de lectores.',
   portadaUrl: 'https://m.media-amazon.com/images/I/81iqZ+tL2ZL._AC_UF1000,1000_QL80_.jpg',
   disponible: true
-});
+}); */
 
 // Comentarios y respuestas (simulados)
 const comentarios = ref([

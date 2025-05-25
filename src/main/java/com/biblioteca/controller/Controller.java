@@ -69,11 +69,28 @@ public class Controller {
     }
 
     // Login de usuario
-    @PostMapping("/usuarios/login")
+
+    @PostMapping("/login")
+    public ResponseEntity<?> loginUsuario(@RequestBody Usuario usuario) {
+        Usuario usuarioAutenticado = usuarioService.autenticarYObtenerUsuario(usuario.getCorreo(), usuario.getContrasena());
+        if (usuarioAutenticado != null) {
+            // No devuelvas la contraseña
+            Usuario respuesta = new Usuario();
+            respuesta.setId(usuarioAutenticado.getId());
+            respuesta.setNombre(usuarioAutenticado.getNombre());
+            respuesta.setCorreo(usuarioAutenticado.getCorreo());
+            respuesta.setRol(usuarioAutenticado.getRol());
+            return ResponseEntity.ok(respuesta);
+        } else {
+            return ResponseEntity.status(401).body("Credenciales inválidas");
+        }
+    }
+
+    /* @PostMapping("/login")
     public ResponseEntity<String> loginUsuario(@RequestBody Usuario usuario) {
         String respuesta = usuarioService.autenticarUsuario(usuario.getCorreo(), usuario.getContrasena());
         return ResponseEntity.ok(respuesta);
-    }
+    } */
 
     // Préstamos
 

@@ -19,20 +19,20 @@
 
             <label for="email-address" class="sr-only">Correo electrónico</label>
             <input id="email-address" name="email" type="email" autocomplete="email" required
-                   v-model="credentials.email"
-                   :class="{'border-red-500': errors.email}"
+                   v-model="credentials.correo"
+                   :class="{'border-red-500': errors.correo}"
                    class="appearance-none rounded-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-purple-500 focus:border-fuchsia-700 focus:z-10 sm:text-sm"
                    placeholder="Correo electrónico">
-            <p v-if="errors.email" class="text-red-500 text-xs mt-1">{{ errors.email }}</p>
+            <p v-if="errors.correo" class="text-red-500 text-xs mt-1">{{ errors.correo }}</p>
           </div>
           <div>
             <label for="password" class="sr-only">Contraseña</label>
             <input id="password" name="password" type="password" autocomplete="current-password" required
-                   v-model="credentials.password"
-                   :class="{'border-red-500': errors.password}"
+                   v-model="credentials.contrasena"
+                   :class="{'border-red-500': errors.contrasena}"
                    class="appearance-none rounded-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-purple-500 focus:border-fuchsia-700 focus:z-10 sm:text-sm"
                    placeholder="Contraseña">
-            <p v-if="errors.password" class="text-red-500 text-xs mt-1">{{ errors.password }}</p>
+            <p v-if="errors.contrasena" class="text-red-500 text-xs mt-1">{{ errors.contrasena }}</p>
           </div>
         </div>
 
@@ -70,37 +70,39 @@
 import { ref } from 'vue';
 
 const credentials = ref({
-  email: '',
-  password: ''
+  correo: '',
+  contrasena: ''
 });
 
 const errors = ref({
-  email: '',
-  password: ''
+  correo: '',
+  contrasena: ''
 });
 
 const submissionStatus = ref(null); // { type: 'success'/'error', message: '...' }
 
-const validateEmail = (email) => {
-  if (!email) return "El correo electrónico es obligatorio.";
+const emit = defineEmits(['login']);
+
+const validateEmail = (correo) => {
+  if (!correo) return "El correo electrónico es obligatorio.";
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) return "El formato del correo electrónico no es válido.";
+  if (!emailRegex.test(correo)) return "El formato del correo electrónico no es válido.";
   return "";
 };
 
-const validatePassword = (password) => {
-  if (!password) return "La contraseña es obligatoria.";
-  if (password.length < 6) return "La contraseña debe tener al menos 6 caracteres.";
+const validatePassword = (contrasena) => {
+  if (!contrasena) return "La contraseña es obligatoria.";
+  // if (contrasena.length < 6) return "La contraseña debe tener al menos 6 caracteres.";
   return "";
 };
 
 const validateForm = () => {
-  errors.value.email = validateEmail(credentials.value.email);
-  errors.value.password = validatePassword(credentials.value.password);
-  return !errors.value.email && !errors.value.password;
+  errors.value.correo = validateEmail(credentials.value.correo);
+  errors.value.contrasena = validatePassword(credentials.value.contrasena);
+  return !errors.value.correo && !errors.value.contrasena;
 };
 
-const handleLogin = async () => {
+/* const handleLogin = async () => {
   submissionStatus.value = null;
   if (validateForm()) {
     console.log('Datos de inicio de sesión para enviar al backend:', credentials.value);
@@ -109,5 +111,33 @@ const handleLogin = async () => {
     console.log('Errores de validación:', errors.value);
     submissionStatus.value = { type: 'error', message: 'Por favor, corrige los errores en el formulario.' };
   }
-};
+}; */
+
+const handleLogin = async () => {
+  submissionStatus.value = null
+  if (validateForm()) {
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(credentials.value)
+      })
+      if (!res.ok) {
+        throw new Error('Credenciales inválidas')
+      }
+      const userData = await res.json()
+      emit('login', {
+        id: userData.id,
+        nombre: userData.nombre,
+        correo: userData.correo,
+        role: userData.rol.toLowerCase() // "usuario" o "bibliotecario"
+      })
+      submissionStatus.value = { type: 'success', message: 'Inicio de sesión exitoso.' }
+    } catch (error) {
+      submissionStatus.value = { type: 'error', message: 'Correo o contraseña incorrectos.' }
+    }
+  } else {
+    submissionStatus.value = { type: 'error', message: 'Por favor, corrige los errores en el formulario.' }
+  }
+}
 </script>
