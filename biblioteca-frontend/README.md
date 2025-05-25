@@ -1,4 +1,4 @@
-# biblioteca-frontend
+# gestion-bibliotecaria
 
 ## Project setup
 ```
