@@ -115,10 +115,32 @@ const irAPantallaPrincipal = () => {
   currentComponent.value = 'PantallaPrincipal';
 };
 
-const handleLogin = (userData) => {
+const handleLogin = async () => {
+  try {
+    const res = await fetch('/api/usuarios/me', {
+      credentials: 'include'
+    })
+    if (res.ok) {
+      const userData = await res.json()
+      user.value = {
+        id: userData.id,
+        nombre: userData.nombre,
+        correo: userData.correo,
+        role: userData.rol.toLowerCase()
+      }
+      currentComponent.value = 'PantallaPrincipal'
+    } else {
+      user.value = null
+    }
+  } catch (e) {
+    user.value = null
+  }
+}
+
+/* const handleLogin = (userData) => {
   user.value = userData;
   currentComponent.value = 'PantallaPrincipal';
-};
+}; */
 
 /* const handleLogin = (userData) => {
   user.value = userData;

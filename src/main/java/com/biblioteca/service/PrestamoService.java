@@ -21,8 +21,48 @@ public class PrestamoService {
     @Autowired
     private LibroRepository libroRepository;
 
+    @Autowired
+    private AmonestacionRepository amonestacionRepository;
+
     // Crear un préstamo
-    public String crearPrestamo(Integer usuarioId, Long isbn) {
+
+    public String crearPrestamo(String correoUsuario, Long isbn, String fechaPrestamoStr) {
+        Optional<Usuario> usuarioOpt = usuarioRepository.findByCorreo(correoUsuario);
+        if (usuarioOpt.isEmpty()) return "Usuario no registrado.";
+
+        Usuario usuario = usuarioOpt.get();
+        if (!"USUARIO".equals(usuario.getRol())) return "Solo se pueden asociar préstamos a usuarios con rol USUARIO.";
+
+        long prestamosActivos = prestamoRepository.countByUsuarioIdAndFechaDevolucionIsNull(usuario.getId());
+        if (prestamosActivos >= 2) return "El usuario ya tiene 2 préstamos activos.";
+
+        boolean tieneAmonestaciones = amonestacionRepository.existsByUsuarioIdAndVerificadaFalse(usuario.getId());
+        if (tieneAmonestaciones) return "El usuario tiene amonestaciones activas.";
+
+        Optional<Libro> libroOpt = libroRepository.findByIsbn(isbn);
+        if (libroOpt.isEmpty()) return "Libro no encontrado.";
+        Libro libro = libroOpt.get();
+        if (libro.getCantidad() < 1) return "Libro no disponible para préstamo.";
+
+        LocalDate fechaPrestamo = LocalDate.parse(fechaPrestamoStr);
+        LocalDate fechaDevolucion = fechaPrestamo.plusDays(7);
+
+        Prestamo prestamo = new Prestamo();
+        prestamo.setUsuario(usuario);
+        prestamo.setLibro(libro);
+        prestamo.setFechaPrestamo(fechaPrestamo);
+        prestamo.setFechaDevolucion(fechaDevolucion);
+        prestamo.setEstado("activo");
+
+        prestamoRepository.save(prestamo);
+
+        libro.setCantidad(libro.getCantidad() - 1);
+        libroRepository.save(libro);
+
+        return "Préstamo registrado con éxito.";
+    }
+
+    /* public String crearPrestamo(Integer usuarioId, Long isbn) {
         Optional<Usuario> usuarioOpt = usuarioRepository.findById(usuarioId);
         if (usuarioOpt.isEmpty()) return "Usuario no registrado.";
 
@@ -51,7 +91,7 @@ public class PrestamoService {
         libroRepository.save(libro);
 
         return "Préstamo registrado con éxito.";
-    }
+    } */
 
     // Devolver un préstamo
     public String devolverPrestamo(Integer prestamoId) {

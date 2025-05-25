@@ -22,14 +22,18 @@ public class Prestamo {
     private LocalDate fechaPrestamo;
     private LocalDate fechaDevolucion;
 
+    @Column(nullable = false)
+    private String estado;
+
     public Prestamo() {
     }
 
-    public Prestamo(Usuario usuario, Libro libro, LocalDate fechaPrestamo, LocalDate fechaDevolucion) {
+    public Prestamo(Usuario usuario, Libro libro, LocalDate fechaPrestamo, LocalDate fechaDevolucion, String estado) {
         this.usuario = usuario;
         this.libro = libro;
         this.fechaPrestamo = fechaPrestamo;
         this.fechaDevolucion = fechaDevolucion;
+        this.estado = estado;
     }
 
     public Integer getId() { return id; }
@@ -46,4 +50,7 @@ public class Prestamo {
 
     public LocalDate getFechaDevolucion() { return fechaDevolucion; }
     public void setFechaDevolucion(LocalDate fechaDevolucion) { this.fechaDevolucion = fechaDevolucion; }
+
+    public String getEstado() { return estado; }
+    public void setEstado(String estado) { this.estado = estado; }
 } 

@@ -119,19 +119,18 @@ const handleLogin = async () => {
     try {
       const res = await fetch('/api/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(credentials.value)
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          username: credentials.value.correo,
+          password: credentials.value.contrasena
+        }),
+        credentials: 'include'
       })
       if (!res.ok) {
         throw new Error('Credenciales inválidas')
       }
-      const userData = await res.json()
-      emit('login', {
-        id: userData.id,
-        nombre: userData.nombre,
-        correo: userData.correo,
-        role: userData.rol.toLowerCase() // "usuario" o "bibliotecario"
-      })
+      // Aquí puedes emitir el correo para que el menú se actualice
+      emit('login', { correo: credentials.value.correo })
       submissionStatus.value = { type: 'success', message: 'Inicio de sesión exitoso.' }
     } catch (error) {
       submissionStatus.value = { type: 'error', message: 'Correo o contraseña incorrectos.' }
