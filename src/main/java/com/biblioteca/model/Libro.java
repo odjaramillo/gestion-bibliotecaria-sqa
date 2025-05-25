@@ -1,7 +1,7 @@
 package com.biblioteca.model;
 
 import jakarta.persistence.*;
-
+import java.util.Base64;
 
 @Entity
 @Table(name = "libros")
@@ -83,4 +83,12 @@ public class Libro {
 
     public byte[] getImagen() { return imagen; }
     public void setImagen(byte[] imagen) { this.imagen = imagen; }
+
+    @Transient
+    public String getImagenBase64() {
+        if (imagen != null && imagen.length > 0) {
+            return "data:image/jpeg;base64," + Base64.getEncoder().encodeToString(imagen);
+        }
+        return null;
+    }
 }
