@@ -1,14 +1,15 @@
 package com.biblioteca.model;
 
 import jakarta.persistence.*;
-import java.util.List;
+
 
 @Entity
+@Table(name = "libros")
 public class Libro {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @Column(nullable = false)
     private String titulo;
@@ -23,7 +24,7 @@ public class Libro {
     private String genero;
 
     @Column(unique = true, nullable = false)
-    private String isbn;
+    private Long isbn;
 
     @Column(nullable = false)
     private int anio;
@@ -39,7 +40,7 @@ public class Libro {
     public Libro() {
     }
 
-    public Libro(String titulo, String autor, String editorial, String genero, String isbn, int anio, int cantidad, String sinopsis, String imagen) {
+    public Libro(String titulo, String autor, String editorial, String genero, Long isbn, int anio, int cantidad, String sinopsis, String imagen) {
         this.titulo = titulo;
         this.autor = autor;
         this.editorial = editorial;
@@ -51,8 +52,8 @@ public class Libro {
         this.imagen = imagen;
     }
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
 
     public String getTitulo() { return titulo; }
     public void setTitulo(String titulo) { this.titulo = titulo; }
@@ -66,8 +67,8 @@ public class Libro {
     public String getGenero() { return genero; }
     public void setGenero(String genero) { this.genero = genero; }
 
-    public String getIsbn() { return isbn; }
-    public void setIsbn(String isbn) { this.isbn = isbn; }
+    public Long getIsbn() { return isbn; }
+    public void setIsbn(Long isbn) { this.isbn = isbn; }
 
     public int getAnio() { return anio; }
     public void setAnio(int anio) { this.anio = anio; }

@@ -1,13 +1,14 @@
 package com.biblioteca.model;
 
 import jakarta.persistence.*;
-import java.time.LocalDate;
+
 @Entity
+@Table(name = "usuarios")
 public class Usuario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @Column(nullable = false)
     private String nombre;
@@ -18,17 +19,21 @@ public class Usuario {
     @Column(nullable = false)
     private String contrasena;
 
+    @Column(nullable = false)
+    private String rol;
+
     public Usuario() {
     }
 
-    public Usuario(String nombre, String correo, String contrasena) {
+    public Usuario(String nombre, String correo, String contrasena, String rol) {
         this.nombre = nombre;
         this.correo = correo;
         this.contrasena = contrasena;
+        this.rol = rol;
     }
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
 
     public String getNombre() { return nombre; }
     public void setNombre(String nombre) { this.nombre = nombre; }
@@ -38,4 +43,7 @@ public class Usuario {
 
     public String getContrasena() { return contrasena; }
     public void setContrasena(String contrasena) { this.contrasena = contrasena; }
+
+    public String getRol() { return rol; }
+    public void setRol(String rol) { this.rol = rol; }
 }
