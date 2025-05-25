@@ -16,7 +16,7 @@
       <!-- Portada y detalles básicos -->
       <div class="md:w-1/3">
         <img 
-          :src="libro.portadaUrl" 
+          :src="libro.imagenBase64 || libro.portadaUrl || 'https://placehold.co/300x400/A9A9A9/FFF?text=Sin+Imagen'" 
           :alt="'Portada de ' + libro.titulo"
           class="w-full rounded-lg shadow-md"
         >

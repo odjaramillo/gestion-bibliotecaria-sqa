@@ -6,7 +6,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
       <div v-for="libro in libros" :key="libro.id"
         class="bg-gray-50 rounded-lg shadow-lg overflow-hidden transform hover:scale-105 transition-transform duration-300">
-        <img :src="libro.image || libro.portadaUrl" alt="Portada del libro" class="w-full h-64 object-cover">
+        <img :src="libro.imagenBase64 || libro.portadaUrl || 'https://placehold.co/300x400/A9A9A9/FFF?text=Sin+Imagen'" alt="Portada del libro" class="w-full h-64 object-cover">
         <div class="p-4">
           <h3 class="text-lg font-semibold text-gray-700">{{ libro.titulo }}</h3>
           <p class="text-sm text-gray-500">{{ libro.autor }}</p>
