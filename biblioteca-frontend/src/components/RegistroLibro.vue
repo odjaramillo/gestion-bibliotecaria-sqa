@@ -38,6 +38,34 @@
                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-fuchsia-900 sm:text-sm">
             <p v-if="errors.autor" class="text-red-500 text-xs mt-1">{{ errors.autor }}</p>
           </div>
+          <div>
+            <label for="isbn" class="block text-sm font-medium text-gray-700 mt-4">ISBN</label>
+            <input type="number" id="isbn" v-model="libro.isbn" required
+                   :class="{'border-red-500': errors.isbn}"
+                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-fuchsia-900 sm:text-sm">
+            <p v-if="errors.isbn" class="text-red-500 text-xs mt-1">{{ errors.isbn }}</p>
+          </div>
+          <div>
+            <label for="anio" class="block text-sm font-medium text-gray-700 mt-4">Año</label>
+            <input type="number" id="anio" v-model="libro.anio" required
+                   :class="{'border-red-500': errors.anio}"
+                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-fuchsia-900 sm:text-sm">
+            <p v-if="errors.anio" class="text-red-500 text-xs mt-1">{{ errors.anio }}</p>
+          </div>
+          <div>
+            <label for="cantidad" class="block text-sm font-medium text-gray-700 mt-4">Cantidad</label>
+            <input type="number" id="cantidad" v-model="libro.cantidad" required
+                   :class="{'border-red-500': errors.cantidad}"
+                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-fuchsia-900 sm:text-sm">
+            <p v-if="errors.cantidad" class="text-red-500 text-xs mt-1">{{ errors.cantidad }}</p>
+          </div>
+          <div>
+            <label for="sinopsis" class="block text-sm font-medium text-gray-700 mt-4">Sinopsis</label>
+            <textarea id="sinopsis" v-model="libro.sinopsis" required
+                      :class="{'border-red-500': errors.sinopsis}"
+                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-fuchsia-900 sm:text-sm"></textarea>
+            <p v-if="errors.sinopsis" class="text-red-500 text-xs mt-1">{{ errors.sinopsis }}</p>
+          </div>
         </div>
 
         <!-- Form pagina 2-->
@@ -63,6 +91,10 @@
             <p class="text-sm text-gray-600"><strong>Autor:</strong> {{ libro.autor || 'N/A' }}</p>
             <p class="text-sm text-gray-600"><strong>Género:</strong> {{ libro.genero || 'N/A' }}</p>
             <p class="text-sm text-gray-600"><strong>Editorial:</strong> {{ libro.editorial || 'N/A' }}</p>
+            <p class="text-sm text-gray-600"><strong>ISBN:</strong> {{ libro.isbn || 'N/A' }}</p>
+            <p class="text-sm text-gray-600"><strong>Año:</strong> {{ libro.anio || 'N/A' }}</p>
+            <p class="text-sm text-gray-600"><strong>Cantidad:</strong> {{ libro.cantidad || 'N/A' }}</p>
+            <p class="text-sm text-gray-600"><strong>Sinopsis:</strong> {{ libro.sinopsis || 'N/A' }}</p>
             <div v-if="libro.imagenPreviewUrl" class="mt-4">
               <img :src="libro.imagenPreviewUrl" alt="Portada" class="rounded-md max-h-48 border">
             </div>
@@ -109,6 +141,16 @@
 
 <script setup>
 import { ref, reactive } from 'vue';
+// import { inject } from 'vue';
+
+const props = defineProps({
+  usuario: {
+    type: Object,
+    required: true
+  }
+});
+
+// const user = inject('user', null);
 
 const currentStep = ref(1);
 const totalSteps = 3;
@@ -120,6 +162,10 @@ const libro = reactive({
   genero: '',
   editorial: '',
   autor: '',
+  isbn: '',
+  anio: '',
+  cantidad: '',
+  sinopsis: '',
   imagenFile: null,
   imagenPreviewUrl: ''
 });
@@ -128,6 +174,10 @@ const errors = reactive({
   titulo: '',
   genero: '',
   autor: '',
+  isbn: '',
+  anio: '',
+  cantidad: '',
+  sinopsis: '',
   imagen: ''
 });
 
@@ -135,7 +185,11 @@ const validateStep1 = () => {
   errors.titulo = !libro.titulo ? 'El título es obligatorio.' : '';
   errors.genero = !libro.genero ? 'El género es obligatorio.' : '';
   errors.autor = !libro.autor ? 'El autor es obligatorio.' : '';
-  return !errors.titulo && !errors.genero && !errors.autor;
+  errors.isbn = !libro.isbn ? 'El ISBN es obligatorio.' : '';
+  errors.anio = !libro.anio ? 'El año es obligatorio.' : '';
+  errors.cantidad = !libro.cantidad ? 'La cantidad es obligatoria.' : '';
+  errors.sinopsis = !libro.sinopsis ? 'La sinopsis es obligatoria.' : '';
+  return !errors.titulo && !errors.genero && !errors.autor && !errors.isbn && !errors.anio && !errors.cantidad && !errors.sinopsis;
 };
 
 const validateStep2 = () => {
@@ -150,7 +204,6 @@ const nextStep = () => {
   } else if (currentStep.value === 2) {
     isValid = validateStep2();
   }
-
   if (isValid && currentStep.value < totalSteps) {
     currentStep.value++;
     submissionStatus.value = null;
@@ -158,6 +211,7 @@ const nextStep = () => {
     submissionStatus.value = { type: 'error', message: 'Por favor, corrige los errores del paso actual.' };
   }
 };
+
 
 const prevStep = () => {
   if (currentStep.value > 1) {
@@ -179,6 +233,47 @@ const handleImageUpload = (event) => {
 };
 
 const handleBookRegistration = async () => {
+  submissionStatus.value = null;
+  if (!validateStep1() && currentStep.value === 1) {
+    submissionStatus.value = { type: 'error', message: 'Faltan datos en el paso 1.' };
+    currentStep.value = 1;
+    return;
+  }
+  const formData = new FormData();
+  formData.append('libro', new Blob([JSON.stringify({
+    titulo: libro.titulo,
+    genero: libro.genero,
+    editorial: libro.editorial,
+    autor: libro.autor,
+    isbn: libro.isbn,
+    anio: libro.anio,
+    cantidad: libro.cantidad,
+    sinopsis: libro.sinopsis
+  })], { type: 'application/json' }));
+  if (libro.imagenFile) {
+    formData.append('imagen', libro.imagenFile);
+  }
+  formData.append('correoUsuario', props.usuario.correo);
+
+  try {
+    const res = await fetch('/api/libros', {
+      method: 'POST',
+      body: formData
+    });
+    if (!res.ok) {
+      throw new Error('Error al registrar libro');
+    }
+    const msg = await res.text();
+    submissionStatus.value = { type: 'success', message: msg };
+    registroExitoso.value = true;
+    // Actualizar libros en la pantalla principal
+    window.dispatchEvent(new Event('libro-registrado'));
+  } catch (e) {
+    submissionStatus.value = { type: 'error', message: 'No se pudo registrar el libro.' };
+  }
+};
+
+/* const handleBookRegistration = async () => {
   submissionStatus.value = null;
   if (!validateStep1() && currentStep.value === 1) {
     submissionStatus.value = { type: 'error', message: 'Faltan datos en el paso 1.' };
@@ -211,7 +306,7 @@ const handleBookRegistration = async () => {
   setTimeout(() => {
     registroExitoso.value = true;
   }, 1000);
-};
+}; */
 
 const resetForm = () => {
   currentStep.value = 1;
@@ -221,6 +316,10 @@ const resetForm = () => {
   libro.genero = '';
   libro.editorial = '';
   libro.autor = '';
+  libro.isbn = '';
+  libro.anio = '';
+  libro.cantidad = '';
+  libro.sinopsis = '';
   libro.imagenFile = null;
   libro.imagenPreviewUrl = '';
   Object.keys(errors).forEach(key => errors[key] = '');

@@ -30,18 +30,36 @@ const libros = ref([])
 
 const emit = defineEmits(['ver-libro'])
 
-const verDetalles = (libro) => {
-  emit('ver-libro', { ...libro })
-}
-
-onMounted(async () => {
+const cargarLibros = async () => {
   try {
     const res = await axios.get('/api/libros')
     libros.value = res.data
   } catch (e) {
     libros.value = []
   }
+}
+
+const verDetalles = (libro) => {
+  emit('ver-libro', { ...libro })
+}
+
+
+onMounted(() => {
+  cargarLibros()
+  window.addEventListener('libro-registrado', cargarLibros)
 })
+
+/* onMounted(async () => {
+  cargarLibros()
+  window.addEventListener('libro-registrado', cargarLibros)
+  try {
+    const res = await axios.get('/api/libros')
+    libros.value = res.data
+  } catch (e) {
+    libros.value = []
+  }
+}) */
+
 </script>
 
 

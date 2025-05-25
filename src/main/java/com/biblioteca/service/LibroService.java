@@ -7,6 +7,7 @@ import com.biblioteca.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -25,7 +26,7 @@ public class LibroService {
     }
 
     // Registrar un libro (solo bibliotecario)
-    public String registrarLibro(Libro libro, String correoUsuario) {
+    public String registrarLibroConImagen(Libro libro, MultipartFile imagen, String correoUsuario) {
         Usuario usuario = usuarioRepository.findByCorreo(correoUsuario)
             .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         if (!"BIBLIOTECARIO".equals(usuario.getRol())) {
@@ -40,6 +41,13 @@ public class LibroService {
         }
         if (libro.getCantidad() <= 0) {
             return "Debe haber al menos una copia física del libro.";
+        }
+        if (imagen != null && !imagen.isEmpty()) {
+        try {
+            libro.setImagen(imagen.getBytes());
+        } catch (Exception e) {
+            return "Error al procesar la imagen.";
+            }
         }
         libroRepository.save(libro);
         return "Libro registrado exitosamente.";

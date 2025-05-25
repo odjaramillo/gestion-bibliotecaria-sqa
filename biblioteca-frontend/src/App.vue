@@ -50,6 +50,7 @@
         @ver-libro="mostrarPantallaLibro"
         @volver="irAPantallaPrincipal"
         :libro="libroSeleccionado"
+        :usuario="user"
       />
     </main>
 

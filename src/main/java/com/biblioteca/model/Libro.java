@@ -35,12 +35,14 @@ public class Libro {
     @Column(length = 1000)
     private String sinopsis;
 
-    private String imagen;
+    @Column(columnDefinition = "LONGBLOB")
+    private byte[] imagen;
+
 
     public Libro() {
     }
 
-    public Libro(String titulo, String autor, String editorial, String genero, Long isbn, int anio, int cantidad, String sinopsis, String imagen) {
+    public Libro(String titulo, String autor, String editorial, String genero, Long isbn, int anio, int cantidad, String sinopsis, byte[] imagen) {
         this.titulo = titulo;
         this.autor = autor;
         this.editorial = editorial;
@@ -79,6 +81,6 @@ public class Libro {
     public String getSinopsis() { return sinopsis; }
     public void setSinopsis(String sinopsis) { this.sinopsis = sinopsis; }
 
-    public String getImagen() { return imagen; }
-    public void setImagen(String imagen) { this.imagen = imagen; }
+    public byte[] getImagen() { return imagen; }
+    public void setImagen(byte[] imagen) { this.imagen = imagen; }
 }

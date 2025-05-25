@@ -20,6 +20,7 @@ import com.biblioteca.service.ResenaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -54,8 +55,12 @@ public class Controller {
 
     // Registrar libro (solo bibliotecario)
     @PostMapping("/libros")
-    public ResponseEntity<?> registrarLibro(@RequestBody Libro libro, @RequestParam String correoUsuario) {
-        String respuesta = libroService.registrarLibro(libro, correoUsuario);
+    public ResponseEntity<?> registrarLibro(
+        @RequestPart("libro") Libro libro,
+        @RequestPart(value = "imagen", required = false) MultipartFile imagen,
+        @RequestParam String correoUsuario
+    ) {
+        String respuesta = libroService.registrarLibroConImagen(libro, imagen, correoUsuario);
         return ResponseEntity.ok(respuesta);
     }
 
