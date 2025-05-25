@@ -101,7 +101,7 @@ const validateEmail = (email) => {
 
 const validatePassword = (password) => {
   if (!password) return "La contraseña es obligatoria.";
-  if (password.length < 8) return "La contraseña debe tener al menos 8 caracteres.";
+  // if (password.length < 8) return "La contraseña debe tener al menos 8 caracteres.";
   return "";
 };
 
@@ -123,6 +123,38 @@ const handleRegister = async () => {
   submissionStatus.value = null;
   if (validateForm()) {
     const dataToSend = {
+      nombre: userData.value.name,
+      correo: userData.value.email,
+      contrasena: userData.value.password
+    };
+    try {
+      const res = await fetch('/api/usuarios/registro', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dataToSend)
+      });
+      if (!res.ok) {
+        throw new Error('Error al registrar usuario');
+      }
+      const msg = await res.text();
+      submissionStatus.value = { type: 'success', message: msg };
+      userData.value.name = '';
+      userData.value.email = '';
+      userData.value.password = '';
+      userData.value.confirmPassword = '';
+    } catch (e) {
+      submissionStatus.value = { type: 'error', message: 'No se pudo registrar el usuario.' };
+    }
+  } else {
+    submissionStatus.value = { type: 'error', message: 'Por favor, corrige los errores en el formulario.' };
+  }
+};
+
+
+/* const handleRegister = async () => {
+  submissionStatus.value = null;
+  if (validateForm()) {
+    const dataToSend = {
       name: userData.value.name,
       email: userData.value.email,
       password: userData.value.password
@@ -133,5 +165,5 @@ const handleRegister = async () => {
     console.log('Errores de validación:', errors.value);
     submissionStatus.value = { type: 'error', message: 'Por favor, corrige los errores en el formulario.' };
   }
-};
+}; */
 </script>

@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class UsuarioService {
 
@@ -30,7 +32,22 @@ public class UsuarioService {
     }
 
     // Autenticación de usuario
-    public String autenticarUsuario(String correo, String contrasena) {
+
+    public Usuario autenticarYObtenerUsuario(String correo, String contrasena) {
+    Optional<Usuario> usuarioOpt = usuarioRepository.findByCorreo(correo);
+    if (usuarioOpt.isPresent()) {
+        Usuario usuario = usuarioOpt.get();
+        System.out.println("Contraseña recibida: " + contrasena);
+        System.out.println("Contraseña en BD: " + usuario.getContrasena());
+        System.out.println("BCrypt match: " + passwordEncoder.matches(contrasena, usuario.getContrasena()));
+        if (passwordEncoder.matches(contrasena, usuario.getContrasena())) {
+            return usuario;
+        }
+    }
+    return null;
+}
+
+   /*  public String autenticarUsuario(String correo, String contrasena) {
         return usuarioRepository.findByCorreo(correo)
                 .map(usuario -> {
                     if (passwordEncoder.matches(contrasena, usuario.getContrasena())) {
@@ -40,5 +57,6 @@ public class UsuarioService {
                     }
                 })
                 .orElse("Usuario no encontrado.");
-    }
+                
+    } */
 }
