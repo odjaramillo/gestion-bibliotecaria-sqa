@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -103,6 +104,21 @@ public class Controller {
         } else {
             return ResponseEntity.status(401).body("Credenciales inválidas");
         }
+    }
+
+    @PutMapping("/usuarios/nombre")
+    public ResponseEntity<?> actualizarNombreUsuario(
+            org.springframework.security.core.Authentication authentication,
+            @RequestBody Map<String, String> body) {
+        String correo = authentication.getName();
+        Usuario usuario = usuarioService.buscarPorCorreo(correo);
+        if (usuario == null) {
+            return ResponseEntity.status(404).body("Usuario no encontrado");
+        }
+        String nuevoNombre = body.get("nombre");
+        usuario.setNombre(nuevoNombre);
+        usuarioService.guardar(usuario);
+        return ResponseEntity.ok("Nombre actualizado correctamente");
     }
 
     /* @PostMapping("/login")

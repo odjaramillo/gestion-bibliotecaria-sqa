@@ -52,6 +52,9 @@ public class UsuarioService {
             return usuarioRepository.findByCorreo(correo).orElse(null);
         }
 
+    public void guardar(Usuario usuario) {
+        usuarioRepository.save(usuario);
+    }    
    /*  public String autenticarUsuario(String correo, String contrasena) {
         return usuarioRepository.findByCorreo(correo)
                 .map(usuario -> {

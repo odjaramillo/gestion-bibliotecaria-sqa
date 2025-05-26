@@ -8,18 +8,17 @@
         <label for="name" class="block text-sm font-medium text-gray-700">Nombre Completo</label>
         <input
           type="text"
-          id="name"
-          v-model="form.name"
-          @blur="validateField('name')"
-          :class="{'border-red-500': errors.name}"
+          id="nombre"
+          v-model="nombre"
+          :class="{'border-red-500': error}"
           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:border-fuchsia-900 "
           placeholder="Ej: Juan Pérez"
         >
-        <p v-if="errors.name" class="mt-1 text-sm text-red-600">{{ errors.name }}</p>
+        <p v-if="error" class="mt-1 text-sm text-red-600">{{ error }}</p>
       </div>
 
       <!-- Correo Electrónico -->
-      <div>
+      <!-- <div>
         <label for="email" class="block text-sm font-medium text-gray-700">Correo Electrónico</label>
         <input
           type="email"
@@ -31,10 +30,10 @@
           placeholder="ejemplo@correo.com"
         >
         <p v-if="errors.email" class="mt-1 text-sm text-red-600">{{ errors.email }}</p>
-      </div>
+      </div> -->
 
       <!-- Contraseña -->
-      <div>
+      <!-- <div>
         <label for="password" class="block text-sm font-medium text-gray-700">Nueva Contraseña</label>
         <input
           type="password"
@@ -47,10 +46,10 @@
         >
         <p v-if="errors.password" class="mt-1 text-sm text-red-600">{{ errors.password }}</p>
         <p class="mt-1 text-xs text-gray-500">Mínimo 8 caracteres, 1 mayúscula y 1 número</p>
-      </div>
+      </div> -->
 
       <!-- Confirmar Contraseña -->
-      <div>
+      <!-- <div>
         <label for="confirmPassword" class="block text-sm font-medium text-gray-700">Confirmar Contraseña</label>
         <input
           type="password"
@@ -62,7 +61,7 @@
           placeholder="••••••••"
         >
         <p v-if="errors.confirmPassword" class="mt-1 text-sm text-red-600">{{ errors.confirmPassword }}</p>
-      </div>
+      </div> -->
 
       <!-- Botones -->
       <div class="flex justify-end space-x-4 pt-4">
@@ -81,14 +80,15 @@
           {{ isSubmitting ? 'Guardando...' : 'Guardar Cambios' }}
         </button>
       </div>
+      <p v-if="mensaje" :class="mensajeTipo === 'error' ? 'text-red-600' : 'text-green-600'" class="mt-2 text-center">{{ mensaje }}</p>
     </form>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue'
 
-const form = ref({
+/* const form = ref({
   name: '',
   email: '',
   password: '',
@@ -100,11 +100,27 @@ const errors = ref({
   email: '',
   password: '',
   confirmPassword: ''
-});
+}); */
 
-const isSubmitting = ref(false);
+const nombre = ref('')
+const error = ref('')
+const isSubmitting = ref(false)
+const mensaje = ref('')
+const mensajeTipo = ref('')
 
-const validateField = (field) => {
+const cargarNombre = async () => {
+  try {
+    const res = await fetch('/api/usuarios/me', { credentials: 'include' })
+    if (res.ok) {
+      const user = await res.json()
+      nombre.value = user.nombre || ''
+    }
+  } catch (e) {
+    nombre.value = ''
+  }
+}
+
+/* const validateField = (field) => {
   switch(field) {
     case 'name': {
       errors.value.name = form.value.name.trim() === '' 
@@ -138,14 +154,28 @@ const validateField = (field) => {
       break;
     }
   }
-};
+}; */
 
-const validateForm = () => {
+const validate = () => {
+  if (!nombre.value.trim()) {
+    error.value = 'El nombre es requerido'
+    return false
+  }
+  if (nombre.value.length < 3) {
+    error.value = 'Mínimo 3 caracteres'
+    return false
+  }
+  error.value = ''
+  return true
+}
+
+/* const validateForm = () => {
   Object.keys(form.value).forEach(field => validateField(field));
   return !Object.values(errors.value).some(error => error !== '');
 };
+ */
 
-const handleSubmit = async () => {
+/* const handleSubmit = async () => {
   if (validateForm()) {
     isSubmitting.value = true;
     try {
@@ -158,9 +188,37 @@ const handleSubmit = async () => {
       isSubmitting.value = false;
     }
   }
-};
+}; */
 
-const resetForm = () => {
+const handleSubmit = async () => {
+  if (!validate()) return
+  isSubmitting.value = true
+  mensaje.value = ''
+  mensajeTipo.value = ''
+  try {
+    const res = await fetch('/api/usuarios/nombre', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ nombre: nombre.value })
+    })
+    const msg = await res.text()
+    if (res.ok) {
+      mensaje.value = msg
+      mensajeTipo.value = 'success'
+    } else {
+      mensaje.value = msg
+      mensajeTipo.value = 'error'
+    }
+  } catch (e) {
+    mensaje.value = 'Error al actualizar el nombre'
+    mensajeTipo.value = 'error'
+  } finally {
+    isSubmitting.value = false
+  }
+}
+
+/* const resetForm = () => {
   form.value = {
     name: '',
     email: '',
@@ -168,7 +226,19 @@ const resetForm = () => {
     confirmPassword: ''
   };
   Object.keys(errors.value).forEach(key => errors.value[key] = '');
-};
+}; */
+
+const resetForm = () => {
+  cargarNombre()
+  error.value = ''
+  mensaje.value = ''
+  mensajeTipo.value = ''
+}
+
+onMounted(() => {
+  cargarNombre()
+})
+
 </script>
 
 <style scoped>
