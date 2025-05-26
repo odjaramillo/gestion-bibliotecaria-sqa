@@ -5,21 +5,25 @@ import com.biblioteca.model.Usuario;
 import com.biblioteca.model.Prestamo;
 import com.biblioteca.model.Resena;
 import com.biblioteca.model.ComentarioResena;
+import com.biblioteca.model.Amonestacion;
 
 import com.biblioteca.dto.ResenaRequest;
 import com.biblioteca.dto.ComentarioResenaRequest;
 import com.biblioteca.dto.PrestamoRequest;
+import com.biblioteca.dto.AmonestacionDTO;
 
 import com.biblioteca.service.ComentarioResenaService;
 import com.biblioteca.service.LibroService;
 import com.biblioteca.service.UsuarioService;
 import com.biblioteca.service.PrestamoService;
 import com.biblioteca.service.ResenaService;
+import com.biblioteca.service.AmonestacionService;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -44,6 +48,9 @@ public class Controller {
     @Autowired
     private ComentarioResenaService comentarioResenaService;
 
+    @Autowired
+    private AmonestacionService amonestacionService;
+
     // Libros
 
     // Consultar todos los libros
@@ -54,8 +61,12 @@ public class Controller {
 
     // Registrar libro (solo bibliotecario)
     @PostMapping("/libros")
-    public ResponseEntity<?> registrarLibro(@RequestBody Libro libro, @RequestParam String correoUsuario) {
-        String respuesta = libroService.registrarLibro(libro, correoUsuario);
+    public ResponseEntity<?> registrarLibro(
+        @RequestPart("libro") Libro libro,
+        @RequestPart(value = "imagen", required = false) MultipartFile imagen,
+        @RequestParam String correoUsuario
+    ) {
+        String respuesta = libroService.registrarLibroConImagen(libro, imagen, correoUsuario);
         return ResponseEntity.ok(respuesta);
     }
 
@@ -68,21 +79,57 @@ public class Controller {
         return ResponseEntity.ok(respuesta);
     }
 
+    @GetMapping("/usuarios/me")
+        public ResponseEntity<Usuario> getUsuarioAutenticado(org.springframework.security.core.Authentication authentication) {
+            String correo = authentication.getName();
+            Usuario usuario = usuarioService.buscarPorCorreo(correo);
+            usuario.setContrasena(null);
+            return ResponseEntity.ok(usuario);
+        }
+
     // Login de usuario
-    @PostMapping("/usuarios/login")
+
+    @PostMapping("/login")
+    public ResponseEntity<?> loginUsuario(@RequestBody Usuario usuario) {
+        Usuario usuarioAutenticado = usuarioService.autenticarYObtenerUsuario(usuario.getCorreo(), usuario.getContrasena());
+        if (usuarioAutenticado != null) {
+            // No devuelvas la contraseña
+            Usuario respuesta = new Usuario();
+            respuesta.setId(usuarioAutenticado.getId());
+            respuesta.setNombre(usuarioAutenticado.getNombre());
+            respuesta.setCorreo(usuarioAutenticado.getCorreo());
+            respuesta.setRol(usuarioAutenticado.getRol());
+            return ResponseEntity.ok(respuesta);
+        } else {
+            return ResponseEntity.status(401).body("Credenciales inválidas");
+        }
+    }
+
+    /* @PostMapping("/login")
     public ResponseEntity<String> loginUsuario(@RequestBody Usuario usuario) {
         String respuesta = usuarioService.autenticarUsuario(usuario.getCorreo(), usuario.getContrasena());
         return ResponseEntity.ok(respuesta);
-    }
+    } */
 
     // Préstamos
 
     // Crear préstamo
-    @PostMapping("/prestamos")
+
+    @PostMapping("/prestar")
+    public ResponseEntity<String> registrarPrestamo(@RequestBody PrestamoRequest request) {
+        String respuesta = prestamoService.crearPrestamo(request.getCorreoUsuario(), request.getIsbn(), request.getFechaPrestamo());
+        if (respuesta.startsWith("Préstamo registrado")) {
+            return ResponseEntity.ok(respuesta);
+        } else {
+            return ResponseEntity.badRequest().body(respuesta);
+        }
+    }
+
+    /* @PostMapping("/prestamos")
     public ResponseEntity<String> crearPrestamo(@RequestBody PrestamoRequest request) {
         String respuesta = prestamoService.crearPrestamo(request.getUsuarioId(), request.getIsbn());
         return ResponseEntity.ok(respuesta);
-    }
+    } */
 
     // Devolver préstamo
     @PostMapping("/prestamos/devolver")
@@ -137,4 +184,31 @@ public class Controller {
         return comentarioResenaService.findByResena(resenaId);
     }
 
+
+    // Amonestaciones
+
+    @GetMapping("/amonestaciones")
+    public List<Amonestacion> listarAmonestaciones() {
+        return amonestacionService.findAll();
+    }
+
+    @GetMapping("/amonestaciones/usuario/{usuarioId}")
+    public List<Amonestacion> listarAmonestacionesPorUsuario(@PathVariable Integer usuarioId) {
+        return amonestacionService.findByUsuario(usuarioId);
+    }
+
+    @GetMapping("/amonestaciones/prestamo/{prestamoId}")
+    public List<Amonestacion> listarAmonestacionesPorPrestamo(@PathVariable Integer prestamoId) {
+        return amonestacionService.findByPrestamo(prestamoId);
+    }
+
+    @PostMapping("/amonestaciones")
+    public Amonestacion crearAmonestacion(@RequestBody AmonestacionDTO dto) {
+        return amonestacionService.save(dto.toAmonestacion(), dto.getUsuarioId(), dto.getPrestamoId());
+    }
+
+    @DeleteMapping("/amonestaciones/{id}")
+    public void eliminarAmonestacion(@PathVariable Integer id) {
+        amonestacionService.eliminarAmonestacion(id);
+    }
 }

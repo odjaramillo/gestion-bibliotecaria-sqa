@@ -15,7 +15,8 @@
               class="ml-4 px-4 py-2 hover:bg-gray-800 rounded-md transition-colors">Registro</button>
           </template>
           
-          <template v-if="user && user.role === 'user'">
+          <template v-if="user && user.role === 'usuario'">
+            <span class="ml-4 font-semibold">Hola, {{ user.nombre }}</span>
             <button @click="currentComponent = 'SolicitudVerificacionPago'"
               class="ml-4 px-4 py-2 hover:bg-gray-800 rounded-md transition-colors">Solicitar verificar Pago</button>
             <button @click="currentComponent = 'EditarDatosPersonales'"
@@ -24,7 +25,8 @@
               class="ml-4 px-4 py-2 bg-red-600 hover:bg-red-700 rounded-md transition-colors">Cerrar Sesión</button>
           </template>
           
-          <template v-if="user && user.role === 'librarian'">
+          <template v-if="user && user.role === 'bibliotecario'">
+            <span class="ml-4 font-semibold">Hola, {{ user.nombre }}</span>
             <button @click="currentComponent = 'RegistroLibro'"
               class="ml-4 px-4 py-2 hover:bg-gray-800 rounded-md transition-colors">Registrar nuevo libro</button>
             <button @click="currentComponent = 'VerificarPago'"
@@ -46,7 +48,9 @@
         :is="activeComponent" 
         @login="handleLogin"
         @ver-libro="mostrarPantallaLibro"
-        
+        @volver="irAPantallaPrincipal"
+        :libro="libroSeleccionado"
+        :usuario="user"
       />
     </main>
 
@@ -111,14 +115,41 @@ const irAPantallaPrincipal = () => {
   currentComponent.value = 'PantallaPrincipal';
 };
 
-const handleLogin = (userData) => {
-  user.value = userData;
-  if (userData.role === 'librarian') {
-    currentComponent.value = 'PantallaBibliotecario';
-  } else {
-    currentComponent.value = 'PantallaUsuario';
+const handleLogin = async () => {
+  try {
+    const res = await fetch('/api/usuarios/me', {
+      credentials: 'include'
+    })
+    if (res.ok) {
+      const userData = await res.json()
+      user.value = {
+        id: userData.id,
+        nombre: userData.nombre,
+        correo: userData.correo,
+        role: userData.rol.toLowerCase()
+      }
+      currentComponent.value = 'PantallaPrincipal'
+    } else {
+      user.value = null
+    }
+  } catch (e) {
+    user.value = null
   }
-};
+}
+
+/* const handleLogin = (userData) => {
+  user.value = userData;
+  currentComponent.value = 'PantallaPrincipal';
+}; */
+
+/* const handleLogin = (userData) => {
+  user.value = userData;
+  if (userData.role === 'bibliotecario') {
+    currentComponent.value = 'PantallaPrincipal';
+  } else {
+    currentComponent.value = 'PantallaPrincipal';
+  }
+}; */
 
 const logout = () => {
   user.value = null;

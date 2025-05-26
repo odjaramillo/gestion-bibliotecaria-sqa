@@ -3,5 +3,10 @@ package com.biblioteca.repository;
 import com.biblioteca.model.Amonestacion;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface AmonestacionRepository extends JpaRepository<Amonestacion, Long> {
+import java.util.List;
+
+public interface AmonestacionRepository extends JpaRepository<Amonestacion, Integer> {
+    List<Amonestacion> findByUsuarioId(Integer usuarioId);
+    List<Amonestacion> findByPrestamoId(Integer prestamoId);
+    boolean existsByUsuarioIdAndVerificadaFalse(Integer usuarioId);
 }
