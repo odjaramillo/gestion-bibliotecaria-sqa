@@ -45,13 +45,13 @@ public class PrestamoService {
         if (libro.getCantidad() < 1) return "Libro no disponible para préstamo.";
 
         LocalDate fechaPrestamo = LocalDate.parse(fechaPrestamoStr);
-        LocalDate fechaDevolucion = fechaPrestamo.plusDays(7);
+        // LocalDate fechaDevolucion = fechaPrestamo.plusDays(7);
 
         Prestamo prestamo = new Prestamo();
         prestamo.setUsuario(usuario);
         prestamo.setLibro(libro);
         prestamo.setFechaPrestamo(fechaPrestamo);
-        prestamo.setFechaDevolucion(fechaDevolucion);
+        prestamo.setFechaDevolucion(null);
         prestamo.setEstado("activo");
 
         prestamoRepository.save(prestamo);
