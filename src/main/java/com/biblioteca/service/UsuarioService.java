@@ -45,7 +45,12 @@ public class UsuarioService {
         }
     }
     return null;
-}
+
+    }
+
+    public Usuario buscarPorCorreo(String correo) {
+            return usuarioRepository.findByCorreo(correo).orElse(null);
+        }
 
    /*  public String autenticarUsuario(String correo, String contrasena) {
         return usuarioRepository.findByCorreo(correo)

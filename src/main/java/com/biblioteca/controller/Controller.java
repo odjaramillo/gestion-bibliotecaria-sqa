@@ -5,16 +5,19 @@ import com.biblioteca.model.Usuario;
 import com.biblioteca.model.Prestamo;
 import com.biblioteca.model.Resena;
 import com.biblioteca.model.ComentarioResena;
+import com.biblioteca.model.Amonestacion;
 
 import com.biblioteca.dto.ResenaRequest;
 import com.biblioteca.dto.ComentarioResenaRequest;
 import com.biblioteca.dto.PrestamoRequest;
+import com.biblioteca.dto.AmonestacionDTO;
 
 import com.biblioteca.service.ComentarioResenaService;
 import com.biblioteca.service.LibroService;
 import com.biblioteca.service.UsuarioService;
 import com.biblioteca.service.PrestamoService;
 import com.biblioteca.service.ResenaService;
+import com.biblioteca.service.AmonestacionService;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +48,9 @@ public class Controller {
     @Autowired
     private ComentarioResenaService comentarioResenaService;
 
+    @Autowired
+    private AmonestacionService amonestacionService;
+
     // Libros
 
     // Consultar todos los libros
@@ -73,6 +79,14 @@ public class Controller {
         return ResponseEntity.ok(respuesta);
     }
 
+    @GetMapping("/usuarios/me")
+        public ResponseEntity<Usuario> getUsuarioAutenticado(org.springframework.security.core.Authentication authentication) {
+            String correo = authentication.getName();
+            Usuario usuario = usuarioService.buscarPorCorreo(correo);
+            usuario.setContrasena(null);
+            return ResponseEntity.ok(usuario);
+        }
+
     // Login de usuario
 
     @PostMapping("/login")
@@ -100,11 +114,22 @@ public class Controller {
     // Préstamos
 
     // Crear préstamo
-    @PostMapping("/prestamos")
+
+    @PostMapping("/prestar")
+    public ResponseEntity<String> registrarPrestamo(@RequestBody PrestamoRequest request) {
+        String respuesta = prestamoService.crearPrestamo(request.getCorreoUsuario(), request.getIsbn(), request.getFechaPrestamo());
+        if (respuesta.startsWith("Préstamo registrado")) {
+            return ResponseEntity.ok(respuesta);
+        } else {
+            return ResponseEntity.badRequest().body(respuesta);
+        }
+    }
+
+    /* @PostMapping("/prestamos")
     public ResponseEntity<String> crearPrestamo(@RequestBody PrestamoRequest request) {
         String respuesta = prestamoService.crearPrestamo(request.getUsuarioId(), request.getIsbn());
         return ResponseEntity.ok(respuesta);
-    }
+    } */
 
     // Devolver préstamo
     @PostMapping("/prestamos/devolver")
@@ -159,4 +184,31 @@ public class Controller {
         return comentarioResenaService.findByResena(resenaId);
     }
 
+
+    // Amonestaciones
+
+    @GetMapping("/amonestaciones")
+    public List<Amonestacion> listarAmonestaciones() {
+        return amonestacionService.findAll();
+    }
+
+    @GetMapping("/amonestaciones/usuario/{usuarioId}")
+    public List<Amonestacion> listarAmonestacionesPorUsuario(@PathVariable Integer usuarioId) {
+        return amonestacionService.findByUsuario(usuarioId);
+    }
+
+    @GetMapping("/amonestaciones/prestamo/{prestamoId}")
+    public List<Amonestacion> listarAmonestacionesPorPrestamo(@PathVariable Integer prestamoId) {
+        return amonestacionService.findByPrestamo(prestamoId);
+    }
+
+    @PostMapping("/amonestaciones")
+    public Amonestacion crearAmonestacion(@RequestBody AmonestacionDTO dto) {
+        return amonestacionService.save(dto.toAmonestacion(), dto.getUsuarioId(), dto.getPrestamoId());
+    }
+
+    @DeleteMapping("/amonestaciones/{id}")
+    public void eliminarAmonestacion(@PathVariable Integer id) {
+        amonestacionService.eliminarAmonestacion(id);
+    }
 }

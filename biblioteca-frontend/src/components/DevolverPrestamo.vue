@@ -1,6 +1,6 @@
 <template>
   <div class="bg-white p-6 rounded-xl shadow-lg max-w-4xl mx-auto">
-    <h1 class="text-2xl font-bold text-slate-700 mb-6">Finalización de Préstamos</h1>
+    <h1 class="text-2xl font-bold text-slate-700 mb-6">Devolución de Préstamos</h1>
     
     <!-- Filtros -->
     <div class="mb-6 flex flex-wrap gap-4 items-center">
@@ -20,30 +20,29 @@
       </select>
     </div>
 
+    <!-- Mensaje -->
+    <p v-if="mensaje" :class="mensajeTipo === 'error' ? 'text-red-600' : 'text-green-600'" class="mb-4 text-center">{{ mensaje }}</p>
+
     <!-- Lista de Préstamos -->
     <div class="space-y-4">
       <div 
         v-for="prestamo in prestamosFiltrados" 
         :key="prestamo.id"
         class="border rounded-lg p-4"
-        :class="{
-          'border-blue-200 bg-blue-50': !prestamoVencido(prestamo),
-          'border-red-200 bg-red-50': prestamoVencido(prestamo)
-        }"
+        :class="prestamo.fechaDevolucion ? 'border-green-200 bg-green-50' : 'border-blue-200 bg-blue-50'"
       >
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
           <!-- Datos Usuario -->
           <div>
-            <h3 class="font-semibold text-gray-800">{{ prestamo.usuario.nombre }}</h3>
-            <p class="text-sm text-gray-600">Código: {{ prestamo.usuario.codigo }}</p>
+            <h3 class="font-semibold text-gray-800">{{ prestamo.usuario?.nombre }}</h3>
+            <p class="text-sm text-gray-600">Correo: {{ prestamo.usuario?.correo }}</p>
             <p class="text-sm">Préstamo ID: {{ prestamo.id }}</p>
           </div>
           
           <!-- Datos Libro -->
           <div>
-            <p class="font-medium">{{ prestamo.libro.titulo }}</p>
-            <p class="text-sm text-gray-600">{{ prestamo.libro.autor }}</p>
-            <p class="text-sm">ISBN: {{ prestamo.libro.isbn }}</p>
+            <p class="font-medium">{{ prestamo.libro?.titulo }}</p>
+            <p class="text-sm text-gray-600">ISBN: {{ prestamo.libro?.isbn }}</p>
           </div>
           
           <!-- Fechas -->
@@ -56,26 +55,19 @@
           </div>
         </div>
         
-        <!-- Observaciones y acciones -->
-        <div class="flex justify-between items-center pt-3 border-t border-gray-200">
-          <div>
-            <p v-if="prestamo.observaciones" class="text-sm text-gray-600">
-              <span class="font-medium">Obs:</span> {{ prestamo.observaciones }}
-            </p>
-          </div>
-          
-          <div class="space-x-2">
-            <button 
-              v-if="!prestamo.fechaDevolucionReal"
-              @click="mostrarModalDevolucion(prestamo)"
-              class="px-3 py-1 bg-green-500 text-white rounded-md text-sm hover:bg-green-600"
-            >
-              Registrar Devolución
-            </button>
-            <span v-else class="text-sm text-green-600">
-              Devuelto el {{ formatFecha(prestamo.fechaDevolucionReal) }}
-            </span>
-          </div>
+        <!-- Acción de devolución -->
+        <div class="flex justify-end items-center pt-3 border-t border-gray-200">
+          <button 
+            v-if="!prestamo.fechaDevolucion"
+            @click="devolverPrestamo(prestamo)"
+            :disabled="procesando"
+            class="px-3 py-1 bg-green-500 text-white rounded-md text-sm hover:bg-green-600 disabled:opacity-50"
+          >
+            {{ procesando ? 'Procesando...' : 'Registrar Devolución' }}
+          </button>
+          <span v-else class="text-sm text-green-600">
+            Devuelto el {{ formatFecha(prestamo.fechaDevolucion) }}
+          </span>
         </div>
       </div>
       
@@ -85,7 +77,7 @@
     </div>
     
     <!-- Modal de Devolución -->
-    <div v-if="modalVisible" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <!-- <div v-if="modalVisible" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div class="bg-white rounded-lg p-6 w-full max-w-md">
         <div class="flex justify-between items-center mb-4">
           <h3 class="text-lg font-semibold">Registrar Devolución</h3>
@@ -136,80 +128,75 @@
           </div>
         </div>
       </div>
-    </div>
+    </div> -->
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 
-// Datos simulados de préstamos
-const prestamos = ref([
-  {
-    id: 'PREST-001',
-    usuario: {
-      id: 1,
-      codigo: 'USR-001',
-      nombre: 'María González'
-    },
-    libro: {
-      id: 1,
-      titulo: 'El nombre del viento',
-      autor: 'Patrick Rothfuss',
-      isbn: '978-84-666-3768-9'
-    },
-    fechaPrestamo: new Date(2023, 5, 1),
-    fechaDevolucion: new Date(2023, 5, 15),
-    fechaDevolucionReal: null,
-    observaciones: 'Libro con daño leve en portada',
-    estado: 'activo'
-  },
-  {
-    id: 'PREST-002',
-    usuario: {
-      id: 2,
-      codigo: 'USR-002',
-      nombre: 'Carlos Méndez'
-    },
-    libro: {
-      id: 2,
-      titulo: 'Cien años de soledad',
-      autor: 'Gabriel García Márquez',
-      isbn: '978-84-376-0494-7'
-    },
-    fechaPrestamo: new Date(2023, 5, 5),
-    fechaDevolucion: new Date(2023, 5, 19),
-    fechaDevolucionReal: new Date(2023, 5, 18),
-    observaciones: '',
-    estado: 'completado'
-  }
-]);
-
 // Estado del componente
-const busqueda = ref('');
-const filtroEstado = ref('activos');
-const modalVisible = ref(false);
-const prestamoActual = ref(null);
+const prestamos = ref([])
+const busqueda = ref('')
+const filtroEstado = ref('todos')
+const procesando = ref(false)
+const mensaje = ref('')
+const mensajeTipo = ref('')
 
-const devolucion = ref({
+/* const devolucion = ref({
   estadoLibro: 'bueno',
   observaciones: ''
-});
+}); */
 
-// Filtros computados
+const cargarPrestamos = async () => {
+  try {
+    const res = await fetch('/api/prestamos', { credentials: 'include' })
+    if (res.ok) {
+      prestamos.value = await res.json()
+    } else {
+      prestamos.value = []
+    }
+  } catch (e) {
+    prestamos.value = []
+  }
+}
+
 const prestamosFiltrados = computed(() => {
+  const termino = busqueda.value.toLowerCase()
+  let lista = prestamos.value
+
+  // Filtro por estado
+  if (filtroEstado.value === 'activos') {
+    lista = lista.filter(p => p.fechaDevolucion == null)
+  } else if (filtroEstado.value === 'finalizados') {
+    lista = lista.filter(p => p.fechaDevolucion != null)
+  }
+
+  // Filtro por búsqueda
+  if (termino) {
+    lista = lista.filter(p =>
+      (p.usuario?.nombre?.toLowerCase() || '').includes(termino) ||
+      (p.usuario?.correo?.toLowerCase() || '').includes(termino) ||
+      (p.libro?.titulo?.toLowerCase() || '').includes(termino) ||
+      (p.libro?.isbn?.toString() || '').includes(termino)
+    )
+  }
+  return lista
+})
+
+/* const prestamosFiltrados = computed(() => {
   const termino = busqueda.value.toLowerCase();
   const hoy = new Date();
   
   return prestamos.value.filter(p => {
-    // Filtro por búsqueda
+   
     const coincideBusqueda = 
       p.usuario.nombre.toLowerCase().includes(termino) ||
       p.usuario.codigo.toLowerCase().includes(termino) ||
       p.libro.titulo.toLowerCase().includes(termino) ||
       p.libro.isbn.includes(termino);
     
-    // Filtro por estado
+    
     let coincideEstado = true;
     if (filtroEstado.value === 'activos') {
       coincideEstado = !p.fechaDevolucionReal;
@@ -219,27 +206,63 @@ const prestamosFiltrados = computed(() => {
     
     return coincideBusqueda && coincideEstado;
   });
-});
+}); */
 
 // Métodos
 const formatFecha = (fecha) => {
+  if (!fecha) return '-'
   return new Date(fecha).toLocaleDateString('es-ES', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric'
-  });
-};
+  })
+}
 
-const prestamoVencido = (prestamo) => {
+/* const prestamoVencido = (prestamo) => {
   if (prestamo.fechaDevolucionReal) return false;
   return new Date(prestamo.fechaDevolucion) < new Date();
-};
+}; */
 
 const estadoPrestamo = (prestamo) => {
-  if (prestamo.fechaDevolucionReal) return 'Devuelto';
-  if (prestamoVencido(prestamo)) return 'Vencido';
-  return 'En curso';
-};
+  if (prestamo.fechaDevolucion) return 'Finalizado'
+  return 'Activo'
+}
+
+const devolverPrestamo = async (prestamo) => {
+  if (!prestamo.id) return
+  procesando.value = true
+  mensaje.value = ''
+  mensajeTipo.value = ''
+  try {
+    const res = await fetch(`/api/prestamos/devolver?prestamoId=${prestamo.id}`, {
+      method: 'POST',
+      credentials: 'include'
+    })
+    const msg = await res.text()
+    if (res.ok) {
+      mensaje.value = msg
+      mensajeTipo.value = 'success'
+      await cargarPrestamos()
+    } else {
+      mensaje.value = msg
+      mensajeTipo.value = 'error'
+    }
+  } catch (e) {
+    mensaje.value = 'Error al devolver el préstamo'
+    mensajeTipo.value = 'error'
+  } finally {
+    procesando.value = false
+  }
+}
+
+const prestamoVencido = (prestamo) => {
+  if (!prestamo.fechaDevolucion && prestamo.fechaLimite) {
+    const hoy = new Date()
+    const limite = new Date(prestamo.fechaLimite)
+    return hoy > limite
+  }
+  return false
+}
 
 const mostrarModalDevolucion = (prestamo) => {
   prestamoActual.value = prestamo;
@@ -278,10 +301,9 @@ const registrarDevolucion = async () => {
   }
 };
 
-// Cargar datos iniciales (simular llamada API)
 onMounted(() => {
-  // En una app real, aquí harías una llamada a tu API
-});
+  cargarPrestamos()
+})
 </script>
 
 <style scoped>
