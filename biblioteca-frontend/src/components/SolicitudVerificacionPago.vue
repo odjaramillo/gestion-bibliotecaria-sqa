@@ -9,6 +9,15 @@
       <div v-else>
         <div v-for="amon in amonestaciones" :key="amon.id" class="border p-4 rounded-lg mb-4 bg-red-50">
           <div class="mb-2">
+            <span class="font-bold">Datos pago móvil</span>
+            <br>
+            <span>Número télefono: 0416-0000000</span>
+            <br>
+            <span>Rif: J-12345678</span>
+            <br>
+            <span>Bancamiga</span>
+          </div>
+          <div class="mb-2">
             <span class="font-bold">Monto:</span> {{ amon.monto }} Bs
           </div>
           <div class="mb-2">
@@ -18,7 +27,7 @@
           </div>
           <form v-if="!amon.pagada" @submit.prevent="pagarAmonestacion(amon.id)">
             <div class="mb-2">
-              <label class="block font-medium">Método de pago</label>
+              <label class="block font-medium">Número de Teléfono</label>
               <input v-model="form.metodoPago" required class="border rounded px-2 py-1 w-full" />
             </div>
             <div class="mb-2">
