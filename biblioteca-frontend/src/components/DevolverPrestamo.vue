@@ -48,10 +48,12 @@
           <!-- Fechas -->
           <div>
             <p class="text-sm"><span class="font-medium">Préstamo:</span> {{ formatFecha(prestamo.fechaPrestamo) }}</p>
+            <p class="text-sm"><span class="font-medium">Límite:</span> {{ formatFecha(prestamo.fechaLimite) }}</p>
             <p class="text-sm"><span class="font-medium">Devolución:</span> {{ formatFecha(prestamo.fechaDevolucion) }}</p>
             <p class="text-sm" :class="prestamoVencido(prestamo) ? 'text-red-600' : 'text-green-600'">
               {{ estadoPrestamo(prestamo) }}
             </p>
+            <span v-if="prestamo.amonestaciones && prestamo.amonestaciones.length > 0" class="ml-2 text-red-600 font-bold">(Amonestado)</span>
           </div>
         </div>
         
