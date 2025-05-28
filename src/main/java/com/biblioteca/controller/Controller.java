@@ -182,20 +182,17 @@ public class Controller {
         return ResponseEntity.ok(resena);
     }
 
-    // Listar reseñas de un libro
     @GetMapping("/resenas/libro/{libroId}")
     public List<Resena> listarResenasPorLibro(@PathVariable Integer libroId) {
         return resenaService.findByLibro(libroId);
     }
 
-    // Crear comentario en reseña
     @PostMapping("/comentarios-resena")
     public ResponseEntity<ComentarioResena> crearComentarioResena(@RequestBody ComentarioResenaRequest request) {
         ComentarioResena comentario = comentarioResenaService.save(request.getResenaId(), request.getUsuarioId(), request.getTexto());
         return ResponseEntity.ok(comentario);
     }
 
-    // Listar comentarios de una reseña
     @GetMapping("/comentarios-resena/resena/{resenaId}")
     public List<ComentarioResena> listarComentariosPorResena(@PathVariable Integer resenaId) {
         return comentarioResenaService.findByResena(resenaId);
@@ -256,30 +253,4 @@ public class Controller {
         amonestacionService.guardar(amonestacion);
         return ResponseEntity.ok("Amonestación verificada");
     }
-
-
-    /* @GetMapping("/amonestaciones")
-    public List<Amonestacion> listarAmonestaciones() {
-        return amonestacionService.findAll();
-    }
-
-    @GetMapping("/amonestaciones/usuario/{usuarioId}")
-    public List<Amonestacion> listarAmonestacionesPorUsuario(@PathVariable Integer usuarioId) {
-        return amonestacionService.findByUsuario(usuarioId);
-    }
-
-    @GetMapping("/amonestaciones/prestamo/{prestamoId}")
-    public List<Amonestacion> listarAmonestacionesPorPrestamo(@PathVariable Integer prestamoId) {
-        return amonestacionService.findByPrestamo(prestamoId);
-    }
-
-    @PostMapping("/amonestaciones")
-    public Amonestacion crearAmonestacion(@RequestBody AmonestacionDTO dto) {
-        return amonestacionService.save(dto.toAmonestacion(), dto.getUsuarioId(), dto.getPrestamoId());
-    }
-
-    @DeleteMapping("/amonestaciones/{id}")
-    public void eliminarAmonestacion(@PathVariable Integer id) {
-        amonestacionService.eliminarAmonestacion(id);
-    } */
 }

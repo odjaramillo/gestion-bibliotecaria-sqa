@@ -43,7 +43,7 @@ public class ComentarioResenaService {
         comentario.setResena(resenaOpt.get());
         comentario.setUsuario(usuarioOpt.get());
         comentario.setTexto(texto);
-        comentario.setFecha(LocalDateTime.now());
+        comentario.setFecha(java.time.LocalDateTime.now());
         return comentarioResenaRepository.save(comentario);
     }
 }
