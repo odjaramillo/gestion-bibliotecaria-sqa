@@ -45,7 +45,7 @@
     <main class="container mx-auto p-8">
       <!-- Renderizado condicional simplificado -->
       <component 
-        :is="activeComponent" 
+        :is="currentComponent === 'PantallaLibro' ? PantallaLibro : activeComponent" 
         @login="handleLogin"
         @ver-libro="mostrarPantallaLibro"
         @volver="irAPantallaPrincipal"
@@ -96,15 +96,7 @@ const components = {
   DevolverPrestamo
 };
 
-const activeComponent = computed(() => {
-  if (currentComponent.value === 'PantallaLibro') {
-    return {
-      ...components.PantallaLibro,
-      props: { libro: libroSeleccionado.value }
-    };
-  }
-  return components[currentComponent.value];
-});
+const activeComponent = computed(() => components[currentComponent.value]);
 
 const mostrarPantallaLibro = (libro) => {
   libroSeleccionado.value = libro;
@@ -113,6 +105,7 @@ const mostrarPantallaLibro = (libro) => {
 
 const irAPantallaPrincipal = () => {
   currentComponent.value = 'PantallaPrincipal';
+  libroSeleccionado.value = null;
 };
 
 const handleLogin = async () => {
@@ -136,6 +129,7 @@ const handleLogin = async () => {
     user.value = null
   }
 }
+
 
 /* const handleLogin = (userData) => {
   user.value = userData;

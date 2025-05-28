@@ -9,7 +9,6 @@ import com.biblioteca.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,7 +42,7 @@ public class ComentarioResenaService {
         comentario.setResena(resenaOpt.get());
         comentario.setUsuario(usuarioOpt.get());
         comentario.setTexto(texto);
-        comentario.setFecha(LocalDateTime.now());
+        comentario.setFecha(java.time.LocalDateTime.now());
         return comentarioResenaRepository.save(comentario);
     }
 }

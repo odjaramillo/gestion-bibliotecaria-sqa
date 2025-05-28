@@ -54,4 +54,14 @@ public class AmonestacionService {
     public boolean usuarioTieneAmonestacionesNoVerificadas(Integer usuarioId) {
         return amonestacionRepository.existsByUsuarioIdAndVerificadaFalse(usuarioId);
     }
+
+    public Amonestacion findById(Integer id) {
+        return amonestacionRepository.findById(id).orElse(null);
+    }
+    
+
+    public Amonestacion guardar(Amonestacion amonestacion) {
+        return amonestacionRepository.save(amonestacion);
+    }
+
 }

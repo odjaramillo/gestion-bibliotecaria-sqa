@@ -52,16 +52,7 @@ public class UsuarioService {
             return usuarioRepository.findByCorreo(correo).orElse(null);
         }
 
-   /*  public String autenticarUsuario(String correo, String contrasena) {
-        return usuarioRepository.findByCorreo(correo)
-                .map(usuario -> {
-                    if (passwordEncoder.matches(contrasena, usuario.getContrasena())) {
-                        return "Login exitoso. Rol: " + usuario.getRol();
-                    } else {
-                        return "Contraseña incorrecta.";
-                    }
-                })
-                .orElse("Usuario no encontrado.");
-                
-    } */
+    public void guardar(Usuario usuario) {
+        usuarioRepository.save(usuario);
+    }    
 }

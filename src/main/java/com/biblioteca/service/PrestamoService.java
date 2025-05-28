@@ -45,13 +45,14 @@ public class PrestamoService {
         if (libro.getCantidad() < 1) return "Libro no disponible para préstamo.";
 
         LocalDate fechaPrestamo = LocalDate.parse(fechaPrestamoStr);
-        // LocalDate fechaDevolucion = fechaPrestamo.plusDays(7);
+        LocalDate fechaLimite = fechaPrestamo.plusDays(7);
 
         Prestamo prestamo = new Prestamo();
         prestamo.setUsuario(usuario);
         prestamo.setLibro(libro);
         prestamo.setFechaPrestamo(fechaPrestamo);
         prestamo.setFechaDevolucion(null);
+        prestamo.setFechaLimite(fechaLimite); 
         prestamo.setEstado("activo");
 
         prestamoRepository.save(prestamo);
@@ -62,59 +63,40 @@ public class PrestamoService {
         return "Préstamo registrado con éxito.";
     }
 
-    /* public String crearPrestamo(Integer usuarioId, Long isbn) {
-        Optional<Usuario> usuarioOpt = usuarioRepository.findById(usuarioId);
-        if (usuarioOpt.isEmpty()) return "Usuario no registrado.";
-
-        Usuario usuario = usuarioOpt.get();
-        if (!"USUARIO".equals(usuario.getRol())) return "Solo se pueden asociar préstamos a usuarios con rol USUARIO.";
-
-        long prestamosActivos = prestamoRepository.countByUsuarioIdAndFechaDevolucionIsNull(usuarioId);
-        if (prestamosActivos >= 2) return "El usuario ya tiene 2 préstamos activos.";
-
-        Optional<Libro> libroOpt = libroRepository.findByIsbn(isbn);
-        if (libroOpt.isEmpty()) return "Libro no encontrado.";
-        Libro libro = libroOpt.get();
-        if (libro.getCantidad() < 1) return "Libro no disponible para préstamo.";
-
-        // Registrar el préstamo
-        Prestamo prestamo = new Prestamo();
-        prestamo.setUsuario(usuario);
-        prestamo.setLibro(libro);
-        prestamo.setFechaPrestamo(LocalDate.now());
-        prestamo.setFechaDevolucion(LocalDate.now().plusDays(7));
-
-        prestamoRepository.save(prestamo);
-
-        // Disminuir la cantidad de libros disponibles
-        libro.setCantidad(libro.getCantidad() - 1);
-        libroRepository.save(libro);
-
-        return "Préstamo registrado con éxito.";
-    } */
-
     // Devolver un préstamo
     public String devolverPrestamo(Integer prestamoId) {
-        Optional<Prestamo> prestamoOpt = prestamoRepository.findById(prestamoId);
-        if (prestamoOpt.isEmpty()) return "Préstamo no encontrado.";
+    Optional<Prestamo> prestamoOpt = prestamoRepository.findById(prestamoId);
+    if (prestamoOpt.isEmpty()) return "Préstamo no encontrado.";
 
-        Prestamo prestamo = prestamoOpt.get();
-        if (prestamo.getFechaDevolucion() != null && prestamo.getFechaDevolucion().isBefore(LocalDate.now())) {
-            // Ya fue devuelto
-            return "El préstamo ya fue devuelto.";
-        }
-
-        // Actualiza la fecha de devolución al día de hoy
-        prestamo.setFechaDevolucion(LocalDate.now());
-        prestamoRepository.save(prestamo);
-
-        // Aumenta la cantidad de libros disponibles
-        Libro libro = prestamo.getLibro();
-        libro.setCantidad(libro.getCantidad() + 1);
-        libroRepository.save(libro);
-
-        return "Préstamo devuelto con éxito.";
+    Prestamo prestamo = prestamoOpt.get();
+    if (prestamo.getFechaDevolucion() != null) {
+        return "El préstamo ya fue devuelto.";
     }
+
+    LocalDate hoy = LocalDate.now();
+    prestamo.setFechaDevolucion(hoy);
+    prestamoRepository.save(prestamo);
+
+    Libro libro = prestamo.getLibro();
+    libro.setCantidad(libro.getCantidad() + 1);
+    libroRepository.save(libro);
+
+    // Si la devolución es después de la fecha límite, genera amonestación
+    if (prestamo.getFechaLimite() != null && hoy.isAfter(prestamo.getFechaLimite())) {
+        Amonestacion amonestacion = new Amonestacion();
+        amonestacion.setUsuario(prestamo.getUsuario());
+        amonestacion.setPrestamo(prestamo);
+        amonestacion.setMonto(100.0);
+        amonestacion.setPagada(false);
+        amonestacion.setMetodoPago(null);
+        amonestacion.setComprobantePago(null);
+        amonestacion.setVerificada(false);
+        amonestacion.setFecha(java.time.LocalDateTime.now());
+        amonestacionRepository.save(amonestacion);
+    }
+
+    return "Préstamo devuelto con éxito.";
+}
 
     // Listar todos los préstamos
     public List<Prestamo> obtenerPrestamos() {

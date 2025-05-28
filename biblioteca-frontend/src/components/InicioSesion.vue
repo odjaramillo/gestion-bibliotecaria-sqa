@@ -102,17 +102,6 @@ const validateForm = () => {
   return !errors.value.correo && !errors.value.contrasena;
 };
 
-/* const handleLogin = async () => {
-  submissionStatus.value = null;
-  if (validateForm()) {
-    console.log('Datos de inicio de sesión para enviar al backend:', credentials.value);
-    submissionStatus.value = { type: 'success', message: 'Simulación: Inicio de sesión enviado (ver consola).' };
-  } else {
-    console.log('Errores de validación:', errors.value);
-    submissionStatus.value = { type: 'error', message: 'Por favor, corrige los errores en el formulario.' };
-  }
-}; */
-
 const handleLogin = async () => {
   submissionStatus.value = null
   if (validateForm()) {

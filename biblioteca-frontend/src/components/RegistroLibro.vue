@@ -273,41 +273,6 @@ const handleBookRegistration = async () => {
   }
 };
 
-/* const handleBookRegistration = async () => {
-  submissionStatus.value = null;
-  if (!validateStep1() && currentStep.value === 1) {
-    submissionStatus.value = { type: 'error', message: 'Faltan datos en el paso 1.' };
-    currentStep.value = 1;
-    return;
-  }
-
-  const formData = new FormData();
-  formData.append('titulo', libro.titulo);
-  formData.append('genero', libro.genero);
-  formData.append('editorial', libro.editorial);
-  formData.append('autor', libro.autor);
-  if (libro.imagenFile) {
-    formData.append('imagen', libro.imagenFile);
-  }
-
-  const libroDataForObject = {
-    titulo: libro.titulo,
-    genero: libro.genero,
-    editorial: libro.editorial,
-    autor: libro.autor,
-  };
-
-  console.log('Datos del libro para enviar al backend (como objeto):', libroDataForObject);
-  if (libro.imagenFile) {
-    console.log('Archivo de imagen adjunto:', libro.imagenFile.name);
-  }
-  console.log('Datos del libro para enviar al backend (como FormData):', formData);
-
-  setTimeout(() => {
-    registroExitoso.value = true;
-  }, 1000);
-}; */
-
 const resetForm = () => {
   currentStep.value = 1;
   registroExitoso.value = false;
