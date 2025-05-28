@@ -2,6 +2,9 @@ package com.biblioteca.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
 @Table(name = "prestamos")
@@ -21,6 +24,11 @@ public class Prestamo {
 
     private LocalDate fechaPrestamo;
     private LocalDate fechaDevolucion;
+    private LocalDate fechaLimite;
+
+    @OneToMany(mappedBy = "prestamo")
+    @JsonManagedReference
+    private List<Amonestacion> amonestaciones;
 
     @Column(nullable = false)
     private String estado;
@@ -53,4 +61,10 @@ public class Prestamo {
 
     public String getEstado() { return estado; }
     public void setEstado(String estado) { this.estado = estado; }
+
+    public LocalDate getFechaLimite() { return fechaLimite; }
+    public void setFechaLimite(LocalDate fechaLimite) { this.fechaLimite = fechaLimite; }
+
+    public List<Amonestacion> getAmonestaciones() { return amonestaciones; }
+    public void setAmonestaciones(List<Amonestacion> amonestaciones) { this.amonestaciones = amonestaciones; }
 } 

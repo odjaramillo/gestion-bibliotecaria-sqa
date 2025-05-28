@@ -2,6 +2,7 @@ package com.biblioteca.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,6 +24,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/usuarios/registro", "/api/login").permitAll()
                 .requestMatchers("/api/libros", "/api/libros/**").permitAll()
                 .requestMatchers("/api/prestamos", "/api/prestamos/**", "/api/prestar").hasAuthority("BIBLIOTECARIO")
+                .requestMatchers(HttpMethod.GET, "/api/resenas/**", "/api/comentarios-resena/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/resenas/**", "/api/comentarios-resena/**").authenticated()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
@@ -37,5 +40,3 @@ public class SecurityConfig {
         return http.build();
     }
 }
-
-// .requestMatchers("/api/libros").hasAuthority("BIBLIOTECARIO")

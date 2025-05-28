@@ -10,7 +10,6 @@ import com.biblioteca.model.Amonestacion;
 import com.biblioteca.dto.ResenaRequest;
 import com.biblioteca.dto.ComentarioResenaRequest;
 import com.biblioteca.dto.PrestamoRequest;
-import com.biblioteca.dto.AmonestacionDTO;
 
 import com.biblioteca.service.ComentarioResenaService;
 import com.biblioteca.service.LibroService;
@@ -24,8 +23,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.security.core.Authentication;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -105,16 +106,24 @@ public class Controller {
         }
     }
 
-    /* @PostMapping("/login")
-    public ResponseEntity<String> loginUsuario(@RequestBody Usuario usuario) {
-        String respuesta = usuarioService.autenticarUsuario(usuario.getCorreo(), usuario.getContrasena());
-        return ResponseEntity.ok(respuesta);
-    } */
+    @PutMapping("/usuarios/nombre")
+    public ResponseEntity<?> actualizarNombreUsuario(
+            org.springframework.security.core.Authentication authentication,
+            @RequestBody Map<String, String> body) {
+        String correo = authentication.getName();
+        Usuario usuario = usuarioService.buscarPorCorreo(correo);
+        if (usuario == null) {
+            return ResponseEntity.status(404).body("Usuario no encontrado");
+        }
+        String nuevoNombre = body.get("nombre");
+        usuario.setNombre(nuevoNombre);
+        usuarioService.guardar(usuario);
+        return ResponseEntity.ok("Nombre actualizado correctamente");
+    }
 
     // Préstamos
 
     // Crear préstamo
-
     @PostMapping("/prestar")
     public ResponseEntity<String> registrarPrestamo(@RequestBody PrestamoRequest request) {
         String respuesta = prestamoService.crearPrestamo(request.getCorreoUsuario(), request.getIsbn(), request.getFechaPrestamo());
@@ -124,12 +133,6 @@ public class Controller {
             return ResponseEntity.badRequest().body(respuesta);
         }
     }
-
-    /* @PostMapping("/prestamos")
-    public ResponseEntity<String> crearPrestamo(@RequestBody PrestamoRequest request) {
-        String respuesta = prestamoService.crearPrestamo(request.getUsuarioId(), request.getIsbn());
-        return ResponseEntity.ok(respuesta);
-    } */
 
     // Devolver préstamo
     @PostMapping("/prestamos/devolver")
@@ -165,20 +168,17 @@ public class Controller {
         return ResponseEntity.ok(resena);
     }
 
-    // Listar reseñas de un libro
     @GetMapping("/resenas/libro/{libroId}")
     public List<Resena> listarResenasPorLibro(@PathVariable Integer libroId) {
         return resenaService.findByLibro(libroId);
     }
 
-    // Crear comentario en reseña
     @PostMapping("/comentarios-resena")
     public ResponseEntity<ComentarioResena> crearComentarioResena(@RequestBody ComentarioResenaRequest request) {
         ComentarioResena comentario = comentarioResenaService.save(request.getResenaId(), request.getUsuarioId(), request.getTexto());
         return ResponseEntity.ok(comentario);
     }
 
-    // Listar comentarios de una reseña
     @GetMapping("/comentarios-resena/resena/{resenaId}")
     public List<ComentarioResena> listarComentariosPorResena(@PathVariable Integer resenaId) {
         return comentarioResenaService.findByResena(resenaId);
@@ -186,29 +186,56 @@ public class Controller {
 
 
     // Amonestaciones
+    @GetMapping("/amonestaciones-usuario/mis-amonestaciones")
+    public ResponseEntity<?> getAmonestacionesUsuario(Authentication authentication) {
+        String correo = authentication.getName();
+        Usuario usuario = usuarioService.buscarPorCorreo(correo);
+        if (usuario == null) {
+            return ResponseEntity.status(401).body("Usuario no autenticado");
+        }
+        List<Amonestacion> amonestaciones = amonestacionService.findByUsuario(usuario.getId());
+        return ResponseEntity.ok(Map.of(
+            "tieneAmonestacion", amonestaciones != null && !amonestaciones.isEmpty(),
+            "amonestaciones", amonestaciones
+        ));
+    }
 
-    @GetMapping("/amonestaciones")
-    public List<Amonestacion> listarAmonestaciones() {
+    @PutMapping("/amonestaciones-usuario/pagar")
+    public ResponseEntity<?> pagarAmonestacion(
+            Authentication authentication,
+            @RequestBody Map<String, Object> body) {
+        String correo = authentication.getName();
+        Usuario usuario = usuarioService.buscarPorCorreo(correo);
+        if (usuario == null) {
+            return ResponseEntity.status(401).body("Usuario no autenticado");
+        }
+        Integer amonestacionId = (Integer) body.get("amonestacionId");
+        String metodoPago = (String) body.get("metodoPago");
+        String comprobantePago = (String) body.get("comprobantePago");
+        Amonestacion amonestacion = amonestacionService.findById(amonestacionId);
+        if (amonestacion == null || !amonestacion.getUsuario().getId().equals(usuario.getId())) {
+            return ResponseEntity.status(403).body("No autorizado");
+        }
+        amonestacion.setMetodoPago(metodoPago);
+        amonestacion.setComprobantePago(comprobantePago);
+        amonestacion.setPagada(true);
+        amonestacionService.guardar(amonestacion);
+        return ResponseEntity.ok("Amonestación pagada correctamente");
+    }
+
+    @GetMapping("/amonestaciones-usuario/todas")
+    public List<Amonestacion> getTodasAmonestaciones() {
         return amonestacionService.findAll();
     }
 
-    @GetMapping("/amonestaciones/usuario/{usuarioId}")
-    public List<Amonestacion> listarAmonestacionesPorUsuario(@PathVariable Integer usuarioId) {
-        return amonestacionService.findByUsuario(usuarioId);
-    }
-
-    @GetMapping("/amonestaciones/prestamo/{prestamoId}")
-    public List<Amonestacion> listarAmonestacionesPorPrestamo(@PathVariable Integer prestamoId) {
-        return amonestacionService.findByPrestamo(prestamoId);
-    }
-
-    @PostMapping("/amonestaciones")
-    public Amonestacion crearAmonestacion(@RequestBody AmonestacionDTO dto) {
-        return amonestacionService.save(dto.toAmonestacion(), dto.getUsuarioId(), dto.getPrestamoId());
-    }
-
-    @DeleteMapping("/amonestaciones/{id}")
-    public void eliminarAmonestacion(@PathVariable Integer id) {
-        amonestacionService.eliminarAmonestacion(id);
+    @PutMapping("/amonestaciones-usuario/verificar/{id}")
+    public ResponseEntity<?> verificarAmonestacion(@PathVariable Integer id) {
+        Amonestacion amonestacion = amonestacionService.findById(id);
+        if (amonestacion == null) {
+            return ResponseEntity.status(404).body("Amonestación no encontrada");
+        }
+        amonestacion.setVerificada(true);
+        amonestacionService.guardar(amonestacion);
+        return ResponseEntity.ok("Amonestación verificada");
     }
 }
