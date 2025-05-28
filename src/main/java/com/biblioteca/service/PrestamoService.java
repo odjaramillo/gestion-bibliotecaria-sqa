@@ -117,7 +117,7 @@ public class PrestamoService {
         Amonestacion amonestacion = new Amonestacion();
         amonestacion.setUsuario(prestamo.getUsuario());
         amonestacion.setPrestamo(prestamo);
-        amonestacion.setMonto(5.0); // Puedes ajustar el monto
+        amonestacion.setMonto(100.0);
         amonestacion.setPagada(false);
         amonestacion.setMetodoPago(null);
         amonestacion.setComprobantePago(null);

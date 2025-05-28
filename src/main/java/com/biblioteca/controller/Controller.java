@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.security.core.Authentication;
 
 import java.util.List;
 import java.util.Map;
@@ -203,7 +204,61 @@ public class Controller {
 
     // Amonestaciones
 
-    @GetMapping("/amonestaciones")
+    @GetMapping("/amonestaciones-usuario/mis-amonestaciones")
+    public ResponseEntity<?> getAmonestacionesUsuario(Authentication authentication) {
+        String correo = authentication.getName();
+        Usuario usuario = usuarioService.buscarPorCorreo(correo);
+        if (usuario == null) {
+            return ResponseEntity.status(401).body("Usuario no autenticado");
+        }
+        List<Amonestacion> amonestaciones = amonestacionService.findByUsuario(usuario.getId());
+        return ResponseEntity.ok(Map.of(
+            "tieneAmonestacion", amonestaciones != null && !amonestaciones.isEmpty(),
+            "amonestaciones", amonestaciones
+        ));
+    }
+
+    @PutMapping("/amonestaciones-usuario/pagar")
+    public ResponseEntity<?> pagarAmonestacion(
+            Authentication authentication,
+            @RequestBody Map<String, Object> body) {
+        String correo = authentication.getName();
+        Usuario usuario = usuarioService.buscarPorCorreo(correo);
+        if (usuario == null) {
+            return ResponseEntity.status(401).body("Usuario no autenticado");
+        }
+        Integer amonestacionId = (Integer) body.get("amonestacionId");
+        String metodoPago = (String) body.get("metodoPago");
+        String comprobantePago = (String) body.get("comprobantePago");
+        Amonestacion amonestacion = amonestacionService.findById(amonestacionId);
+        if (amonestacion == null || !amonestacion.getUsuario().getId().equals(usuario.getId())) {
+            return ResponseEntity.status(403).body("No autorizado");
+        }
+        amonestacion.setMetodoPago(metodoPago);
+        amonestacion.setComprobantePago(comprobantePago);
+        amonestacion.setPagada(true);
+        amonestacionService.guardar(amonestacion);
+        return ResponseEntity.ok("Amonestación pagada correctamente");
+    }
+
+    @GetMapping("/amonestaciones-usuario/todas")
+    public List<Amonestacion> getTodasAmonestaciones() {
+        return amonestacionService.findAll();
+    }
+
+    @PutMapping("/amonestaciones-usuario/verificar/{id}")
+    public ResponseEntity<?> verificarAmonestacion(@PathVariable Integer id) {
+        Amonestacion amonestacion = amonestacionService.findById(id);
+        if (amonestacion == null) {
+            return ResponseEntity.status(404).body("Amonestación no encontrada");
+        }
+        amonestacion.setVerificada(true);
+        amonestacionService.guardar(amonestacion);
+        return ResponseEntity.ok("Amonestación verificada");
+    }
+
+
+    /* @GetMapping("/amonestaciones")
     public List<Amonestacion> listarAmonestaciones() {
         return amonestacionService.findAll();
     }
@@ -226,5 +281,5 @@ public class Controller {
     @DeleteMapping("/amonestaciones/{id}")
     public void eliminarAmonestacion(@PathVariable Integer id) {
         amonestacionService.eliminarAmonestacion(id);
-    }
+    } */
 }

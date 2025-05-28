@@ -1,8 +1,8 @@
-<template>
+<!-- <template>
   <div class="bg-white p-6 rounded-xl shadow-lg max-w-4xl mx-auto">
     <h1 class="text-2xl font-bold text-slate-700 mb-6">Gestión de Pagos Pendientes</h1>
     
-    <!-- Filtros -->
+
     <div class="mb-6 flex flex-wrap gap-4">
       <select v-model="filtroEstado" class="px-4 py-2 border rounded-lg">
         <option value="todos">Todos</option>
@@ -19,7 +19,7 @@
       >
     </div>
 
-    <!-- Lista de Solicitudes -->
+
     <div class="space-y-4">
       <div 
         v-for="solicitud in solicitudesFiltradas" 
@@ -32,20 +32,20 @@
         }"
       >
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
-          <!-- Datos Usuario -->
+
           <div>
             <h3 class="font-semibold text-gray-800">{{ solicitud.usuario.nombre }}</h3>
             <p class="text-sm">Deuda: <span class="font-medium">Bs {{ solicitud.usuario.deuda.toFixed(2) }}</span></p>
           </div>
           
-          <!-- Datos Pago -->
+
           <div>
             <p class="text-sm"><span class="font-medium">Banco:</span> {{ formatBanco(solicitud.pago.banco) }}</p>
             <p class="text-sm"><span class="font-medium">Celular:</span> {{ solicitud.pago.celular }}</p>
             <p class="text-sm"><span class="font-medium">Monto:</span> Bs {{ solicitud.pago.monto }}</p>
           </div>
           
-          <!-- Estado -->
+
           <div class="flex items-center">
             <span 
               class="px-2 py-1 rounded-full text-xs font-medium"
@@ -60,7 +60,7 @@
           </div>
         </div>
         
-        <!-- Acciones -->
+
         <div class="flex justify-between items-center pt-3 border-t border-gray-200">
           <div>
             <button 
@@ -94,7 +94,7 @@
       </p>
     </div>
     
-    <!-- Modal Comprobante -->
+
     <div v-if="comprobanteVisible" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div class="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-auto">
         <div class="flex justify-between items-center mb-4">
@@ -124,13 +124,46 @@
       </div>
     </div>
   </div>
+</template> -->
+
+<template>
+  <div class="bg-white p-6 rounded-xl shadow-lg max-w-4xl mx-auto">
+    <h1 class="text-2xl font-bold text-slate-700 mb-6">Verificar Pagos de Amonestaciones</h1>
+    <div class="space-y-4">
+      <div v-for="amon in amonestaciones" :key="amon.id" class="border rounded-lg p-4 bg-yellow-50">
+        <div class="mb-2">
+          <span class="font-bold">Usuario:</span> {{ amon.usuario.nombre }} ({{ amon.usuario.correo }})
+        </div>
+        <div class="mb-2">
+          <span class="font-bold">Monto:</span> {{ amon.monto }} Bs
+        </div>
+        <div class="mb-2">
+          <span class="font-bold">Método de pago:</span> {{ amon.metodoPago }}
+        </div>
+        <div class="mb-2">
+          <span class="font-bold">Comprobante:</span> {{ amon.comprobantePago }}
+        </div>
+        <div class="mb-2">
+          <span class="font-bold">Estado:</span>
+          <span v-if="amon.verificada" class="text-green-700">Verificada</span>
+          <span v-else class="text-yellow-700">Pendiente</span>
+        </div>
+        <button v-if="!amon.verificada" @click="verificarAmonestacion(amon.id)" class="bg-green-600 text-white px-4 py-2 rounded">Comprobar</button>
+        <span v-else class="text-green-700 font-semibold">Pago verificado</span>
+      </div>
+      <p v-if="amonestaciones.length === 0" class="text-center text-gray-500 py-6">
+        No hay pagos pendientes de verificación
+      </p>
+    </div>
+  </div>
 </template>
 
+
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, onMounted } from 'vue';
 
 // Datos simulados
-const solicitudes = ref([
+/* const solicitudes = ref([
   {
     id: 'SOL-001',
     usuario: {
@@ -163,27 +196,29 @@ const solicitudes = ref([
     fecha: new Date(2023, 5, 16),
     estado: 'pendiente'
   }
-]);
+]); */
 
 // Filtros
-const filtroEstado = ref('pendiente');
+/* const filtroEstado = ref('pendiente');
 const busqueda = ref('');
+ */
+const amonestaciones = ref([]);
 
 // Modal comprobante
-const comprobanteVisible = ref(false);
+/* const comprobanteVisible = ref(false);
 const comprobanteActual = ref(null);
-
+ */
 // Filtrar solicitudes
-const solicitudesFiltradas = computed(() => {
+/* const solicitudesFiltradas = computed(() => {
   return solicitudes.value.filter(s => {
     const cumpleEstado = filtroEstado.value === 'todos' || s.estado === filtroEstado.value;
     const cumpleBusqueda = s.usuario.nombre.toLowerCase().includes(busqueda.value.toLowerCase());
     return cumpleEstado && cumpleBusqueda;
   });
 });
-
+ */
 // Formateadores
-const formatEstado = (estado) => {
+/* const formatEstado = (estado) => {
   const estados = {
     pendiente: 'Pendiente',
     aprobado: 'Aprobado',
@@ -210,7 +245,7 @@ const formatFecha = (fecha) => {
   });
 };
 
-// Acciones
+
 const verComprobante = (solicitud) => {
   comprobanteActual.value = solicitud.pago.comprobante;
   comprobanteVisible.value = true;
@@ -221,7 +256,7 @@ const esImagen = (archivo) => {
 };
 
 const descargarComprobante = () => {
-  // En una app real, esto descargaría el archivo
+  
   alert(`Descargando ${comprobanteActual.value.name}`);
 };
 
@@ -229,7 +264,7 @@ const aprobarPago = (id) => {
   const solicitud = solicitudes.value.find(s => s.id === id);
   if (solicitud) {
     solicitud.estado = 'aprobado';
-    // Aquí iría la lógica para actualizar la deuda del usuario
+    
   }
 };
 
@@ -238,7 +273,26 @@ const rechazarPago = (id) => {
   if (solicitud) {
     solicitud.estado = 'rechazado';
   }
+}; */
+
+const cargarAmonestaciones = async () => {
+  const res = await fetch('/api/amonestaciones-usuario/todas', { credentials: 'include' });
+  const data = await res.json();
+  amonestaciones.value = data || [];
 };
+
+const verificarAmonestacion = async (amonestacionId) => {
+  await fetch(`/api/amonestaciones-usuario/verificar/${amonestacionId}`, {
+    method: 'PUT',
+    credentials: 'include'
+  });
+  await cargarAmonestaciones();
+};
+
+onMounted(() => {
+  cargarAmonestaciones();
+});
+
 </script>
 
 <style scoped>

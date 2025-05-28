@@ -3,6 +3,9 @@ package com.biblioteca.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @Entity
 @Table(name = "amonestaciones")
 public class Amonestacion {
@@ -12,10 +15,12 @@ public class Amonestacion {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "usuario_id")
+    @JsonIgnoreProperties({"contrasena"})
     private Usuario usuario;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "prestamo_id")
+    @JsonBackReference
     private Prestamo prestamo;
 
     @Column(nullable = false)

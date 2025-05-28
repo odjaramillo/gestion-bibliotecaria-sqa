@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 @Entity
 @Table(name = "prestamos")
 public class Prestamo {
@@ -25,6 +27,7 @@ public class Prestamo {
     private LocalDate fechaLimite;
 
     @OneToMany(mappedBy = "prestamo")
+    @JsonManagedReference
     private List<Amonestacion> amonestaciones;
 
     @Column(nullable = false)

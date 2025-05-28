@@ -1,8 +1,8 @@
-<template>
+<!-- <template>
   <div class="bg-white p-8 rounded-xl shadow-2xl max-w-md mx-auto">
     <h1 class="text-2xl font-bold text-slate-700 mb-6">Solicitud de Pago</h1>
     
-    <!-- Datos del Usuario -->
+  
     <div class="mb-6 p-4 border border-gray-200 rounded-lg">
       <h2 class="text-lg font-semibold text-gray-800 mb-2">Información del Usuario</h2>
       <div class="space-y-2">
@@ -11,7 +11,7 @@
       </div>
     </div>
 
-    <!-- Formulario de Pago Móvil -->
+    
     <form @submit.prevent="enviarSolicitud" class="space-y-4">
       <div class="border border-purple-200 rounded-lg p-4 bg-fuchsia-50">
         <h2 class="text-lg font-semibold text-slate-700 mb-3">Datos del Pago Móvil</h2>
@@ -64,7 +64,7 @@
         </div>
       </div>
 
-      <!-- Comprobante -->
+      
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">Comprobante de pago</label>
         <div class="flex items-center justify-center w-full">
@@ -91,7 +91,7 @@
         </p>
       </div>
 
-      <!-- Botones -->
+      
       <div class="flex justify-end space-x-4 pt-4">
         <button
           type="button"
@@ -110,13 +110,49 @@
       </div>
     </form>
   </div>
+</template> -->
+
+<template>
+  <div class="bg-white p-8 rounded-xl shadow-2xl max-w-md mx-auto">
+    <h1 class="text-2xl font-bold text-slate-700 mb-6">Amonestaciones</h1>
+    <div v-if="cargando" class="text-gray-500">Cargando...</div>
+    <div v-else>
+      <div v-if="!tieneAmonestacion" class="text-green-700 font-semibold">
+        No tienes amonestaciones pendientes.
+      </div>
+      <div v-else>
+        <div v-for="amon in amonestaciones" :key="amon.id" class="border p-4 rounded-lg mb-4 bg-red-50">
+          <div class="mb-2">
+            <span class="font-bold">Monto:</span> {{ amon.monto }} Bs
+          </div>
+          <div class="mb-2">
+            <span class="font-bold">Estado:</span>
+            <span v-if="amon.pagada" class="text-green-700">Pagada</span>
+            <span v-else class="text-red-700">Pendiente</span>
+          </div>
+          <form v-if="!amon.pagada" @submit.prevent="pagarAmonestacion(amon.id)">
+            <div class="mb-2">
+              <label class="block font-medium">Método de pago</label>
+              <input v-model="form.metodoPago" required class="border rounded px-2 py-1 w-full" />
+            </div>
+            <div class="mb-2">
+              <label class="block font-medium">Comprobante de pago</label>
+              <input v-model="form.comprobantePago" required class="border rounded px-2 py-1 w-full" />
+            </div>
+            <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Registrar Pago</button>
+          </form>
+          <div v-else class="text-green-700 mt-2">Pago registrado</div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 
 // Datos simulados del usuario (en producción vendrían de una API)
-const usuario = ref({
+/* const usuario = ref({
   nombre: 'Juan Pérez',
   deuda: 150.50
 });
@@ -126,11 +162,51 @@ const pago = ref({
   celular: '',
   monto: '',
   comprobante: null
+}); */
+
+// const procesando = ref(false);
+
+const tieneAmonestacion = ref(false);
+const amonestaciones = ref([]);
+const form = ref({
+  metodoPago: '',
+  comprobantePago: ''
+});
+const cargando = ref(true);
+
+const cargarAmonestaciones = async () => {
+  cargando.value = true;
+  try {
+    const res = await fetch('/api/amonestaciones-usuario/mis-amonestaciones', { credentials: 'include' });
+    const data = await res.json();
+    tieneAmonestacion.value = !!(data.amonestaciones && data.amonestaciones.length > 0);
+    amonestaciones.value = data.amonestaciones || [];
+  } finally {
+    cargando.value = false;
+  }
+};
+
+const pagarAmonestacion = async (amonestacionId) => {
+  await fetch('/api/amonestaciones-usuario/pagar', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({
+      amonestacionId,
+      metodoPago: form.value.metodoPago,
+      comprobantePago: form.value.comprobantePago
+    })
+  });
+  await cargarAmonestaciones();
+  form.value.metodoPago = '';
+  form.value.comprobantePago = '';
+};
+
+onMounted(() => {
+  cargarAmonestaciones();
 });
 
-const procesando = ref(false);
-
-const handleFileUpload = (event) => {
+/* const handleFileUpload = (event) => {
   pago.value.comprobante = event.target.files[0];
 };
 
@@ -138,7 +214,7 @@ const enviarSolicitud = async () => {
   procesando.value = true;
   
   try {
-    // Simular envío a API
+    
     await new Promise(resolve => setTimeout(resolve, 1500));
     
     const solicitud = {
@@ -151,7 +227,7 @@ const enviarSolicitud = async () => {
     console.log('Solicitud creada:', solicitud);
     alert('Solicitud enviada para aprobación');
     
-    // Resetear formulario
+    
     pago.value = {
       banco: '',
       celular: '',
@@ -162,7 +238,7 @@ const enviarSolicitud = async () => {
   } finally {
     procesando.value = false;
   }
-};
+}; */
 </script>
 
 <style scoped>
