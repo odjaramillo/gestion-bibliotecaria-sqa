@@ -63,37 +63,6 @@ public class PrestamoService {
         return "Préstamo registrado con éxito.";
     }
 
-    /* public String crearPrestamo(Integer usuarioId, Long isbn) {
-        Optional<Usuario> usuarioOpt = usuarioRepository.findById(usuarioId);
-        if (usuarioOpt.isEmpty()) return "Usuario no registrado.";
-
-        Usuario usuario = usuarioOpt.get();
-        if (!"USUARIO".equals(usuario.getRol())) return "Solo se pueden asociar préstamos a usuarios con rol USUARIO.";
-
-        long prestamosActivos = prestamoRepository.countByUsuarioIdAndFechaDevolucionIsNull(usuarioId);
-        if (prestamosActivos >= 2) return "El usuario ya tiene 2 préstamos activos.";
-
-        Optional<Libro> libroOpt = libroRepository.findByIsbn(isbn);
-        if (libroOpt.isEmpty()) return "Libro no encontrado.";
-        Libro libro = libroOpt.get();
-        if (libro.getCantidad() < 1) return "Libro no disponible para préstamo.";
-
-        // Registrar el préstamo
-        Prestamo prestamo = new Prestamo();
-        prestamo.setUsuario(usuario);
-        prestamo.setLibro(libro);
-        prestamo.setFechaPrestamo(LocalDate.now());
-        prestamo.setFechaDevolucion(LocalDate.now().plusDays(7));
-
-        prestamoRepository.save(prestamo);
-
-        // Disminuir la cantidad de libros disponibles
-        libro.setCantidad(libro.getCantidad() - 1);
-        libroRepository.save(libro);
-
-        return "Préstamo registrado con éxito.";
-    } */
-
     // Devolver un préstamo
     public String devolverPrestamo(Integer prestamoId) {
     Optional<Prestamo> prestamoOpt = prestamoRepository.findById(prestamoId);

@@ -10,7 +10,6 @@ import com.biblioteca.model.Amonestacion;
 import com.biblioteca.dto.ResenaRequest;
 import com.biblioteca.dto.ComentarioResenaRequest;
 import com.biblioteca.dto.PrestamoRequest;
-import com.biblioteca.dto.AmonestacionDTO;
 
 import com.biblioteca.service.ComentarioResenaService;
 import com.biblioteca.service.LibroService;
