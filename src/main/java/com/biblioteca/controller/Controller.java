@@ -122,16 +122,9 @@ public class Controller {
         return ResponseEntity.ok("Nombre actualizado correctamente");
     }
 
-    /* @PostMapping("/login")
-    public ResponseEntity<String> loginUsuario(@RequestBody Usuario usuario) {
-        String respuesta = usuarioService.autenticarUsuario(usuario.getCorreo(), usuario.getContrasena());
-        return ResponseEntity.ok(respuesta);
-    } */
-
     // Préstamos
 
     // Crear préstamo
-
     @PostMapping("/prestar")
     public ResponseEntity<String> registrarPrestamo(@RequestBody PrestamoRequest request) {
         String respuesta = prestamoService.crearPrestamo(request.getCorreoUsuario(), request.getIsbn(), request.getFechaPrestamo());
@@ -141,12 +134,6 @@ public class Controller {
             return ResponseEntity.badRequest().body(respuesta);
         }
     }
-
-    /* @PostMapping("/prestamos")
-    public ResponseEntity<String> crearPrestamo(@RequestBody PrestamoRequest request) {
-        String respuesta = prestamoService.crearPrestamo(request.getUsuarioId(), request.getIsbn());
-        return ResponseEntity.ok(respuesta);
-    } */
 
     // Devolver préstamo
     @PostMapping("/prestamos/devolver")
@@ -200,7 +187,6 @@ public class Controller {
 
 
     // Amonestaciones
-
     @GetMapping("/amonestaciones-usuario/mis-amonestaciones")
     public ResponseEntity<?> getAmonestacionesUsuario(Authentication authentication) {
         String correo = authentication.getName();

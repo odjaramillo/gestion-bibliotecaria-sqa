@@ -77,60 +77,6 @@
         No hay préstamos que coincidan con los filtros
       </p>
     </div>
-    
-    <!-- Modal de Devolución -->
-    <!-- <div v-if="modalVisible" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div class="bg-white rounded-lg p-6 w-full max-w-md">
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="text-lg font-semibold">Registrar Devolución</h3>
-          <button @click="modalVisible = false" class="text-gray-500 hover:text-gray-700">
-            ✕
-          </button>
-        </div>
-        
-        <div v-if="prestamoActual">
-          <p class="mb-2"><span class="font-medium">Libro:</span> {{ prestamoActual.libro.titulo }}</p>
-          <p class="mb-4"><span class="font-medium">Usuario:</span> {{ prestamoActual.usuario.nombre }}</p>
-          
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Estado del Libro</label>
-            <select 
-              v-model="devolucion.estadoLibro"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500"
-            >
-              <option value="bueno">Buen estado</option>
-              <option value="danado">Dañado</option>
-              <option value="perdido">Perdido</option>
-            </select>
-          </div>
-          
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Observaciones</label>
-            <textarea
-              v-model="devolucion.observaciones"
-              rows="2"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500"
-              placeholder="Detalles del estado del libro..."
-            ></textarea>
-          </div>
-          
-          <div class="flex justify-end space-x-3">
-            <button
-              @click="modalVisible = false"
-              class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-            >
-              Cancelar
-            </button>
-            <button
-              @click="registrarDevolucion"
-              class="px-4 py-2 bg-purple-600 text-white rounded-md text-sm font-medium hover:bg-purple-700"
-            >
-              Confirmar Devolución
-            </button>
-          </div>
-        </div>
-      </div>
-    </div> -->
   </div>
 </template>
 
@@ -144,11 +90,6 @@ const filtroEstado = ref('todos')
 const procesando = ref(false)
 const mensaje = ref('')
 const mensajeTipo = ref('')
-
-/* const devolucion = ref({
-  estadoLibro: 'bueno',
-  observaciones: ''
-}); */
 
 const cargarPrestamos = async () => {
   try {
@@ -186,30 +127,6 @@ const prestamosFiltrados = computed(() => {
   return lista
 })
 
-/* const prestamosFiltrados = computed(() => {
-  const termino = busqueda.value.toLowerCase();
-  const hoy = new Date();
-  
-  return prestamos.value.filter(p => {
-   
-    const coincideBusqueda = 
-      p.usuario.nombre.toLowerCase().includes(termino) ||
-      p.usuario.codigo.toLowerCase().includes(termino) ||
-      p.libro.titulo.toLowerCase().includes(termino) ||
-      p.libro.isbn.includes(termino);
-    
-    
-    let coincideEstado = true;
-    if (filtroEstado.value === 'activos') {
-      coincideEstado = !p.fechaDevolucionReal;
-    } else if (filtroEstado.value === 'vencidos') {
-      coincideEstado = !p.fechaDevolucionReal && new Date(p.fechaDevolucion) < hoy;
-    }
-    
-    return coincideBusqueda && coincideEstado;
-  });
-}); */
-
 // Métodos
 const formatFecha = (fecha) => {
   if (!fecha) return '-'
@@ -219,11 +136,6 @@ const formatFecha = (fecha) => {
     year: 'numeric'
   })
 }
-
-/* const prestamoVencido = (prestamo) => {
-  if (prestamo.fechaDevolucionReal) return false;
-  return new Date(prestamo.fechaDevolucion) < new Date();
-}; */
 
 const estadoPrestamo = (prestamo) => {
   if (prestamo.fechaDevolucion) return 'Finalizado'

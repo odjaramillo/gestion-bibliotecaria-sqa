@@ -40,5 +40,3 @@ public class SecurityConfig {
         return http.build();
     }
 }
-
-// .requestMatchers("/api/libros").hasAuthority("BIBLIOTECARIO")

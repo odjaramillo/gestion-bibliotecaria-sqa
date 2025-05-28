@@ -10,6 +10,3 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
     Optional<Usuario> findByCorreo(String correo);
     Optional<Usuario> findByNombre(String nombre);
 }
-
-
-//existsByCorreo permite validar si un usuario ya está registrado con ese email.

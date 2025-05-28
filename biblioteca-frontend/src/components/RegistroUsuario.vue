@@ -149,21 +149,4 @@ const handleRegister = async () => {
     submissionStatus.value = { type: 'error', message: 'Por favor, corrige los errores en el formulario.' };
   }
 };
-
-
-/* const handleRegister = async () => {
-  submissionStatus.value = null;
-  if (validateForm()) {
-    const dataToSend = {
-      name: userData.value.name,
-      email: userData.value.email,
-      password: userData.value.password
-    };
-    console.log('Datos de registro para enviar al backend:', dataToSend);
-    submissionStatus.value = { type: 'success', message: 'Simulación: Registro enviado (ver consola).' };
-  } else {
-    console.log('Errores de validación:', errors.value);
-    submissionStatus.value = { type: 'error', message: 'Por favor, corrige los errores en el formulario.' };
-  }
-}; */
 </script>
