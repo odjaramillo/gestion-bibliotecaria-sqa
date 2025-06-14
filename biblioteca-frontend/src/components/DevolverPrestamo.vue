@@ -178,43 +178,6 @@ const prestamoVencido = (prestamo) => {
   return false
 }
 
-const mostrarModalDevolucion = (prestamo) => {
-  prestamoActual.value = prestamo;
-  devolucion.value = {
-    estadoLibro: 'bueno',
-    observaciones: ''
-  };
-  modalVisible.value = true;
-};
-
-const registrarDevolucion = async () => {
-  try {
-    // Simular llamada a API
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Actualizar el préstamo
-    const index = prestamos.value.findIndex(p => p.id === prestamoActual.value.id);
-    if (index !== -1) {
-      prestamos.value[index] = {
-        ...prestamos.value[index],
-        fechaDevolucionReal: new Date(),
-        estado: 'completado',
-        observaciones: devolucion.value.observaciones || prestamos.value[index].observaciones
-      };
-    }
-    
-    // Cerrar modal y resetear
-    modalVisible.value = false;
-    prestamoActual.value = null;
-    
-    alert('Devolución registrada exitosamente!');
-    
-  } catch (error) {
-    console.error('Error al registrar devolución:', error);
-    alert('Ocurrió un error al registrar la devolución');
-  }
-};
-
 onMounted(() => {
   cargarPrestamos()
 })
