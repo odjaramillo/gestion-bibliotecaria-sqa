@@ -24,10 +24,6 @@ public class ResenaService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    public List<Resena> findAll() {
-        return resenaRepository.findAll();
-    }
-
     public List<Resena> findByLibro(Integer libroId) {
         return resenaRepository.findByLibroId(libroId);
     }
