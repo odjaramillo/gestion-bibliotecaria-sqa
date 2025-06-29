@@ -24,10 +24,6 @@ public class ComentarioResenaService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    public List<ComentarioResena> findAll() {
-        return comentarioResenaRepository.findAll();
-    }
-
     public List<ComentarioResena> findByResena(Integer resenaId) {
         return comentarioResenaRepository.findByResenaId(resenaId);
     }
