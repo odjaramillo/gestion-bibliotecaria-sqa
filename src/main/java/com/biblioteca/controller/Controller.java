@@ -121,6 +121,33 @@ public class Controller {
         return ResponseEntity.ok("Nombre actualizado correctamente");
     }
 
+        // Cambiar contraseña
+    @PutMapping("/usuarios/contrasena")
+    public ResponseEntity<String> cambiarContrasena(
+            org.springframework.security.core.Authentication authentication,
+            @RequestBody Map<String, String> body) {
+        String correo = authentication.getName();
+        String contrasenaActual = body.get("contrasenaActual");
+        String contrasenaNueva = body.get("contrasenaNueva");
+
+        String resultado = usuarioService.cambiarContrasena(correo, contrasenaActual, contrasenaNueva);
+        if (resultado.equals("Contraseña actualizada correctamente.")) {
+            return ResponseEntity.ok(resultado);
+        } else {
+            return ResponseEntity.status(400).body(resultado);
+        }
+    }
+
+    // Eliminar perfil
+    @DeleteMapping("/usuarios")
+    public ResponseEntity<String> eliminarPerfil(
+            org.springframework.security.core.Authentication authentication) {
+        String correo = authentication.getName();
+        usuarioService.eliminarUsuario(correo);
+        return ResponseEntity.ok("Perfil eliminado correctamente.");
+    }
+
+
     // Préstamos
 
     // Crear préstamo

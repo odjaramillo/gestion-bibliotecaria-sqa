@@ -5,6 +5,8 @@ import com.biblioteca.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 
 import java.util.Optional;
 
@@ -54,5 +56,30 @@ public class UsuarioService {
 
     public void guardar(Usuario usuario) {
         usuarioRepository.save(usuario);
-    }    
+    }
+    
+    public String cambiarContrasena(String correo, String contrasenaActual, String contrasenaNueva) {
+    Optional<Usuario> usuarioOpt = usuarioRepository.findByCorreo(correo);
+    if (usuarioOpt.isEmpty()) {
+        return "Usuario no encontrado.";
+    }
+    Usuario usuario = usuarioOpt.get();
+
+    if (!passwordEncoder.matches(contrasenaActual, usuario.getContrasena())) {
+        return "La contraseña actual no es correcta.";
+    }
+
+    usuario.setContrasena(passwordEncoder.encode(contrasenaNueva));
+    usuarioRepository.save(usuario);
+    return "Contraseña actualizada correctamente.";
+    }
+
+    @Transactional
+    public void eliminarUsuario(String correo) {
+        Usuario usuario = usuarioRepository.findByCorreo(correo)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        usuarioRepository.delete(usuario);
+    }
+
 }
+
