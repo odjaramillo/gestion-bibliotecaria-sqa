@@ -18,7 +18,6 @@ import com.biblioteca.service.PrestamoService;
 import com.biblioteca.service.ResenaService;
 import com.biblioteca.service.AmonestacionService;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,7 +31,6 @@ import java.util.Map;
 @RequestMapping("/api")
 
 public class Controller {
-    
 
     @Autowired
     private UsuarioService usuarioService;
@@ -43,7 +41,7 @@ public class Controller {
     @Autowired
     private PrestamoService prestamoService;
 
-     @Autowired
+    @Autowired
     private ResenaService resenaService;
 
     @Autowired
@@ -63,10 +61,9 @@ public class Controller {
     // Registrar libro (solo bibliotecario)
     @PostMapping("/libros")
     public ResponseEntity<?> registrarLibro(
-        @RequestPart("libro") Libro libro,
-        @RequestPart(value = "imagen", required = false) MultipartFile imagen,
-        @RequestParam String correoUsuario
-    ) {
+            @RequestPart("libro") Libro libro,
+            @RequestPart(value = "imagen", required = false) MultipartFile imagen,
+            @RequestParam String correoUsuario) {
         String respuesta = libroService.registrarLibroConImagen(libro, imagen, correoUsuario);
         return ResponseEntity.ok(respuesta);
     }
@@ -81,18 +78,20 @@ public class Controller {
     }
 
     @GetMapping("/usuarios/me")
-        public ResponseEntity<Usuario> getUsuarioAutenticado(org.springframework.security.core.Authentication authentication) {
-            String correo = authentication.getName();
-            Usuario usuario = usuarioService.buscarPorCorreo(correo);
-            usuario.setContrasena(null);
-            return ResponseEntity.ok(usuario);
-        }
+    public ResponseEntity<Usuario> getUsuarioAutenticado(
+            org.springframework.security.core.Authentication authentication) {
+        String correo = authentication.getName();
+        Usuario usuario = usuarioService.buscarPorCorreo(correo);
+        usuario.setContrasena(null);
+        return ResponseEntity.ok(usuario);
+    }
 
     // Login de usuario
 
     @PostMapping("/login")
     public ResponseEntity<?> loginUsuario(@RequestBody Usuario usuario) {
-        Usuario usuarioAutenticado = usuarioService.autenticarYObtenerUsuario(usuario.getCorreo(), usuario.getContrasena());
+        Usuario usuarioAutenticado = usuarioService.autenticarYObtenerUsuario(usuario.getCorreo(),
+                usuario.getContrasena());
         if (usuarioAutenticado != null) {
             // No devuelvas la contraseña
             Usuario respuesta = new Usuario();
@@ -121,7 +120,7 @@ public class Controller {
         return ResponseEntity.ok("Nombre actualizado correctamente");
     }
 
-        // Cambiar contraseña
+    // Cambiar contraseña
     @PutMapping("/usuarios/contrasena")
     public ResponseEntity<String> cambiarContrasena(
             org.springframework.security.core.Authentication authentication,
@@ -147,13 +146,13 @@ public class Controller {
         return ResponseEntity.ok("Perfil eliminado correctamente.");
     }
 
-
     // Préstamos
 
     // Crear préstamo
     @PostMapping("/prestar")
     public ResponseEntity<String> registrarPrestamo(@RequestBody PrestamoRequest request) {
-        String respuesta = prestamoService.crearPrestamo(request.getCorreoUsuario(), request.getIsbn(), request.getFechaPrestamo());
+        String respuesta = prestamoService.crearPrestamo(request.getCorreoUsuario(), request.getIsbn(),
+                request.getFechaPrestamo());
         if (respuesta.startsWith("Préstamo registrado")) {
             return ResponseEntity.ok(respuesta);
         } else {
@@ -202,7 +201,8 @@ public class Controller {
 
     @PostMapping("/comentarios-resena")
     public ResponseEntity<ComentarioResena> crearComentarioResena(@RequestBody ComentarioResenaRequest request) {
-        ComentarioResena comentario = comentarioResenaService.save(request.getResenaId(), request.getUsuarioId(), request.getTexto());
+        ComentarioResena comentario = comentarioResenaService.save(request.getResenaId(), request.getUsuarioId(),
+                request.getTexto());
         return ResponseEntity.ok(comentario);
     }
 
@@ -210,7 +210,6 @@ public class Controller {
     public List<ComentarioResena> listarComentariosPorResena(@PathVariable Integer resenaId) {
         return comentarioResenaService.findByResena(resenaId);
     }
-
 
     // Amonestaciones
     @GetMapping("/amonestaciones-usuario/mis-amonestaciones")
@@ -222,9 +221,8 @@ public class Controller {
         }
         List<Amonestacion> amonestaciones = amonestacionService.findByUsuario(usuario.getId());
         return ResponseEntity.ok(Map.of(
-            "tieneAmonestacion", amonestaciones != null && !amonestaciones.isEmpty(),
-            "amonestaciones", amonestaciones
-        ));
+                "tieneAmonestacion", amonestaciones != null && !amonestaciones.isEmpty(),
+                "amonestaciones", amonestaciones));
     }
 
     @PutMapping("/amonestaciones-usuario/pagar")
