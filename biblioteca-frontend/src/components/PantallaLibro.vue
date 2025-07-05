@@ -35,7 +35,7 @@
           <p class="text-gray-700">{{ libro.sinopsis }}</p>
         </div>
         <div>
-          <h2 class="text-xl font-semibold text-slate-700 mb-4">Comentarios ({{ resenas.length }})</h2>
+          <h2 class="text-xl font-semibold text-slate-700 mb-4">Reseñas ({{ resenas.length }})</h2>
           <div class="mb-6 p-4 bg-gray-50 rounded-lg">
             <textarea
               v-model="nuevaResena"
@@ -48,7 +48,7 @@
               class="mt-2 px-4 py-2 bg-fuchsia-700 text-white rounded-md hover:bg-fuchsia-900 transition-colors"
               :disabled="!nuevaResena.trim()"
             >
-              Publicar comentario
+              Publicar reseña
             </button>
           </div>
           <div class="space-y-6">
@@ -62,15 +62,43 @@
                   <span class="font-semibold">{{ resena.usuarioNombre }}</span>
                   <span class="text-gray-500 text-sm ml-2">{{ formatFecha(resena.fecha) }}</span>
                 </div>
-                <button 
-                  v-if="resena.usuarioId === usuarioActual.id"
-                  @click="eliminarResena(resena.id)"
-                  class="text-red-500 hover:text-red-700"
+                <div class="flex space-x-2">
+                  <button 
+                    v-if="resena.usuarioId === usuarioActual.id"
+                    @click="activarEdicionResena(resena)"
+                    class="text-blue-500 hover:text-blue-700"
+                  >
+                    Editar
+                  </button>
+                  <button 
+                    v-if="resena.usuarioId === usuarioActual.id"
+                    @click="eliminarResena(resena.id)"
+                    class="text-red-500 hover:text-red-700"
+                  >
+                    Eliminar
+                  </button>
+                </div>
+              </div>
+              <div v-if="resenaEnEdicion.id === resena.id">
+                <textarea
+                  v-model="resenaEnEdicion.texto"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-fuchsia-900"
+                  rows="3"
+                ></textarea>
+                <button
+                  @click="guardarEdicionResena(resena.id)"
+                  class="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-700 transition-colors"
                 >
-                  Eliminar
+                  Guardar
+                </button>
+                <button
+                  @click="cancelarEdicionResena"
+                  class="mt-2 px-4 py-2 bg-gray-300 text-black rounded-md hover:bg-gray-400 transition-colors"
+                >
+                  Cancelar
                 </button>
               </div>
-              <p class="text-gray-700 mb-2">{{ resena.texto }}</p>
+              <p v-else class="text-gray-700">{{ resena.texto }}</p>
               <div>
                 <h3 class="font-semibold text-sm mb-1">Comentarios ({{ resena.comentarios.length }})</h3>
                 <div class="mb-2">
@@ -97,15 +125,42 @@
                     <div class="flex justify-between">
                       <span class="font-semibold">{{ comentario.usuarioNombre }}</span>
                       <span class="text-gray-500 text-xs">{{ formatFecha(comentario.fecha) }}</span>
-                      <button 
-                        v-if="comentario.usuarioId === usuarioActual.id"
-                        @click="eliminarComentarioResena(comentario.id)"
-                        class="text-red-500 hover:text-red-700 text-xs ml-2"
+                      <div class="flex space-x-2">
+                        <button 
+                          v-if="comentario.usuarioId === usuarioActual.id"
+                          @click="eliminarComentarioResena(comentario.id)"
+                          class="text-red-500 hover:text-red-700 text-xs ml-2"
+                        >
+                          Eliminar
+                        </button>
+                        <button 
+                          v-if="comentario.usuarioId === usuarioActual.id"
+                          @click="activarEdicionComentario(comentario)"
+                          class="text-blue-500 hover:text-blue-700 text-xs ml-2"
+                        >
+                          Editar
+                        </button>
+                      </div>
+                    </div>
+                    <div v-if="comentarioEnEdicion.id === comentario.id">
+                      <textarea
+                        v-model="comentarioEnEdicion.texto"
+                        class="w-full px-3 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-fuchsia-900"
+                      ></textarea>
+                      <button
+                        @click="guardarEdicionComentario(comentario.id)"
+                        class="mt-2 px-3 py-1 bg-blue-500 text-white rounded-md text-sm hover:bg-blue-700 transition-colors"
                       >
-                        Eliminar
+                        Guardar
+                      </button>
+                      <button
+                        @click="cancelarEdicionComentario"
+                        class="mt-2 px-3 py-1 bg-gray-300 text-black rounded-md text-sm hover:bg-gray-400 transition-colors"
+                      >
+                        Cancelar
                       </button>
                     </div>
-                    <p class="text-gray-600 text-sm">{{ comentario.texto }}</p>
+                    <p v-else class="text-gray-600 text-sm">{{ comentario.texto }}</p>
                   </div>
                 </div>
               </div>
@@ -118,7 +173,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, computed} from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import axios from 'axios'
 
 const props = defineProps({
@@ -136,7 +191,9 @@ const usuarioActual = computed(() => props.usuario || {})
 
 const resenas = ref([])
 const nuevaResena = ref('')
+const resenaEnEdicion = reactive({ id: null, texto: '' })
 const comentariosTemporales = reactive({})
+const comentarioEnEdicion = reactive({ id: null, texto: '' })
 
 const cargarResenas = async () => {
   try {
@@ -169,7 +226,7 @@ const agregarResena = async () => {
     window.location.href = '/'; // Redirige a inicio de sesión
     return;
   }
-  if (!nuevaResena.value.trim() || !usuarioActual.value.id) return
+  if (!nuevaResena.value.trim()) return
   await axios.post('/api/resenas', {
     libroId: props.libro.id,
     usuarioId: usuarioActual.value.id,
@@ -179,7 +236,29 @@ const agregarResena = async () => {
   await cargarResenas()
 }
 
-const eliminarResena = async (resenaId) => {}
+const eliminarResena = async (resenaId) => {
+  await axios.delete(`/api/resenas/${resenaId}`)
+  await cargarResenas()
+}
+
+const activarEdicionResena = (resena) => {
+  resenaEnEdicion.id = resena.id
+  resenaEnEdicion.texto = resena.texto
+}
+
+const guardarEdicionResena = async (resenaId) => {
+  await axios.put(`/api/resenas/${resenaId}`, {
+    texto: resenaEnEdicion.texto
+  })
+  resenaEnEdicion.id = null
+  resenaEnEdicion.texto = ''
+  await cargarResenas()
+}
+
+const cancelarEdicionResena = () => {
+  resenaEnEdicion.id = null
+  resenaEnEdicion.texto = ''
+}
 
 const agregarComentarioResena = async (resenaId) => {
   if (!usuarioActual.value.id) {
@@ -187,7 +266,7 @@ const agregarComentarioResena = async (resenaId) => {
     return;
   }
   const texto = comentariosTemporales[resenaId]
-  if (!texto?.trim() || !usuarioActual.value.id) return
+  if (!texto?.trim()) return
   await axios.post('/api/comentarios-resena', {
     resenaId,
     usuarioId: usuarioActual.value.id,
@@ -197,7 +276,29 @@ const agregarComentarioResena = async (resenaId) => {
   await cargarResenas()
 }
 
-const eliminarComentarioResena = async (comentarioId) => {}
+const eliminarComentarioResena = async (comentarioId) => {
+  await axios.delete(`/api/comentarios-resena/${comentarioId}`)
+  await cargarResenas()
+}
+
+const activarEdicionComentario = (comentario) => {
+  comentarioEnEdicion.id = comentario.id
+  comentarioEnEdicion.texto = comentario.texto
+}
+
+const guardarEdicionComentario = async (comentarioId) => {
+  await axios.put(`/api/comentarios-resena/${comentarioId}`, {
+    texto: comentarioEnEdicion.texto
+  })
+  comentarioEnEdicion.id = null
+  comentarioEnEdicion.texto = ''
+  await cargarResenas()
+}
+
+const cancelarEdicionComentario = () => {
+  comentarioEnEdicion.id = null
+  comentarioEnEdicion.texto = ''
+}
 
 const formatFecha = (fecha) => {
   return new Date(fecha).toLocaleDateString('es-ES', {

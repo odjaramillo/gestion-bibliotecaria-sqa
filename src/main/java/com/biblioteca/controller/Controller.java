@@ -211,6 +211,103 @@ public class Controller {
         return comentarioResenaService.findByResena(resenaId);
     }
 
+    @PutMapping("/resenas/{id}")
+    public ResponseEntity<?> editarResena(
+            @PathVariable Integer id,
+            @RequestBody Map<String, String> body,
+            Authentication authentication) {
+        String correo = authentication.getName();
+        Usuario usuario = usuarioService.buscarPorCorreo(correo);
+        if (usuario == null) {
+            return ResponseEntity.status(401).body("Usuario no autenticado");
+        }
+
+        String nuevoTexto = body.get("texto");
+        Resena resena = resenaService.findById(id);
+        if (resena == null) {
+            return ResponseEntity.status(404).body("Reseña no encontrada");
+        }
+
+        if (!resena.getUsuario().getId().equals(usuario.getId())) {
+            return ResponseEntity.status(403).body("No autorizado para editar esta reseña");
+        }
+
+        resena.setTexto(nuevoTexto);
+        resenaService.guardar(resena);
+        return ResponseEntity.ok("Reseña editada correctamente");
+    }
+
+    @DeleteMapping("/resenas/{id}")
+    public ResponseEntity<?> eliminarResena(
+            @PathVariable Integer id,
+            Authentication authentication) {
+        String correo = authentication.getName();
+        Usuario usuario = usuarioService.buscarPorCorreo(correo);
+        if (usuario == null) {
+            return ResponseEntity.status(401).body("Usuario no autenticado");
+        }
+
+        Resena resena = resenaService.findById(id);
+        if (resena == null) {
+            return ResponseEntity.status(404).body("Reseña no encontrada");
+        }
+
+        if (!resena.getUsuario().getId().equals(usuario.getId())) {
+            return ResponseEntity.status(403).body("No autorizado para eliminar esta reseña");
+        }
+
+        comentarioResenaService.eliminarPorResena(resena);
+
+        resenaService.eliminar(resena);
+
+        return ResponseEntity.ok("Reseña eliminada correctamente");
+    }
+
+    @PutMapping("/comentarios-resena/{id}")
+    public ResponseEntity<?> editarComentarioResena(
+            @PathVariable Integer id,
+            @RequestBody Map<String, String> body,
+            Authentication authentication) {
+        String correo = authentication.getName();
+        Usuario usuario = usuarioService.buscarPorCorreo(correo);
+        if (usuario == null) {
+            return ResponseEntity.status(401).body("Usuario no autenticado");
+        }
+
+        String nuevoTexto = body.get("texto");
+        ComentarioResena comentario = comentarioResenaService.findById(id);
+        if (comentario == null || !comentario.getUsuario().getId().equals(usuario.getId())) {
+            return ResponseEntity.status(403).body("No autorizado para editar este comentario");
+        }
+
+        comentario.setTexto(nuevoTexto);
+        comentarioResenaService.guardar(comentario);
+        return ResponseEntity.ok("Comentario editado correctamente");
+    }
+
+    @DeleteMapping("/comentarios-resena/{id}")
+    public ResponseEntity<?> eliminarComentarioResena(
+            @PathVariable Integer id,
+            Authentication authentication) {
+        String correo = authentication.getName();
+        Usuario usuario = usuarioService.buscarPorCorreo(correo);
+        if (usuario == null) {
+            return ResponseEntity.status(401).body("Usuario no autenticado");
+        }
+
+        ComentarioResena comentario = comentarioResenaService.findById(id);
+        if (comentario == null) {
+            return ResponseEntity.status(404).body("Comentario no encontrado");
+        }
+
+        if (!comentario.getUsuario().getId().equals(usuario.getId())) {
+            return ResponseEntity.status(403).body("No autorizado para eliminar este comentario");
+        }
+
+        comentarioResenaService.eliminar(comentario);
+        return ResponseEntity.ok("Comentario eliminado correctamente");
+    }
+
     // Amonestaciones
     @GetMapping("/amonestaciones-usuario/mis-amonestaciones")
     public ResponseEntity<?> getAmonestacionesUsuario(Authentication authentication) {

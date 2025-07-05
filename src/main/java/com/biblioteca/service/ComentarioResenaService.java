@@ -28,6 +28,10 @@ public class ComentarioResenaService {
         return comentarioResenaRepository.findByResenaId(resenaId);
     }
 
+    public ComentarioResena findById(Integer id) {
+        return comentarioResenaRepository.findById(id).orElse(null);
+    }
+
     public ComentarioResena save(Integer resenaId, Integer usuarioId, String texto) {
         Optional<Resena> resenaOpt = resenaRepository.findById(resenaId);
         Optional<Usuario> usuarioOpt = usuarioRepository.findById(usuarioId);
@@ -40,5 +44,18 @@ public class ComentarioResenaService {
         comentario.setTexto(texto);
         comentario.setFecha(java.time.LocalDateTime.now());
         return comentarioResenaRepository.save(comentario);
+    }
+
+    public ComentarioResena guardar(ComentarioResena comentario) {
+        return comentarioResenaRepository.save(comentario);
+    }
+
+    public void eliminar(ComentarioResena comentario) {
+        comentarioResenaRepository.delete(comentario);
+    }
+
+    public void eliminarPorResena(Resena resena) {
+        List<ComentarioResena> comentarios = comentarioResenaRepository.findByResenaId(resena.getId());
+        comentarioResenaRepository.deleteAll(comentarios);
     }
 }
