@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface ResenaRepository extends JpaRepository<Resena, Integer> {
     List<Resena> findByLibroId(Integer libroId);
+
+    List<Resena> findByUsuarioId(Integer usuarioId);
 }
