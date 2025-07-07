@@ -1,3 +1,9 @@
+Ok, vamos a consolidar todas las correcciones y añadidos que hemos discutido en tu App.vue.
+
+Aquí tienes el código completo y corregido para tu src/App.vue:
+
+Fragmento de código
+
 <template>
   <div class="bg-gray-100 min-h-screen font-sans">
     <header class="bg-gray-700 text-white p-6 shadow-md">
@@ -32,7 +38,7 @@
             <button @click="iniciarProcesoModificacion"
               class="ml-4 px-4 py-2 hover:bg-gray-800 rounded-md transition-colors">Modificar libro</button>
             
-            <button @click="currentComponent = 'EliminarLibro'"
+            <button @click="iniciarProcesoEliminacion" 
               class="ml-4 px-4 py-2 hover:bg-gray-800 rounded-md transition-colors">Eliminar libro</button>
             
             <button @click="currentComponent = 'VerificarPago'"
@@ -55,7 +61,9 @@
         @ver-libro="mostrarPantallaLibro"
         @volver="irAPantallaPrincipal"
         @seleccionar-libro-para-modificar="iniciarModificacionLibro"
-        @libro-modificado="irAPantallaPrincipal" :libro="libroSeleccionado"
+        @libro-modificado="irAPantallaPrincipal" 
+        @libro-eliminado="irAPantallaPrincipal" 
+        :libro="libroSeleccionado"
         :libro-a-modificar="libroParaModificar"
         :usuario="user"
       />
@@ -69,6 +77,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+// Importaciones de tus componentes
 import PantallaPrincipal from './components/PantallaPrincipal.vue';
 import InicioSesion from './components/InicioSesion.vue';
 import Registro from './components/RegistroUsuario.vue';
@@ -79,14 +88,13 @@ import SolicitudVerificacionPago from './components/SolicitudVerificacionPago.vu
 import VerificarPago from './components/VerificarPago.vue';
 import AnadirPrestamo from './components/AnadirPrestamo.vue';
 import DevolverPrestamo from './components/DevolverPrestamo.vue';
-import EliminarLibro from './components/EliminarLibro.vue';
+import EliminarLibro from './components/EliminarLibroPantallaBusqueda.vue'; // Confirmado que este es el nombre que usas
 
-// Importa los componentes para el flujo de modificación
+// Importa los dos componentes del flujo de modificación
 import ModificarLibroPantallaBusqueda from './components/ModificarLibroPantallaBusqueda.vue';
 import ModificarLibroFormulario from './components/ModificarLibroFormulario.vue';
 
 
-// Estado del usuario
 const user = ref(null);
 const currentComponent = ref('PantallaPrincipal');
 const libroSeleccionado = ref(null); // Usado para 'Ver Detalles' en PantallaPrincipal
@@ -104,25 +112,29 @@ const components = {
   VerificarPago,
   AnadirPrestamo,
   DevolverPrestamo,
-  EliminarLibro,
-  ModificarLibroPantallaBusqueda, // La primera pantalla de búsqueda
-  ModificarLibroFormulario // La segunda pantalla, el formulario de edición
+  EliminarLibro, // Asegúrate de que la clave aquí coincide con el currentComponent.value que usas
+  ModificarLibroFormulario,
+  ModificarLibroPantallaBusqueda,
 };
 
-// Computed property para determinar qué componente renderizar dinámicamente
+// Modificamos esta computed property para manejar el flujo de modificación y eliminación
 const getComponentToRender = computed(() => {
   if (currentComponent.value === 'PantallaLibro') {
     return PantallaLibro;
   }
-  // Si currentComponent es 'ModificarLibroFormulario' y ya hay un libro seleccionado
+  // Si estamos en el formulario de modificación Y tenemos un libro para modificar
   if (currentComponent.value === 'ModificarLibroFormulario' && libroParaModificar.value) {
     return ModificarLibroFormulario;
   }
-  // Si currentComponent es 'ModificarLibroPantallaBusqueda'
+  // Si estamos en la pantalla de búsqueda de modificación
   if (currentComponent.value === 'ModificarLibroPantallaBusqueda') {
     return ModificarLibroPantallaBusqueda;
   }
-  // Para el resto de componentes
+  // AÑADIDO: Lógica para el componente de eliminación
+  if (currentComponent.value === 'EliminarLibro') { // <--- CORRECCIÓN: Añadir esta condición
+    return EliminarLibro;
+  }
+  // Para el resto de componentes (fallback)
   return components[currentComponent.value];
 });
 
@@ -135,22 +147,28 @@ const mostrarPantallaLibro = (libro) => {
 const irAPantallaPrincipal = () => {
   currentComponent.value = 'PantallaPrincipal';
   libroSeleccionado.value = null;
-  libroParaModificar.value = null; // Limpiar también el libro de modificación
+  libroParaModificar.value = null; // Limpiar también el libro de modificación al ir a inicio
 };
 
-// Función para iniciar el proceso de modificación desde la navegación (limpia estado y va a la búsqueda)
+// FUNCIÓN: Inicia el proceso de modificación desde el botón de navegación
 const iniciarProcesoModificacion = () => {
-  libroParaModificar.value = null; // Muy importante: asegúrate de que no haya un libro precargado
-  currentComponent.value = 'ModificarLibroPantallaBusqueda';
+  libroParaModificar.value = null; // Asegurarse de que no haya un libro cargado previamente
+  currentComponent.value = 'ModificarLibroPantallaBusqueda'; // Ir directamente a la pantalla de búsqueda
 };
 
-
-// Función llamada por ModificarLibroPantallaBusqueda.vue cuando encuentra y selecciona un libro
+// FUNCIÓN: Se llama desde ModificarLibroPantallaBusqueda.vue cuando un libro es seleccionado
 const iniciarModificacionLibro = (libro) => {
-  libroParaModificar.value = libro; // Guarda los datos del libro encontrado
-  currentComponent.value = 'ModificarLibroFormulario'; // Cambia la vista al formulario de modificación
+  libroParaModificar.value = libro; // Almacena el libro encontrado
+  currentComponent.value = 'ModificarLibroFormulario'; // Cambia a la pantalla del formulario de modificación
 };
 
+// AÑADIDO: Función para iniciar el proceso de eliminación (para consistencia con iniciarProcesoModificacion)
+const iniciarProcesoEliminacion = () => {
+  currentComponent.value = 'EliminarLibro'; // Asegúrate de que 'EliminarLibro' es la clave en el objeto 'components'
+};
+
+
+// Funciones de login/logout usando fetch (como lo tienes actualmente)
 const handleLogin = async () => {
   try {
     const res = await fetch('/api/usuarios/me', {
@@ -162,7 +180,7 @@ const handleLogin = async () => {
         id: userData.id,
         nombre: userData.nombre,
         correo: userData.correo,
-        role: userData.rol.toLowerCase()
+        role: userData.rol.toLowerCase() // Asegura que el rol siempre sea minúsculas
       }
       currentComponent.value = 'PantallaPrincipal'
     } else {
@@ -182,6 +200,9 @@ const logout = async () => {
         if (res.ok) {
             user.value = null;
             currentComponent.value = 'InicioSesion';
+            // También limpia los estados relacionados con libros al cerrar sesión
+            libroSeleccionado.value = null;
+            libroParaModificar.value = null; 
         } else {
             console.error("Error al cerrar sesión en el servidor.");
         }
