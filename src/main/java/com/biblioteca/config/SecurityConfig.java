@@ -25,6 +25,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/libros", "/api/libros/**").permitAll()
                         .requestMatchers("/api/prestamos", "/api/prestamos/**", "/api/prestar")
                         .hasAuthority("BIBLIOTECARIO")
+                        .requestMatchers(HttpMethod.DELETE, "/api/libros/isbn/**").hasAuthority("BIBLIOTECARIO")
                         .requestMatchers(HttpMethod.GET, "/api/resenas/**", "/api/comentarios-resena/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/resenas/**", "/api/comentarios-resena/**")
                         .authenticated()
