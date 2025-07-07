@@ -7,7 +7,6 @@
           <button @click="irAPantallaPrincipal"
             class="px-4 py-2 hover:bg-gray-800 rounded-md transition-colors">Inicio</button>
           
-          <!-- Menú dinámico según tipo de usuario -->
           <template v-if="!user">
             <button @click="currentComponent = 'InicioSesion'"
               class="ml-4 px-4 py-2 hover:bg-gray-800 rounded-md transition-colors">Iniciar Sesión</button>
@@ -29,6 +28,13 @@
             <span class="ml-4 font-semibold">Hola, {{ user.nombre }}</span>
             <button @click="currentComponent = 'RegistroLibro'"
               class="ml-4 px-4 py-2 hover:bg-gray-800 rounded-md transition-colors">Registrar nuevo libro</button>
+            
+            <button @click="iniciarProcesoModificacion"
+              class="ml-4 px-4 py-2 hover:bg-gray-800 rounded-md transition-colors">Modificar libro</button>
+            
+            <button @click="currentComponent = 'EliminarLibro'"
+              class="ml-4 px-4 py-2 hover:bg-gray-800 rounded-md transition-colors">Eliminar libro</button>
+            
             <button @click="currentComponent = 'VerificarPago'"
               class="ml-4 px-4 py-2 hover:bg-gray-800 rounded-md transition-colors">Verificar Pagos</button>
             <button @click="currentComponent = 'AnadirPrestamo'"
@@ -43,13 +49,14 @@
     </header>
 
     <main class="container mx-auto p-8">
-      <!-- Renderizado condicional simplificado -->
       <component 
-        :is="currentComponent === 'PantallaLibro' ? PantallaLibro : activeComponent" 
+        :is="getComponentToRender" 
         @login="handleLogin"
         @ver-libro="mostrarPantallaLibro"
         @volver="irAPantallaPrincipal"
-        :libro="libroSeleccionado"
+        @seleccionar-libro-para-modificar="iniciarModificacionLibro"
+        @libro-modificado="irAPantallaPrincipal" :libro="libroSeleccionado"
+        :libro-a-modificar="libroParaModificar"
         :usuario="user"
       />
     </main>
@@ -61,7 +68,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import PantallaPrincipal from './components/PantallaPrincipal.vue';
 import InicioSesion from './components/InicioSesion.vue';
 import Registro from './components/RegistroUsuario.vue';
@@ -72,13 +79,20 @@ import SolicitudVerificacionPago from './components/SolicitudVerificacionPago.vu
 import VerificarPago from './components/VerificarPago.vue';
 import AnadirPrestamo from './components/AnadirPrestamo.vue';
 import DevolverPrestamo from './components/DevolverPrestamo.vue';
+import EliminarLibro from './components/EliminarLibro.vue';
+
+// Importa los componentes para el flujo de modificación
+import ModificarLibroPantallaBusqueda from './components/ModificarLibroPantallaBusqueda.vue';
+import ModificarLibroFormulario from './components/ModificarLibroFormulario.vue';
+
 
 // Estado del usuario
 const user = ref(null);
 const currentComponent = ref('PantallaPrincipal');
-const libroSeleccionado = ref(null);
+const libroSeleccionado = ref(null); // Usado para 'Ver Detalles' en PantallaPrincipal
+const libroParaModificar = ref(null); // Almacena el libro seleccionado para modificar
 
-// Mapeo de componentes
+// Mapeo de componentes disponibles
 const components = {
   PantallaPrincipal,
   InicioSesion,
@@ -89,10 +103,29 @@ const components = {
   SolicitudVerificacionPago,
   VerificarPago,
   AnadirPrestamo,
-  DevolverPrestamo
+  DevolverPrestamo,
+  EliminarLibro,
+  ModificarLibroPantallaBusqueda, // La primera pantalla de búsqueda
+  ModificarLibroFormulario // La segunda pantalla, el formulario de edición
 };
 
-const activeComponent = computed(() => components[currentComponent.value]);
+// Computed property para determinar qué componente renderizar dinámicamente
+const getComponentToRender = computed(() => {
+  if (currentComponent.value === 'PantallaLibro') {
+    return PantallaLibro;
+  }
+  // Si currentComponent es 'ModificarLibroFormulario' y ya hay un libro seleccionado
+  if (currentComponent.value === 'ModificarLibroFormulario' && libroParaModificar.value) {
+    return ModificarLibroFormulario;
+  }
+  // Si currentComponent es 'ModificarLibroPantallaBusqueda'
+  if (currentComponent.value === 'ModificarLibroPantallaBusqueda') {
+    return ModificarLibroPantallaBusqueda;
+  }
+  // Para el resto de componentes
+  return components[currentComponent.value];
+});
+
 
 const mostrarPantallaLibro = (libro) => {
   libroSeleccionado.value = libro;
@@ -102,6 +135,20 @@ const mostrarPantallaLibro = (libro) => {
 const irAPantallaPrincipal = () => {
   currentComponent.value = 'PantallaPrincipal';
   libroSeleccionado.value = null;
+  libroParaModificar.value = null; // Limpiar también el libro de modificación
+};
+
+// Función para iniciar el proceso de modificación desde la navegación (limpia estado y va a la búsqueda)
+const iniciarProcesoModificacion = () => {
+  libroParaModificar.value = null; // Muy importante: asegúrate de que no haya un libro precargado
+  currentComponent.value = 'ModificarLibroPantallaBusqueda';
+};
+
+
+// Función llamada por ModificarLibroPantallaBusqueda.vue cuando encuentra y selecciona un libro
+const iniciarModificacionLibro = (libro) => {
+  libroParaModificar.value = libro; // Guarda los datos del libro encontrado
+  currentComponent.value = 'ModificarLibroFormulario'; // Cambia la vista al formulario de modificación
 };
 
 const handleLogin = async () => {
@@ -126,8 +173,24 @@ const handleLogin = async () => {
   }
 }
 
-const logout = () => {
-  user.value = null;
-  currentComponent.value = 'PantallaPrincipal';
+const logout = async () => {
+    try {
+        const res = await fetch('/api/logout', {
+            method: 'POST',
+            credentials: 'include'
+        });
+        if (res.ok) {
+            user.value = null;
+            currentComponent.value = 'InicioSesion';
+        } else {
+            console.error("Error al cerrar sesión en el servidor.");
+        }
+    } catch (e) {
+        console.error("Error de red al cerrar sesión:", e);
+    }
 };
+
+onMounted(() => {
+    handleLogin();
+});
 </script>
