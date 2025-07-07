@@ -235,7 +235,7 @@ const confirmarEliminarPerfil = async () => {
       mensajeTipo.value = 'success'
       window.location.href = '/login'
     } else {
-      mensaje.value = msg
+      mensaje.value = 'No puedes eliminar tu perfil con préstamos o amonestaciones pendientes.'
       mensajeTipo.value = 'error'
     }
   } catch (e) {

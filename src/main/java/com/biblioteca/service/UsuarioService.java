@@ -87,7 +87,7 @@ public class UsuarioService {
         return "Contraseña actualizada correctamente.";
     }
 
-    @Transactional
+   @Transactional
     public void eliminarUsuario(String correo) {
         Usuario usuario = usuarioRepository.findByCorreo(correo)
             .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
@@ -104,21 +104,13 @@ public class UsuarioService {
             throw new RuntimeException("No puedes eliminar tu cuenta con amonestaciones pendientes.");
         }
 
-        // Anonimizar reseñas
-        List<Resena> resenas = resenaRepository.findByUsuarioId(usuario.getId());
-        for (Resena resena : resenas) {
-            resena.setTexto("[Reseña de usuario eliminado]");
-            resena.setUsuario(null);
-        }
-        resenaRepository.saveAll(resenas);
-
-        // Anonimizar comentarios
+        // Eliminar comentarios asociados
         List<ComentarioResena> comentarios = comentarioResenaRepository.findByUsuarioId(usuario.getId());
-        for (ComentarioResena comentario : comentarios) {
-            comentario.setTexto("[Comentario de usuario eliminado]");
-            comentario.setUsuario(null);
-        }
-        comentarioResenaRepository.saveAll(comentarios);
+        comentarioResenaRepository.deleteAll(comentarios);
+
+        // Eliminar reseñas asociadas
+        List<Resena> resenas = resenaRepository.findByUsuarioId(usuario.getId());
+        resenaRepository.deleteAll(resenas);
 
         // Eliminar usuario
         usuarioRepository.delete(usuario);
