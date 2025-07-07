@@ -100,7 +100,7 @@ const libroEditado = ref({
   editorial: '',
   autor: '',
   isbn: '',
-  ano: null,
+  anio: null,
   cantidad: null,
   sinopsis: '',
   portadaUrl: '' 
@@ -113,7 +113,7 @@ watch(() => props.libroAModificar, (newVal) => {
   } else {
     libroEditado.value = {
       id: null, titulo: '', genero: '', editorial: '', autor: '',
-      isbn: '', ano: null, cantidad: null, sinopsis: '', portadaUrl: ''
+      isbn: '', anio: '', cantidad: '', sinopsis: '', portadaUrl: ''
     };
   }
 }, { immediate: true }); 
