@@ -62,17 +62,6 @@ public class Controller {
         return libroService.listarLibros();
     }
 
-    @GetMapping("/libros/isbn/{isbn}")
-    public ResponseEntity<Libro> obtenerLibroPorIsbn(@PathVariable Long isbn) {
-        // CAMBIO AQUÍ: Llamar a 'buscarLibroPorIsbn' y usar el Optional
-        Optional<Libro> libroOptional = libroService.buscarLibroPorIsbn(isbn);
-        if (libroOptional.isPresent()) { // Verificar si el Optional contiene un libro
-            return ResponseEntity.ok(libroOptional.get()); // Obtener el libro del Optional
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Devuelve 404 si no se encuentra
-        }
-    }
-
     // Registrar libro (solo bibliotecario)
     @PostMapping("/libros")
     public ResponseEntity<?> registrarLibro(
@@ -83,7 +72,21 @@ public class Controller {
         return ResponseEntity.ok(respuesta);
     }
 
-        // Modificar libro por ISBN (solo bibliotecario)
+    // === ENDPOINTS CLAVE PARA BUSCAR Y MODIFICAR POR ISBN ===
+
+    // 1. Endpoint para BUSCAR un libro por su ISBN (para el frontend: ModificarLibroPantallaBusqueda.vue)
+    @GetMapping("/libros/isbn/{isbn}")
+    public ResponseEntity<Libro> obtenerLibroPorIsbn(@PathVariable Long isbn) { // ISBN como Long
+        Optional<Libro> libroOptional = libroService.buscarLibroPorIsbn(isbn);
+        if (libroOptional.isPresent()) {
+            return ResponseEntity.ok(libroOptional.get()); // Devuelve el libro si se encuentra
+        } else {
+            // Devuelve 404 NOT FOUND si el libro no existe
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
+    // 2. Endpoint para MODIFICAR un libro por ISBN (para el frontend: ModificarLibroFormulario.vue)
     @PutMapping("/libros/isbn/{isbn}")
     public ResponseEntity<?> actualizarLibroPorIsbn(
         @PathVariable Long isbn,
@@ -94,6 +97,7 @@ public class Controller {
         String resultado = libroService.actualizarLibroPorIsbn(isbn, libroActualizado, correo);
         return ResponseEntity.ok(resultado);
     }
+
 
     // Eliminar libro por ISBN (solo bibliotecario)
     @DeleteMapping("/libros/isbn/{isbn}")
