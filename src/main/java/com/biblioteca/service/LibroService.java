@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class LibroService {
@@ -51,5 +52,55 @@ public class LibroService {
         }
         libroRepository.save(libro);
         return "Libro registrado exitosamente.";
+    }
+
+        // === FUNCIONES CLAVE PARA BUSCAR Y MODIFICAR POR ISBN ===
+
+    // 1. Función para BUSCAR un libro por su ISBN (para el GET)
+    public Optional<Libro> buscarLibroPorIsbn(Long isbn) {
+        return libroRepository.findByIsbn(isbn);
+    }
+
+    // 2. Función para MODIFICAR un libro por su ISBN (para el PUT)
+    public String actualizarLibroPorIsbn(Long isbn, Libro datosActualizados, String correoUsuario) {
+        Usuario usuario = usuarioRepository.findByCorreo(correoUsuario).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (!"BIBLIOTECARIO".equals(usuario.getRol())) {
+            throw new AccessDeniedException("No tienes permisos para esta acción.");
+        }
+
+        Libro libroExistente = libroRepository.findByIsbn(isbn)
+            .orElseThrow(() -> new RuntimeException("Libro no encontrado por ISBN"));
+
+        // Actualiza solo los campos que deberían ser modificables
+        libroExistente.setTitulo(datosActualizados.getTitulo());
+        libroExistente.setAutor(datosActualizados.getAutor());
+        libroExistente.setGenero(datosActualizados.getGenero());
+        libroExistente.setEditorial(datosActualizados.getEditorial()); // ¡Asegúrate de incluir todos los campos que quieres que se puedan modificar!
+        libroExistente.setAnio(datosActualizados.getAnio());
+        libroExistente.setCantidad(datosActualizados.getCantidad());
+        libroExistente.setSinopsis(datosActualizados.getSinopsis());
+        // Si manejas imagen o portadaUrl y quieres que se pueda modificar:
+        // libroExistente.setPortadaUrl(datosActualizados.getPortadaUrl());
+        // o si es un byte[]:
+        // libroExistente.setImagen(datosActualizados.getImagen()); 
+
+        libroRepository.save(libroExistente);
+        return "Libro actualizado exitosamente.";
+    }
+
+    public String eliminarLibroPorIsbn(Long isbn, String correoUsuario) {
+        Usuario usuario = usuarioRepository.findByCorreo(correoUsuario)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (!"BIBLIOTECARIO".equals(usuario.getRol())) {
+            throw new AccessDeniedException("No tienes permisos para esta acción.");
+        }
+
+        Libro libro = libroRepository.findByIsbn(isbn)
+            .orElseThrow(() -> new RuntimeException("Libro no encontrado por ISBN"));
+
+        libroRepository.delete(libro);
+        return "Libro eliminado correctamente.";
     }
 }
