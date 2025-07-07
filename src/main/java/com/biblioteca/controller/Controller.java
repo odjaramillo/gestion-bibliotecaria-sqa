@@ -21,11 +21,15 @@ import com.biblioteca.service.AmonestacionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.security.core.Authentication;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api")
@@ -58,6 +62,17 @@ public class Controller {
         return libroService.listarLibros();
     }
 
+    @GetMapping("/libros/isbn/{isbn}")
+    public ResponseEntity<Libro> obtenerLibroPorIsbn(@PathVariable Long isbn) {
+        // CAMBIO AQUÍ: Llamar a 'buscarLibroPorIsbn' y usar el Optional
+        Optional<Libro> libroOptional = libroService.buscarLibroPorIsbn(isbn);
+        if (libroOptional.isPresent()) { // Verificar si el Optional contiene un libro
+            return ResponseEntity.ok(libroOptional.get()); // Obtener el libro del Optional
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Devuelve 404 si no se encuentra
+        }
+    }
+
     // Registrar libro (solo bibliotecario)
     @PostMapping("/libros")
     public ResponseEntity<?> registrarLibro(
@@ -68,6 +83,28 @@ public class Controller {
         return ResponseEntity.ok(respuesta);
     }
 
+        // Modificar libro por ISBN (solo bibliotecario)
+    @PutMapping("/libros/isbn/{isbn}")
+    public ResponseEntity<?> actualizarLibroPorIsbn(
+        @PathVariable Long isbn,
+        @RequestBody Libro libroActualizado,
+        Authentication authentication) {
+
+        String correo = authentication.getName();
+        String resultado = libroService.actualizarLibroPorIsbn(isbn, libroActualizado, correo);
+        return ResponseEntity.ok(resultado);
+    }
+
+    // Eliminar libro por ISBN (solo bibliotecario)
+    @DeleteMapping("/libros/isbn/{isbn}")
+    public ResponseEntity<?> eliminarLibroPorIsbn(
+            @PathVariable Long isbn,
+            Authentication authentication) {
+
+        String correo = authentication.getName();
+        String resultado = libroService.eliminarLibroPorIsbn(isbn, correo);
+        return ResponseEntity.ok(resultado);
+    }
     // Usuarios
 
     // Registro de usuario
