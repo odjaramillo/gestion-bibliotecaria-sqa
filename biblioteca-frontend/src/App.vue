@@ -1,9 +1,3 @@
-Ok, vamos a consolidar todas las correcciones y añadidos que hemos discutido en tu App.vue.
-
-Aquí tienes el código completo y corregido para tu src/App.vue:
-
-Fragmento de código
-
 <template>
   <div class="bg-gray-100 min-h-screen font-sans">
     <header class="bg-gray-700 text-white p-6 shadow-md">
