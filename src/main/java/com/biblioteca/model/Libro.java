@@ -1,5 +1,6 @@
 package com.biblioteca.model;
-
+import java.util.ArrayList;
+import java.util.List;
 import jakarta.persistence.*;
 import java.util.Base64;
 
@@ -91,4 +92,6 @@ public class Libro {
         }
         return null;
     }
+    @OneToMany(mappedBy = "libro", cascade = CascadeType.ALL, orphanRemoval = true)
+private List<Resena> resenas = new ArrayList<>();
 }
