@@ -1,5 +1,6 @@
 package com.biblioteca.model;
-
+import java.util.ArrayList;
+import java.util.List;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -84,4 +85,6 @@ public class Resena {
                 ", fecha=" + fecha +
                 '}';
     }
+    @OneToMany(mappedBy = "resena", cascade = CascadeType.ALL, orphanRemoval = true)
+private List<ComentarioResena> comentarios = new ArrayList<>();
 }

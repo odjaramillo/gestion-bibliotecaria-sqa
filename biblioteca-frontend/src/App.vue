@@ -7,7 +7,6 @@
           <button @click="irAPantallaPrincipal"
             class="px-4 py-2 hover:bg-gray-800 rounded-md transition-colors">Inicio</button>
           
-          <!-- Menú dinámico según tipo de usuario -->
           <template v-if="!user">
             <button @click="currentComponent = 'InicioSesion'"
               class="ml-4 px-4 py-2 hover:bg-gray-800 rounded-md transition-colors">Iniciar Sesión</button>
@@ -29,6 +28,13 @@
             <span class="ml-4 font-semibold">Hola, {{ user.nombre }}</span>
             <button @click="currentComponent = 'RegistroLibro'"
               class="ml-4 px-4 py-2 hover:bg-gray-800 rounded-md transition-colors">Registrar nuevo libro</button>
+            
+            <button @click="iniciarProcesoModificacion"
+              class="ml-4 px-4 py-2 hover:bg-gray-800 rounded-md transition-colors">Modificar libro</button>
+            
+            <button @click="iniciarProcesoEliminacion" 
+              class="ml-4 px-4 py-2 hover:bg-gray-800 rounded-md transition-colors">Eliminar libro</button>
+            
             <button @click="currentComponent = 'VerificarPago'"
               class="ml-4 px-4 py-2 hover:bg-gray-800 rounded-md transition-colors">Verificar Pagos</button>
             <button @click="currentComponent = 'AnadirPrestamo'"
@@ -43,13 +49,16 @@
     </header>
 
     <main class="container mx-auto p-8">
-      <!-- Renderizado condicional simplificado -->
       <component 
-        :is="currentComponent === 'PantallaLibro' ? PantallaLibro : activeComponent" 
+        :is="getComponentToRender" 
         @login="handleLogin"
         @ver-libro="mostrarPantallaLibro"
         @volver="irAPantallaPrincipal"
+        @seleccionar-libro-para-modificar="iniciarModificacionLibro"
+        @libro-modificado="irAPantallaPrincipal" 
+        @libro-eliminado="irAPantallaPrincipal" 
         :libro="libroSeleccionado"
+        :libro-a-modificar="libroParaModificar"
         :usuario="user"
       />
     </main>
@@ -61,7 +70,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import PantallaPrincipal from './components/PantallaPrincipal.vue';
 import InicioSesion from './components/InicioSesion.vue';
 import Registro from './components/RegistroUsuario.vue';
@@ -72,13 +81,15 @@ import SolicitudVerificacionPago from './components/SolicitudVerificacionPago.vu
 import VerificarPago from './components/VerificarPago.vue';
 import AnadirPrestamo from './components/AnadirPrestamo.vue';
 import DevolverPrestamo from './components/DevolverPrestamo.vue';
+import EliminarLibro from './components/EliminarLibroPantallaBusqueda.vue'; 
+import ModificarLibroPantallaBusqueda from './components/ModificarLibroPantallaBusqueda.vue';
+import ModificarLibroFormulario from './components/ModificarLibroFormulario.vue';
 
-// Estado del usuario
 const user = ref(null);
 const currentComponent = ref('PantallaPrincipal');
-const libroSeleccionado = ref(null);
+const libroSeleccionado = ref(null); 
+const libroParaModificar = ref(null); 
 
-// Mapeo de componentes
 const components = {
   PantallaPrincipal,
   InicioSesion,
@@ -89,10 +100,27 @@ const components = {
   SolicitudVerificacionPago,
   VerificarPago,
   AnadirPrestamo,
-  DevolverPrestamo
+  DevolverPrestamo,
+  EliminarLibro, 
+  ModificarLibroFormulario,
+  ModificarLibroPantallaBusqueda,
 };
 
-const activeComponent = computed(() => components[currentComponent.value]);
+const getComponentToRender = computed(() => {
+  if (currentComponent.value === 'PantallaLibro') {
+    return PantallaLibro;
+  }
+  if (currentComponent.value === 'ModificarLibroFormulario' && libroParaModificar.value) {
+    return ModificarLibroFormulario;
+  }
+  if (currentComponent.value === 'ModificarLibroPantallaBusqueda') {
+    return ModificarLibroPantallaBusqueda;
+  }
+  if (currentComponent.value === 'EliminarLibro') { 
+    return EliminarLibro;
+  }
+  return components[currentComponent.value];
+});
 
 const mostrarPantallaLibro = (libro) => {
   libroSeleccionado.value = libro;
@@ -102,6 +130,21 @@ const mostrarPantallaLibro = (libro) => {
 const irAPantallaPrincipal = () => {
   currentComponent.value = 'PantallaPrincipal';
   libroSeleccionado.value = null;
+  libroParaModificar.value = null; 
+};
+
+const iniciarProcesoModificacion = () => {
+  libroParaModificar.value = null; 
+  currentComponent.value = 'ModificarLibroPantallaBusqueda'; 
+};
+
+const iniciarModificacionLibro = (libro) => {
+  libroParaModificar.value = libro; 
+  currentComponent.value = 'ModificarLibroFormulario'; 
+};
+
+const iniciarProcesoEliminacion = () => {
+  currentComponent.value = 'EliminarLibro'; 
 };
 
 const handleLogin = async () => {
@@ -115,7 +158,7 @@ const handleLogin = async () => {
         id: userData.id,
         nombre: userData.nombre,
         correo: userData.correo,
-        role: userData.rol.toLowerCase()
+        role: userData.rol.toLowerCase() 
       }
       currentComponent.value = 'PantallaPrincipal'
     } else {
@@ -126,8 +169,26 @@ const handleLogin = async () => {
   }
 }
 
-const logout = () => {
-  user.value = null;
-  currentComponent.value = 'PantallaPrincipal';
+const logout = async () => {
+    try {
+        const res = await fetch('/api/logout', {
+            method: 'POST',
+            credentials: 'include'
+        });
+        if (res.ok) {
+            user.value = null;
+            currentComponent.value = 'InicioSesion';
+            libroSeleccionado.value = null;
+            libroParaModificar.value = null; 
+        } else {
+            console.error("Error al cerrar sesión en el servidor.");
+        }
+    } catch (e) {
+        console.error("Error de red al cerrar sesión:", e);
+    }
 };
+
+onMounted(() => {
+    handleLogin();
+});
 </script>
