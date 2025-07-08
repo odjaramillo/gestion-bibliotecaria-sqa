@@ -1,7 +1,7 @@
 <template>
   <div class="max-w-md mx-auto bg-white p-8 rounded-xl shadow-2xl animate-fadeIn">
     <h2 class="text-2xl font-bold text-slate-700 mb-6">Editar Perfil</h2>
-
+    
     <form @submit.prevent="handleSubmit" class="space-y-4">
       <!-- Nombre Completo -->
       <div>
@@ -245,7 +245,6 @@ const confirmarEliminarPerfil = async () => {
     isSubmitting.value = false
   }
 }
-
 
 // Cancelar cambios
 const resetForm = () => {

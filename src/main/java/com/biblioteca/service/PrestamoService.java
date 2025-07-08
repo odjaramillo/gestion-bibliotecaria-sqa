@@ -75,6 +75,7 @@ public class PrestamoService {
 
     LocalDate hoy = LocalDate.now();
     prestamo.setFechaDevolucion(hoy);
+    prestamo.setEstado("finalizado"); // Marcar como finalizado
     prestamoRepository.save(prestamo);
 
     Libro libro = prestamo.getLibro();
@@ -111,5 +112,52 @@ public class PrestamoService {
     // Listar préstamos de un usuario
     public List<Prestamo> obtenerPrestamosPorUsuario(Integer usuarioId) {
         return prestamoRepository.findByUsuarioIdAndFechaDevolucionIsNull(usuarioId);
+    }
+
+    // Renovar un préstamo finalizado (solo bibliotecarios)
+    public String renovarPrestamo(Integer prestamoId, String usuarioRol) {
+        // Verificar que el usuario sea bibliotecario
+        if (!"BIBLIOTECARIO".equals(usuarioRol)) {
+            return "Solo los bibliotecarios pueden renovar préstamos.";
+        }
+
+        Optional<Prestamo> prestamoOpt = prestamoRepository.findById(prestamoId);
+        if (prestamoOpt.isEmpty()) {
+            return "Préstamo no encontrado.";
+        }
+
+        Prestamo prestamo = prestamoOpt.get();
+        
+        // Verificar que el préstamo tenga fecha de devolución (esté finalizado)
+        if (prestamo.getFechaDevolucion() == null) {
+            return "Solo se pueden renovar préstamos finalizados.";
+        }
+
+        // Verificar que el usuario no tenga amonestaciones pendientes
+        boolean tieneAmonestaciones = amonestacionRepository.existsByUsuarioIdAndVerificadaFalse(prestamo.getUsuario().getId());
+        if (tieneAmonestaciones) {
+            return "No se puede renovar el préstamo. El usuario tiene amonestaciones pendientes de verificación.";
+        }
+
+        LocalDate hoy = LocalDate.now();
+        
+        // Renovar: nueva fecha límite 7 días desde hoy
+        prestamo.setFechaLimite(hoy.plusDays(7));
+        prestamo.setEstado("activo");
+        prestamo.setFechaDevolucion(null); // Resetear fecha de devolución
+        
+        prestamoRepository.save(prestamo);
+
+        // Reducir cantidad disponible del libro
+        Libro libro = prestamo.getLibro();
+        libro.setCantidad(libro.getCantidad() - 1);
+        libroRepository.save(libro);
+
+        return "Préstamo renovado con éxito. Nueva fecha límite: " + prestamo.getFechaLimite();
+    }
+
+    // Listar préstamos finalizados (para renovar)
+    public List<Prestamo> obtenerPrestamosFinalizados() {
+        return prestamoRepository.findByFechaDevolucionIsNotNull();
     }
 }

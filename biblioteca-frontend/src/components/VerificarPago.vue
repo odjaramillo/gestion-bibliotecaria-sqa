@@ -20,8 +20,11 @@
           <span v-if="amon.verificada" class="text-green-700">Verificada</span>
           <span v-else class="text-yellow-700">Pendiente</span>
         </div>
-        <button v-if="!amon.verificada" @click="verificarAmonestacion(amon.id)" class="bg-green-600 text-white px-4 py-2 rounded">Comprobar</button>
-        <span v-else class="text-green-700 font-semibold">Pago verificado</span>
+        <div class="flex gap-2">
+          <button v-if="!amon.verificada" @click="verificarAmonestacion(amon.id)" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Comprobar</button>
+          <button v-if="!amon.verificada" @click="eliminarAmonestacion(amon.id)" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Eliminar Amonestación</button>
+          <span v-if="amon.verificada" class="text-green-700 font-semibold">Pago verificado</span>
+        </div>
       </div>
       <p v-if="amonestaciones.length === 0" class="text-center text-gray-500 py-6">
         No hay pagos pendientes de verificación
@@ -49,6 +52,25 @@ const verificarAmonestacion = async (amonestacionId) => {
     credentials: 'include'
   });
   await cargarAmonestaciones();
+};
+
+const eliminarAmonestacion = async (amonestacionId) => {
+  if (confirm('¿Está seguro de que desea eliminar esta amonestación?')) {
+    try {
+      const res = await fetch(`/api/amonestaciones/${amonestacionId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      if (res.ok) {
+        await cargarAmonestaciones();
+      } else {
+        const error = await res.text();
+        alert('Error al eliminar amonestación: ' + error);
+      }
+    } catch (e) {
+      alert('Error al eliminar amonestación');
+    }
+  }
 };
 
 onMounted(() => {

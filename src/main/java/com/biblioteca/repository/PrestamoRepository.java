@@ -11,4 +11,5 @@ public interface PrestamoRepository extends JpaRepository<Prestamo, Integer> {
 
     boolean existsByUsuarioIdAndFechaDevolucionIsNull(Integer usuarioId);
 
+    List<Prestamo> findByFechaDevolucionIsNotNull();
 }

@@ -1,6 +1,6 @@
 <template>
   <div class="bg-white p-6 rounded-xl shadow-lg max-w-4xl mx-auto">
-    <h1 class="text-2xl font-bold text-slate-700 mb-6">Devolución de Préstamos</h1>
+    <h1 class="text-2xl font-bold text-slate-700 mb-6">Renovación de Préstamos</h1>
     
     <!-- Filtros -->
     <div class="mb-6 flex flex-wrap gap-4 items-center">
@@ -13,10 +13,9 @@
         >
       </div>
       
-      <select v-model="filtroEstado" class="px-4 py-2 border rounded-md">
-        <option value="activos">Préstamos Activos</option>
-        <option value="todos">Todos los Préstamos</option>
-      </select>
+      <div class="px-4 py-2 border rounded-md bg-gray-100 text-gray-700 cursor-default">
+        Préstamos Finalizados
+      </div>
     </div>
 
     <!-- Mensaje -->
@@ -27,8 +26,7 @@
       <div 
         v-for="prestamo in prestamosFiltrados" 
         :key="prestamo.id"
-        class="border rounded-lg p-4"
-        :class="prestamo.fechaDevolucion ? 'border-green-200 bg-green-50' : 'border-blue-200 bg-blue-50'"
+        class="border rounded-lg p-4 border-red-200 bg-red-50"
       >
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
           <!-- Datos Usuario -->
@@ -49,31 +47,27 @@
             <p class="text-sm"><span class="font-medium">Préstamo:</span> {{ formatFecha(prestamo.fechaPrestamo) }}</p>
             <p class="text-sm"><span class="font-medium">Límite:</span> {{ formatFecha(prestamo.fechaLimite) }}</p>
             <p class="text-sm"><span class="font-medium">Devolución:</span> {{ formatFecha(prestamo.fechaDevolucion) }}</p>
-            <p class="text-sm" :class="prestamoVencido(prestamo) ? 'text-red-600' : 'text-green-600'">
-              {{ estadoPrestamo(prestamo) }}
+            <p class="text-sm text-red-600">
+              Finalizado (Vencido)
             </p>
             <span v-if="tieneAmonestacionesPendientes(prestamo)" class="ml-2 text-red-600 font-bold">(Amonestado)</span>
           </div>
         </div>
         
-        <!-- Acción de devolución -->
+        <!-- Acción de renovación -->
         <div class="flex justify-end items-center pt-3 border-t border-gray-200">
           <button 
-            v-if="!prestamo.fechaDevolucion"
-            @click="devolverPrestamo(prestamo)"
+            @click="renovarPrestamo(prestamo)"
             :disabled="procesando"
-            class="px-3 py-1 bg-green-500 text-white rounded-md text-sm hover:bg-green-600 disabled:opacity-50"
+            class="px-3 py-1 bg-blue-500 text-white rounded-md text-sm hover:bg-blue-600 disabled:opacity-50"
           >
-            {{ procesando ? 'Procesando...' : 'Registrar Devolución' }}
+            {{ procesando ? 'Procesando...' : 'Renovar' }}
           </button>
-          <span v-else class="text-sm text-green-600">
-            Devuelto el {{ formatFecha(prestamo.fechaDevolucion) }}
-          </span>
         </div>
       </div>
       
       <p v-if="prestamosFiltrados.length === 0" class="text-center text-gray-500 py-6">
-        No hay préstamos que coincidan con los filtros
+        No hay préstamos finalizados para renovar
       </p>
     </div>
   </div>
@@ -85,14 +79,13 @@ import { ref, computed, onMounted } from 'vue';
 // Estado del componente
 const prestamos = ref([])
 const busqueda = ref('')
-const filtroEstado = ref('todos')
 const procesando = ref(false)
 const mensaje = ref('')
 const mensajeTipo = ref('')
 
 const cargarPrestamos = async () => {
   try {
-    const res = await fetch('/api/prestamos', { credentials: 'include' })
+    const res = await fetch('/api/prestamos/finalizados', { credentials: 'include' })
     if (res.ok) {
       prestamos.value = await res.json()
     } else {
@@ -107,15 +100,7 @@ const prestamosFiltrados = computed(() => {
   const termino = busqueda.value.toLowerCase()
   let lista = prestamos.value
 
-  // Filtro por estado
-  if (filtroEstado.value === 'activos') {
-    lista = lista.filter(p => p.fechaDevolucion == null)
-  } else if (filtroEstado.value === 'vencidos') {
-    lista = lista.filter(p => p.fechaDevolucion == null && prestamoVencido(p))
-  } else if (filtroEstado.value === 'finalizados') {
-    lista = lista.filter(p => p.fechaDevolucion != null)
-  }
-
+  // Solo préstamos finalizados (ya filtrados por el endpoint)
   // Filtro por búsqueda
   if (termino) {
     lista = lista.filter(p =>
@@ -138,19 +123,14 @@ const formatFecha = (fecha) => {
   })
 }
 
-const estadoPrestamo = (prestamo) => {
-  if (prestamo.fechaDevolucion) return 'Finalizado'
-  return 'Activo'
-}
-
-const devolverPrestamo = async (prestamo) => {
+const renovarPrestamo = async (prestamo) => {
   if (!prestamo.id) return
   procesando.value = true
   mensaje.value = ''
   mensajeTipo.value = ''
   try {
-    const res = await fetch(`/api/prestamos/devolver?prestamoId=${prestamo.id}`, {
-      method: 'POST',
+    const res = await fetch(`/api/prestamos/${prestamo.id}/renovar`, {
+      method: 'PUT',
       credentials: 'include'
     })
     const msg = await res.text()
@@ -163,20 +143,11 @@ const devolverPrestamo = async (prestamo) => {
       mensajeTipo.value = 'error'
     }
   } catch (e) {
-    mensaje.value = 'Error al devolver el préstamo'
+    mensaje.value = 'Error al renovar el préstamo'
     mensajeTipo.value = 'error'
   } finally {
     procesando.value = false
   }
-}
-
-const prestamoVencido = (prestamo) => {
-  if (!prestamo.fechaDevolucion && prestamo.fechaLimite) {
-    const hoy = new Date()
-    const limite = new Date(prestamo.fechaLimite)
-    return hoy > limite
-  }
-  return false
 }
 
 const tieneAmonestacionesPendientes = (prestamo) => {

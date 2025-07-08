@@ -398,9 +398,61 @@ public class Controller {
             return ResponseEntity.status(404).body("Amonestación no encontrada");
         }
         amonestacion.setVerificada(true);
+        amonestacion.setPagada(true); // Marcar como pagada también
         amonestacionService.guardar(amonestacion);
         return ResponseEntity.ok("Amonestación verificada");
     }
 
+    // Renovar préstamo (solo bibliotecarios)
+    @PutMapping("/prestamos/{id}/renovar")
+    public ResponseEntity<String> renovarPrestamo(@PathVariable Integer id, Authentication authentication) {
+        String correo = authentication.getName();
+        Usuario usuario = usuarioService.buscarPorCorreo(correo);
+        if (usuario == null) {
+            return ResponseEntity.status(401).body("Usuario no autenticado");
+        }
+        
+        String resultado = prestamoService.renovarPrestamo(id, usuario.getRol());
+        if (resultado.startsWith("Solo los bibliotecarios") || resultado.startsWith("Préstamo no encontrado") 
+            || resultado.startsWith("Solo se pueden renovar") || resultado.startsWith("El préstamo no está vencido")
+            || resultado.startsWith("No se puede renovar el préstamo")) {
+            return ResponseEntity.badRequest().body(resultado);
+        }
+        
+        return ResponseEntity.ok(resultado);
+    }
 
+    // Listar préstamos finalizados (para renovar)
+    @GetMapping("/prestamos/finalizados")
+    public ResponseEntity<List<Prestamo>> obtenerPrestamosFinalizados(Authentication authentication) {
+        String correo = authentication.getName();
+        Usuario usuario = usuarioService.buscarPorCorreo(correo);
+        if (usuario == null) {
+            return ResponseEntity.status(401).body(null);
+        }
+        
+        if (!"BIBLIOTECARIO".equals(usuario.getRol())) {
+            return ResponseEntity.status(403).body(null);
+        }
+        
+        List<Prestamo> prestamos = prestamoService.obtenerPrestamosFinalizados();
+        return ResponseEntity.ok(prestamos);
+    }
+
+    // Eliminar amonestación (solo bibliotecarios)
+    @DeleteMapping("/amonestaciones/{id}")
+    public ResponseEntity<String> eliminarAmonestacion(@PathVariable Integer id, Authentication authentication) {
+        String correo = authentication.getName();
+        Usuario usuario = usuarioService.buscarPorCorreo(correo);
+        if (usuario == null) {
+            return ResponseEntity.status(401).body("Usuario no autenticado");
+        }
+        
+        String resultado = amonestacionService.eliminarAmonestacion(id, usuario.getRol());
+        if (resultado.startsWith("Solo los bibliotecarios") || resultado.startsWith("Amonestación no encontrada")) {
+            return ResponseEntity.badRequest().body(resultado);
+        }
+        
+        return ResponseEntity.ok(resultado);
+    }
 }

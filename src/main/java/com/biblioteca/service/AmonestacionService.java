@@ -30,4 +30,18 @@ public class AmonestacionService {
         return amonestacionRepository.save(amonestacion);
     }
 
+    // Eliminar amonestación (solo bibliotecarios)
+    public String eliminarAmonestacion(Integer amonestacionId, String usuarioRol) {
+        // Verificar que el usuario sea bibliotecario
+        if (!"BIBLIOTECARIO".equals(usuarioRol)) {
+            return "Solo los bibliotecarios pueden eliminar amonestaciones.";
+        }
+
+        if (!amonestacionRepository.existsById(amonestacionId)) {
+            return "Amonestación no encontrada.";
+        }
+
+        amonestacionRepository.deleteById(amonestacionId);
+        return "Amonestación eliminada con éxito.";
+    }
 }
