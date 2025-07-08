@@ -15,7 +15,6 @@
       
       <select v-model="filtroEstado" class="px-4 py-2 border rounded-md">
         <option value="activos">Préstamos Activos</option>
-        <option value="vencidos">Préstamos Vencidos</option>
         <option value="todos">Todos los Préstamos</option>
       </select>
     </div>
