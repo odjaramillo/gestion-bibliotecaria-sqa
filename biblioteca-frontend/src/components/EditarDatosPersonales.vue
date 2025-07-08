@@ -1,7 +1,7 @@
 <template>
   <div class="max-w-md mx-auto bg-white p-8 rounded-xl shadow-2xl animate-fadeIn">
     <h2 class="text-2xl font-bold text-slate-700 mb-6">Editar Perfil</h2>
-    
+
     <form @submit.prevent="handleSubmit" class="space-y-4">
       <!-- Nombre Completo -->
       <div>
@@ -55,7 +55,7 @@
         </button>
       </div>
 
-            <div>
+      <div>
         <button
           type="button"
           @click="cambiarContrasena"
@@ -70,7 +70,7 @@
       <div class="pt-4">
         <button
           type="button"
-          @click="eliminarPerfil"
+          @click="showModal = true"
           class="w-full px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
         >
           Eliminar Perfil
@@ -82,12 +82,36 @@
         {{ mensaje }}
       </p>
     </form>
+
+    <!-- Modal de confirmación -->
+    <div v-if="showModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div class="bg-white rounded-lg shadow-lg p-6 w-80">
+        <h3 class="text-lg font-semibold mb-4">Confirmar Eliminación</h3>
+        <p class="text-sm text-gray-700 mb-4">¿Estás seguro que deseas eliminar tu perfil? Esta acción no se puede deshacer.</p>
+        <div class="flex justify-end space-x-2">
+          <button
+            @click="showModal = false"
+            class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded hover:bg-gray-300"
+          >
+            Cancelar
+          </button>
+          <button
+            @click="confirmarEliminarPerfil"
+            class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-800 rounded"
+          >
+            Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
+
 
 <script setup>
 import { ref, onMounted } from 'vue'
 
+const showModal = ref(false)
 const nombre = ref('')
 const error = ref('')
 const isSubmitting = ref(false)
@@ -191,14 +215,15 @@ const cambiarContrasena = async () => {
   }
 }
 
-// Eliminar perfil
-const eliminarPerfil = async () => {
-  if (!confirm('¿Estás seguro que deseas eliminar tu perfil? Esta acción no se puede deshacer.')) {
-    return
-  }
+const eliminarPerfil = () => {
+  showModal.value = true
+}
+
+const confirmarEliminarPerfil = async () => {
   isSubmitting.value = true
   mensaje.value = ''
   mensajeTipo.value = ''
+  showModal.value = false
   try {
     const res = await fetch('/api/usuarios', {
       method: 'DELETE',
@@ -210,7 +235,7 @@ const eliminarPerfil = async () => {
       mensajeTipo.value = 'success'
       window.location.href = '/login'
     } else {
-      mensaje.value = msg
+      mensaje.value = 'No puedes eliminar tu perfil con préstamos o amonestaciones pendientes.'
       mensajeTipo.value = 'error'
     }
   } catch (e) {
@@ -220,6 +245,7 @@ const eliminarPerfil = async () => {
     isSubmitting.value = false
   }
 }
+
 
 // Cancelar cambios
 const resetForm = () => {

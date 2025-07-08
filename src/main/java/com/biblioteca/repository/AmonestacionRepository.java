@@ -9,4 +9,6 @@ public interface AmonestacionRepository extends JpaRepository<Amonestacion, Inte
     List<Amonestacion> findByUsuarioId(Integer usuarioId);
     List<Amonestacion> findByPrestamoId(Integer prestamoId);
     boolean existsByUsuarioIdAndVerificadaFalse(Integer usuarioId);
+
+    boolean existsByUsuarioIdAndPagadaFalse(Integer usuarioId);
 }

@@ -1,12 +1,21 @@
 package com.biblioteca.service;
 
 import com.biblioteca.model.Usuario;
+import com.biblioteca.model.Resena;
+import com.biblioteca.model.ComentarioResena;
 import com.biblioteca.repository.UsuarioRepository;
+import com.biblioteca.repository.PrestamoRepository;
+import com.biblioteca.repository.AmonestacionRepository;
+import com.biblioteca.repository.ResenaRepository;
+import com.biblioteca.repository.ComentarioResenaRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.transaction.Transactional;
+
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -15,6 +24,18 @@ public class UsuarioService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    @Autowired
+    private PrestamoRepository prestamoRepository;
+
+    @Autowired
+    private AmonestacionRepository amonestacionRepository;
+
+    @Autowired
+    private ResenaRepository resenaRepository;
+
+    @Autowired
+    private ComentarioResenaRepository comentarioResenaRepository;
+
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     // Registro de usuario
@@ -22,9 +43,7 @@ public class UsuarioService {
         if (usuarioRepository.existsByCorreo(usuario.getCorreo())) {
             return "Correo ya registrado.";
         }
-        // Encripta la contraseña antes de guardar
         usuario.setContrasena(passwordEncoder.encode(usuario.getContrasena()));
-        // Asigna rol USUARIO
         if (usuario.getRol() == null || usuario.getRol().isEmpty()) {
             usuario.setRol("USUARIO");
         }
@@ -33,20 +52,15 @@ public class UsuarioService {
     }
 
     // Autenticación de usuario
-
     public Usuario autenticarYObtenerUsuario(String correo, String contrasena) {
         Optional<Usuario> usuarioOpt = usuarioRepository.findByCorreo(correo);
         if (usuarioOpt.isPresent()) {
             Usuario usuario = usuarioOpt.get();
-            System.out.println("Contraseña recibida: " + contrasena);
-            System.out.println("Contraseña en BD: " + usuario.getContrasena());
-            System.out.println("BCrypt match: " + passwordEncoder.matches(contrasena, usuario.getContrasena()));
             if (passwordEncoder.matches(contrasena, usuario.getContrasena())) {
                 return usuario;
             }
         }
         return null;
-
     }
 
     public Usuario buscarPorCorreo(String correo) {
@@ -73,11 +87,32 @@ public class UsuarioService {
         return "Contraseña actualizada correctamente.";
     }
 
-    @Transactional
+   @Transactional
     public void eliminarUsuario(String correo) {
         Usuario usuario = usuarioRepository.findByCorreo(correo)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        // Verificar préstamos activos
+        boolean tienePrestamos = prestamoRepository.existsByUsuarioIdAndFechaDevolucionIsNull(usuario.getId());
+        if (tienePrestamos) {
+            throw new RuntimeException("No puedes eliminar tu cuenta con préstamos activos.");
+        }
+
+        // Verificar amonestaciones no pagadas
+        boolean tieneAmonestaciones = amonestacionRepository.existsByUsuarioIdAndPagadaFalse(usuario.getId());
+        if (tieneAmonestaciones) {
+            throw new RuntimeException("No puedes eliminar tu cuenta con amonestaciones pendientes.");
+        }
+
+        // Eliminar comentarios asociados
+        List<ComentarioResena> comentarios = comentarioResenaRepository.findByUsuarioId(usuario.getId());
+        comentarioResenaRepository.deleteAll(comentarios);
+
+        // Eliminar reseñas asociadas
+        List<Resena> resenas = resenaRepository.findByUsuarioId(usuario.getId());
+        resenaRepository.deleteAll(resenas);
+
+        // Eliminar usuario
         usuarioRepository.delete(usuario);
     }
-
 }
