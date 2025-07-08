@@ -128,17 +128,17 @@
                       <div class="flex space-x-2">
                         <button 
                           v-if="comentario.usuarioId === usuarioActual.id"
-                          @click="eliminarComentarioResena(comentario.id)"
-                          class="text-red-500 hover:text-red-700 text-xs ml-2"
-                        >
-                          Eliminar
-                        </button>
-                        <button 
-                          v-if="comentario.usuarioId === usuarioActual.id"
                           @click="activarEdicionComentario(comentario)"
                           class="text-blue-500 hover:text-blue-700 text-xs ml-2"
                         >
                           Editar
+                        </button>
+                        <button 
+                          v-if="comentario.usuarioId === usuarioActual.id"
+                          @click="eliminarComentarioResena(comentario.id)"
+                          class="text-red-500 hover:text-red-700 text-xs ml-2"
+                        >
+                          Eliminar
                         </button>
                       </div>
                     </div>
@@ -166,7 +166,10 @@
               </div>
             </div>
           </div>
-        </div>
+            <p v-if="resenas.length === 0" class="text-center text-gray-500 py-6">
+              No hay reseñas para este libro
+            </p>
+          </div>
       </div>
     </div>
   </div>
