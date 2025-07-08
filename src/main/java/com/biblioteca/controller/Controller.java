@@ -401,4 +401,6 @@ public class Controller {
         amonestacionService.guardar(amonestacion);
         return ResponseEntity.ok("Amonestación verificada");
     }
+
+
 }
