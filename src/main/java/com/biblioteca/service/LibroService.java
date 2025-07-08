@@ -1,16 +1,17 @@
 package com.biblioteca.service;
 
-import com.biblioteca.model.Libro;
-import com.biblioteca.model.Usuario;
-import com.biblioteca.repository.LibroRepository;
-import com.biblioteca.repository.UsuarioRepository;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-import java.util.Optional;
+import com.biblioteca.model.Libro;
+import com.biblioteca.model.Usuario;
+import com.biblioteca.repository.LibroRepository;
+import com.biblioteca.repository.UsuarioRepository;
 
 @Service
 public class LibroService {
@@ -80,10 +81,6 @@ public class LibroService {
         libroExistente.setAnio(datosActualizados.getAnio());
         libroExistente.setCantidad(datosActualizados.getCantidad());
         libroExistente.setSinopsis(datosActualizados.getSinopsis());
-        // Si manejas imagen o portadaUrl y quieres que se pueda modificar:
-        // libroExistente.setPortadaUrl(datosActualizados.getPortadaUrl());
-        // o si es un byte[]:
-        // libroExistente.setImagen(datosActualizados.getImagen()); 
 
         libroRepository.save(libroExistente);
         return "Libro actualizado exitosamente.";
