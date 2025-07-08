@@ -1,0 +1,70 @@
+package com.biblioteca.model;
+
+import jakarta.persistence.*;
+import java.time.LocalDate;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
+@Entity
+@Table(name = "prestamos")
+public class Prestamo {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "usuario_id")
+    private Usuario usuario;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "libro_id")
+    private Libro libro;
+
+    private LocalDate fechaPrestamo;
+    private LocalDate fechaDevolucion;
+    private LocalDate fechaLimite;
+
+    @OneToMany(mappedBy = "prestamo")
+    @JsonManagedReference
+    private List<Amonestacion> amonestaciones;
+
+    @Column(nullable = false)
+    private String estado;
+
+    public Prestamo() {
+    }
+
+    public Prestamo(Usuario usuario, Libro libro, LocalDate fechaPrestamo, LocalDate fechaDevolucion, String estado) {
+        this.usuario = usuario;
+        this.libro = libro;
+        this.fechaPrestamo = fechaPrestamo;
+        this.fechaDevolucion = fechaDevolucion;
+        this.estado = estado;
+    }
+
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
+
+    public Usuario getUsuario() { return usuario; }
+    public void setUsuario(Usuario usuario) { this.usuario = usuario; }
+
+    public Libro getLibro() { return libro; }
+    public void setLibro(Libro libro) { this.libro = libro; }
+
+    public LocalDate getFechaPrestamo() { return fechaPrestamo; }
+    public void setFechaPrestamo(LocalDate fechaPrestamo) { this.fechaPrestamo = fechaPrestamo; }
+
+    public LocalDate getFechaDevolucion() { return fechaDevolucion; }
+    public void setFechaDevolucion(LocalDate fechaDevolucion) { this.fechaDevolucion = fechaDevolucion; }
+
+    public String getEstado() { return estado; }
+    public void setEstado(String estado) { this.estado = estado; }
+
+    public LocalDate getFechaLimite() { return fechaLimite; }
+    public void setFechaLimite(LocalDate fechaLimite) { this.fechaLimite = fechaLimite; }
+
+    public List<Amonestacion> getAmonestaciones() { return amonestaciones; }
+    public void setAmonestaciones(List<Amonestacion> amonestaciones) { this.amonestaciones = amonestaciones; }
+} 
