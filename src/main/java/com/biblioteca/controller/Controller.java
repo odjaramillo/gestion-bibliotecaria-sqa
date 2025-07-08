@@ -357,6 +357,7 @@ public class Controller {
             return ResponseEntity.status(404).body("Amonestación no encontrada");
         }
         amonestacion.setVerificada(true);
+        amonestacion.setPagada(true); // Marcar como pagada también
         amonestacionService.guardar(amonestacion);
         return ResponseEntity.ok("Amonestación verificada");
     }
@@ -372,7 +373,8 @@ public class Controller {
         
         String resultado = prestamoService.renovarPrestamo(id, usuario.getRol());
         if (resultado.startsWith("Solo los bibliotecarios") || resultado.startsWith("Préstamo no encontrado") 
-            || resultado.startsWith("Solo se pueden renovar") || resultado.startsWith("El préstamo no está vencido")) {
+            || resultado.startsWith("Solo se pueden renovar") || resultado.startsWith("El préstamo no está vencido")
+            || resultado.startsWith("No se puede renovar el préstamo")) {
             return ResponseEntity.badRequest().body(resultado);
         }
         

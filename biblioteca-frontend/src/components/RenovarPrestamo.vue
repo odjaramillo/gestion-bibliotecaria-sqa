@@ -50,7 +50,7 @@
             <p class="text-sm text-red-600">
               Finalizado (Vencido)
             </p>
-            <span v-if="prestamo.amonestaciones && prestamo.amonestaciones.length > 0" class="ml-2 text-red-600 font-bold">(Amonestado)</span>
+            <span v-if="tieneAmonestacionesPendientes(prestamo)" class="ml-2 text-red-600 font-bold">(Amonestado)</span>
           </div>
         </div>
         
@@ -148,6 +148,10 @@ const renovarPrestamo = async (prestamo) => {
   } finally {
     procesando.value = false
   }
+}
+
+const tieneAmonestacionesPendientes = (prestamo) => {
+  return prestamo.amonestaciones && prestamo.amonestaciones.some(amon => !amon.verificada)
 }
 
 onMounted(() => {

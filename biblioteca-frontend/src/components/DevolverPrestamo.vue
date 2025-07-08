@@ -53,7 +53,7 @@
             <p class="text-sm" :class="prestamoVencido(prestamo) ? 'text-red-600' : 'text-green-600'">
               {{ estadoPrestamo(prestamo) }}
             </p>
-            <span v-if="prestamo.amonestaciones && prestamo.amonestaciones.length > 0" class="ml-2 text-red-600 font-bold">(Amonestado)</span>
+            <span v-if="tieneAmonestacionesPendientes(prestamo)" class="ml-2 text-red-600 font-bold">(Amonestado)</span>
           </div>
         </div>
         
@@ -111,6 +111,8 @@ const prestamosFiltrados = computed(() => {
   // Filtro por estado
   if (filtroEstado.value === 'activos') {
     lista = lista.filter(p => p.fechaDevolucion == null)
+  } else if (filtroEstado.value === 'vencidos') {
+    lista = lista.filter(p => p.fechaDevolucion == null && prestamoVencido(p))
   } else if (filtroEstado.value === 'finalizados') {
     lista = lista.filter(p => p.fechaDevolucion != null)
   }
@@ -176,6 +178,10 @@ const prestamoVencido = (prestamo) => {
     return hoy > limite
   }
   return false
+}
+
+const tieneAmonestacionesPendientes = (prestamo) => {
+  return prestamo.amonestaciones && prestamo.amonestaciones.some(amon => !amon.verificada)
 }
 
 onMounted(() => {

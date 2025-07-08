@@ -22,7 +22,7 @@
         </div>
         <div class="flex gap-2">
           <button v-if="!amon.verificada" @click="verificarAmonestacion(amon.id)" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Comprobar</button>
-          <button @click="eliminarAmonestacion(amon.id)" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Eliminar Amonestación</button>
+          <button v-if="!amon.verificada" @click="eliminarAmonestacion(amon.id)" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Eliminar Amonestación</button>
           <span v-if="amon.verificada" class="text-green-700 font-semibold">Pago verificado</span>
         </div>
       </div>

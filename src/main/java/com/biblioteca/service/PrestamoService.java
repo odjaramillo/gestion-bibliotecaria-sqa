@@ -133,6 +133,12 @@ public class PrestamoService {
             return "Solo se pueden renovar préstamos finalizados.";
         }
 
+        // Verificar que el usuario no tenga amonestaciones pendientes
+        boolean tieneAmonestaciones = amonestacionRepository.existsByUsuarioIdAndVerificadaFalse(prestamo.getUsuario().getId());
+        if (tieneAmonestaciones) {
+            return "No se puede renovar el préstamo. El usuario tiene amonestaciones pendientes de verificación.";
+        }
+
         LocalDate hoy = LocalDate.now();
         
         // Renovar: nueva fecha límite 7 días desde hoy
