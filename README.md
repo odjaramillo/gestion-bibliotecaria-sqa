@@ -1,4 +1,4 @@
-# gestion-bibliotecaria
+# Sistema de Gestión Bibliotecaria
 
 Sistema de gestión bibliotecaria desarrollado como proyecto académico de Ingenieria de Software. Incluye un backend en Java con Spring Boot y un frontend en Vue 3 para administrar usuarios, libros, préstamos, reseñas y pagos de amonestaciones
 
