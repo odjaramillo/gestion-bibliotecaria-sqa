@@ -30,7 +30,7 @@ logger = logging.getLogger("agente_sqa")
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-JQL_QUERY: str = 'project = "BIB" AND status = "En Auditoría SQA"'
+JQL_QUERY: str = 'project = "BIB" AND status = "AUDITANDO"'
 
 GEMINI_MODEL: str = "gemini-3.1-flash-lite-preview"
 
@@ -45,8 +45,8 @@ SQA_PROMPT: str = (
     'Si está perfecto, devuelve "aprobado": true.'
 )
 
-TRANSITION_READY_FOR_DEV: str = "Ready for Dev"
-TRANSITION_REFINEMENT: str = "Refinement"
+TRANSITION_READY_FOR_DEV: str = "Done"
+TRANSITION_REFINEMENT: str = "Ajustando"
 
 
 # ---------------------------------------------------------------------------
