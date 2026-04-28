@@ -30,7 +30,7 @@ logger = logging.getLogger("agente_sqa")
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-JQL_QUERY: str = 'project = "BIB" AND status = "AUDITANDO"'
+JQL_QUERY: str = 'project = "T1" AND status = "AUDITANDO"'
 
 GEMINI_MODEL: str = "gemini-3.1-flash-lite-preview"
 
