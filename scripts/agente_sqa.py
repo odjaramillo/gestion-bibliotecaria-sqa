@@ -242,7 +242,8 @@ class SQAOrchestrator:
             self._jira.add_comment(
                 issue,
                 "⚠️ *Auditoría SQA*: El requisito no tiene descripción. "
-                "Se requiere contenido para evaluar.",
+                "Se requiere contenido para evaluar.\n\n"
+                "_Transición automática a Ajustando._"
             )
             self._jira.transition_issue(issue, TRANSITION_REFINEMENT)
             return
@@ -269,7 +270,7 @@ class SQAOrchestrator:
             "- No Ambigüedad ✔\n"
             "- Completitud ✔\n"
             "- Exhaustividad ✔\n\n"
-            "_Transición automática a Ready for Dev._"
+            "_Transición automática a Done._"
         )
         self._jira.add_comment(issue, comment)
         self._jira.transition_issue(issue, TRANSITION_READY_FOR_DEV)
@@ -281,7 +282,7 @@ class SQAOrchestrator:
             "❌ *Auditoría SQA — Defecto Detectado*\n\n"
             f"*Dimensión del Defecto:* {result.dimension_defecto}\n\n"
             f"*Hallazgo Estructurado:*\n{result.hallazgo_estructurado}\n\n"
-            "_Transición automática a Refinement._"
+            "_Transición automática a Ajustando._"
         )
         self._jira.add_comment(issue, comment)
         self._jira.transition_issue(issue, TRANSITION_REFINEMENT)
