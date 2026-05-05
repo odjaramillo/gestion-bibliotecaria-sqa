@@ -34,3 +34,5 @@ build/
 .opencode/
 .atl/
 .agents/
+__pycache__/
+*.pyc
