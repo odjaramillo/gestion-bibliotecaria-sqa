@@ -1,0 +1,53 @@
+name: WF1 — Auditoría Estática de Requisitos
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'documentacion/**'
+      - 'scripts/wf1_auditoria_requisitos.py'
+      - 'scripts/sqa_core/**'
+      - '.github/workflows/wf1_auditoria_requisitos.yml'
+      - 'requirements.txt'
+
+env:
+  DRY_RUN: true
+
+jobs:
+  wf1-auditoria-requisitos:
+    name: Ejecutar WF1 Auditoría de Requisitos
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Ejecutar WF1 Auditoría de Requisitos
+        env:
+          JIRA_SERVER: ${{ secrets.JIRA_SERVER }}
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          CONFLUENCE_URL: ${{ secrets.CONFLUENCE_URL }}
+          CONFLUENCE_USER: ${{ secrets.CONFLUENCE_USER }}
+          CONFLUENCE_TOKEN: ${{ secrets.CONFLUENCE_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          SONARQUBE_URL: ${{ secrets.SONARQUBE_URL }}
+          SONARQUBE_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+          DRY_RUN: ${{ env.DRY_RUN }}
+        run: python scripts/wf1_auditoria_requisitos.py
+
+      - name: Subir reportes como artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: wf1-reportes
+          path: sqa/reportes/wf1_summary.json
+          if-no-files-found: warn
