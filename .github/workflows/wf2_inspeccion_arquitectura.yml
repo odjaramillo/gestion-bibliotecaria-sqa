@@ -1,0 +1,55 @@
+name: WF2 — Inspeccion Arquitectonica y de Codigo
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'documentacion/**'
+      - 'src/**'
+      - 'biblioteca-frontend/src/**'
+      - 'scripts/wf2_inspeccion_arquitectura.py'
+      - 'scripts/sqa_core/**'
+      - '.github/workflows/wf2_inspeccion_arquitectura.yml'
+      - 'requirements.txt'
+
+env:
+  DRY_RUN: true
+
+jobs:
+  wf2-inspeccion-arquitectura:
+    name: Ejecutar WF2 Inspeccion Arquitectonica
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Ejecutar WF2 Inspeccion Arquitectonica
+        env:
+          JIRA_SERVER: ${{ secrets.JIRA_SERVER }}
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          CONFLUENCE_URL: ${{ secrets.CONFLUENCE_URL }}
+          CONFLUENCE_USER: ${{ secrets.CONFLUENCE_USER }}
+          CONFLUENCE_TOKEN: ${{ secrets.CONFLUENCE_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          SONARQUBE_URL: ${{ secrets.SONARQUBE_URL }}
+          SONARQUBE_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+          DRY_RUN: ${{ env.DRY_RUN }}
+        run: python scripts/wf2_inspeccion_arquitectura.py
+
+      - name: Subir reportes como artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: wf2-reportes
+          path: sqa/reportes/wf2_summary.json
+          if-no-files-found: warn
