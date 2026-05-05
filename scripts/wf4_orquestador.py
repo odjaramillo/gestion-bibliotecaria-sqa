@@ -7,10 +7,10 @@ lee resumenes de workflows upstream (WF1, WF2, WF3) y genera
 reporte Markdown consolidado. En modo dry_run NO crea tickets
 reales en Jira ni paginas en Confluence.
 
-El encadenamiento con WF1/WF2/WF3 se realiza principalmente
-desde GitHub Actions (workflow_run/manual). WF4 consume los
-*_summary.json generados por los workflows upstream para
-consolidar el estado del pipeline SQA en su reporte.
+Cuando WF4_ORCHESTRATE_UPSTREAM=true, WF4 ejecuta secuencialmente
+WF1, WF2 y WF3 antes de leer sus resumenes y generar el reporte.
+Esto permite un modo de orquestacion local ademas del
+encadenamiento via GitHub Actions (workflow_run/manual).
 
 Compatible con Python 3.10+.
 """
@@ -27,6 +27,9 @@ from pathlib import Path
 from typing import Any
 
 from scripts.sqa_core.config import SQAConfig, load_config
+from scripts.wf1_auditoria_requisitos import WF1AuditoriaRequisitos
+from scripts.wf2_inspeccion_arquitectura import WF2InspeccionArquitectura
+from scripts.wf3_generacion_pruebas import WF3GeneracionPruebas
 
 # ---------------------------------------------------------------------------
 # Logging
@@ -61,6 +64,45 @@ CODE_PATTERNS: dict[str, str] = {
 }
 
 UPSTREAM_WORKFLOWS: tuple[str, ...] = ("wf1", "wf2", "wf3")
+
+WF4_ORCHESTRATE_UPSTREAM: bool = os.getenv(
+    "WF4_ORCHESTRATE_UPSTREAM", "false"
+).lower() in ("1", "true", "yes", "on")
+
+
+# ---------------------------------------------------------------------------
+# Upstream Runner
+# ---------------------------------------------------------------------------
+class UpstreamRunner:
+    """Ejecuta workflows upstream (WF1, WF2, WF3) en secuencia."""
+
+    def __init__(self, config: SQAConfig | None = None) -> None:
+        self.config = config
+
+    def run_all(self) -> dict[str, str]:
+        """Ejecuta WF1, WF2, WF3 en secuencia y retorna estados."""
+        results: dict[str, str] = {}
+        cfg = self.config if self.config is not None else _default_config()
+        workflows: tuple[tuple[str, type], ...] = (
+            ("wf1", WF1AuditoriaRequisitos),
+            ("wf2", WF2InspeccionArquitectura),
+            ("wf3", WF3GeneracionPruebas),
+        )
+        for name, cls in workflows:
+            try:
+                logger.info("[ORQUESTAR] Ejecutando %s...", name.upper())
+                instance = cls(cfg)
+                summary_path = instance.run()
+                results[name] = "executed"
+                logger.info(
+                    "[ORQUESTAR] %s completado: %s", name.upper(), summary_path
+                )
+            except Exception as exc:
+                logger.error(
+                    "[ORQUESTAR] Error ejecutando %s: %s", name.upper(), exc
+                )
+                results[name] = f"error: {exc}"
+        return results
 
 
 # ---------------------------------------------------------------------------
@@ -429,8 +471,17 @@ class ReportGenerator:
 class WF4Orchestrator:
     """Orquesta el flujo completo del Workflow 4."""
 
-    def __init__(self, config: SQAConfig | None = None) -> None:
+    def __init__(
+        self,
+        config: SQAConfig | None = None,
+        orchestrate_upstream: bool | None = None,
+    ) -> None:
         self.config = config
+        self.orchestrate_upstream = (
+            orchestrate_upstream
+            if orchestrate_upstream is not None
+            else WF4_ORCHESTRATE_UPSTREAM
+        )
         project_root = config.project_root if config else PROJECT_ROOT
         documentacion_dir = config.documentacion_dir if config else DOCUMENTACION_DIR
         reportes_dir = config.reportes_dir if config else REPORTES_DIR
@@ -454,6 +505,11 @@ class WF4Orchestrator:
             logger.info("[DRY RUN] No se crearan tickets en Jira ni paginas en Confluence")
         else:
             logger.info("[PRODUCCION] Sincronizacion con Jira/Confluence habilitada")
+
+        # 0. Ejecutar workflows upstream si esta habilitado
+        if self.orchestrate_upstream:
+            runner = UpstreamRunner(config=self.config)
+            runner.run_all()
 
         # 1. Detectar artefactos
         artifacts = self.detector.detect()

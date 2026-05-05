@@ -24,6 +24,7 @@ from scripts.wf4_orquestador import (
     ArtifactDetector,
     DetectedArtifact,
     ReportGenerator,
+    UpstreamRunner,
     UpstreamSummaryReader,
     WF4Orchestrator,
 )
@@ -75,6 +76,93 @@ class TestUpstreamSummaryReader(unittest.TestCase):
             result = reader.read_all()
 
             self.assertEqual(result, {})
+
+
+class TestUpstreamRunner(unittest.TestCase):
+    """Tests for UpstreamRunner orchestration."""
+
+    def test_runs_wf1_wf2_wf3_in_sequence(self):
+        with unittest.mock.patch(
+            "scripts.wf4_orquestador.WF1AuditoriaRequisitos"
+        ) as mock_wf1, unittest.mock.patch(
+            "scripts.wf4_orquestador.WF2InspeccionArquitectura"
+        ) as mock_wf2, unittest.mock.patch(
+            "scripts.wf4_orquestador.WF3GeneracionPruebas"
+        ) as mock_wf3:
+            mock_wf1.return_value.run.return_value = Path("/tmp/wf1_summary.json")
+            mock_wf2.return_value.run.return_value = Path("/tmp/wf2_summary.json")
+            mock_wf3.return_value.run.return_value = Path("/tmp/wf3_summary.json")
+
+            config = MagicMock()
+            runner = UpstreamRunner(config)
+            results = runner.run_all()
+
+            mock_wf1.assert_called_once_with(config)
+            mock_wf2.assert_called_once_with(config)
+            mock_wf3.assert_called_once_with(config)
+            self.assertEqual(results, {"wf1": "executed", "wf2": "executed", "wf3": "executed"})
+
+    def test_passes_config_to_upstream_workflows(self):
+        with unittest.mock.patch(
+            "scripts.wf4_orquestador.WF1AuditoriaRequisitos"
+        ) as mock_wf1, unittest.mock.patch(
+            "scripts.wf4_orquestador.WF2InspeccionArquitectura"
+        ) as mock_wf2, unittest.mock.patch(
+            "scripts.wf4_orquestador.WF3GeneracionPruebas"
+        ) as mock_wf3:
+            mock_wf1.return_value.run.return_value = Path("/tmp/wf1_summary.json")
+            mock_wf2.return_value.run.return_value = Path("/tmp/wf2_summary.json")
+            mock_wf3.return_value.run.return_value = Path("/tmp/wf3_summary.json")
+
+            config = MagicMock()
+            runner = UpstreamRunner(config)
+            runner.run_all()
+
+            self.assertEqual(mock_wf1.call_args[0][0], config)
+            self.assertEqual(mock_wf2.call_args[0][0], config)
+            self.assertEqual(mock_wf3.call_args[0][0], config)
+
+    def test_logs_and_skips_on_upstream_exception(self):
+        with unittest.mock.patch(
+            "scripts.wf4_orquestador.WF1AuditoriaRequisitos"
+        ) as mock_wf1, unittest.mock.patch(
+            "scripts.wf4_orquestador.WF2InspeccionArquitectura"
+        ) as mock_wf2, unittest.mock.patch(
+            "scripts.wf4_orquestador.WF3GeneracionPruebas"
+        ) as mock_wf3:
+            mock_wf1.return_value.run.side_effect = Exception("WF1 crashed")
+            mock_wf2.return_value.run.return_value = Path("/tmp/wf2_summary.json")
+            mock_wf3.return_value.run.return_value = Path("/tmp/wf3_summary.json")
+
+            config = MagicMock()
+            runner = UpstreamRunner(config)
+            results = runner.run_all()
+
+            self.assertTrue(results["wf1"].startswith("error:"))
+            self.assertEqual(results["wf2"], "executed")
+            self.assertEqual(results["wf3"], "executed")
+            mock_wf2.assert_called_once()
+            mock_wf3.assert_called_once()
+
+    def test_uses_default_config_when_none(self):
+        with unittest.mock.patch(
+            "scripts.wf4_orquestador.WF1AuditoriaRequisitos"
+        ) as mock_wf1, unittest.mock.patch(
+            "scripts.wf4_orquestador.WF2InspeccionArquitectura"
+        ) as mock_wf2, unittest.mock.patch(
+            "scripts.wf4_orquestador.WF3GeneracionPruebas"
+        ) as mock_wf3:
+            mock_wf1.return_value.run.return_value = Path("/tmp/wf1_summary.json")
+            mock_wf2.return_value.run.return_value = Path("/tmp/wf2_summary.json")
+            mock_wf3.return_value.run.return_value = Path("/tmp/wf3_summary.json")
+
+            runner = UpstreamRunner(config=None)
+            runner.run_all()
+
+            config_arg = mock_wf1.call_args[0][0]
+            self.assertTrue(hasattr(config_arg, "project_root"))
+            self.assertTrue(hasattr(config_arg, "dry_run"))
+            self.assertTrue(config_arg.dry_run)
 
 
 class TestReportGeneratorUpstream(unittest.TestCase):
@@ -293,6 +381,48 @@ class TestWF4OrchestratorIntegration(unittest.TestCase):
             orch = WF4Orchestrator(config)
             result = orch.run()
             self.assertIsNone(result)
+
+    def test_orchestrator_runs_upstream_when_orchestrate_enabled(self):
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            orch = self._make_orchestrator(tmpdir)
+            reportes_dir = orch.config.reportes_dir
+
+            with unittest.mock.patch(
+                "scripts.wf4_orquestador.UpstreamRunner"
+            ) as mock_runner_cls:
+                mock_runner = MagicMock()
+                mock_runner.run_all.return_value = {
+                    "wf1": "executed",
+                    "wf2": "executed",
+                    "wf3": "executed",
+                }
+                mock_runner_cls.return_value = mock_runner
+
+                orch = WF4Orchestrator(orch.config, orchestrate_upstream=True)
+                report_path = orch.run()
+
+                mock_runner_cls.assert_called_once_with(config=orch.config)
+                mock_runner.run_all.assert_called_once()
+                self.assertIsNotNone(report_path)
+                self.assertTrue(report_path.exists())
+
+    def test_orchestrator_skips_upstream_when_orchestrate_disabled(self):
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            orch = self._make_orchestrator(tmpdir)
+
+            with unittest.mock.patch(
+                "scripts.wf4_orquestador.UpstreamRunner"
+            ) as mock_runner_cls:
+                orch = WF4Orchestrator(orch.config, orchestrate_upstream=False)
+                report_path = orch.run()
+
+                mock_runner_cls.assert_not_called()
+                self.assertIsNotNone(report_path)
+                self.assertTrue(report_path.exists())
 
 
 if __name__ == "__main__":
