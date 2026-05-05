@@ -1,5 +1,5 @@
 jira>=3.8.0
 google-generativeai>=0.8.0
-
-# Workflow 4 — Orquestador de Quality Gates (futuro)
-# PyMuPDF>=1.24.0  # Descomentar en producción si se extrae texto de PDFs
+PyMuPDF>=1.24.0
+requests>=2.32.0
+pytest>=8.0.0
