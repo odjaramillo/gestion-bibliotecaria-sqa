@@ -36,3 +36,4 @@ build/
 .agents/
 __pycache__/
 *.pyc
+skills-lock.json

@@ -1,0 +1,259 @@
+"""Workflow 2: Inspeccion Arquitectonica y de Codigo (DAS + SonarQube).
+
+Evalua el Documento de Arquitectura de Software (C4) y la calidad del
+codigo fuente mediante SonarQube, genera un reporte de Deuda Tecnica
+en Confluence, y crea tareas en Jira.
+"""
+from __future__ import annotations
+
+import json
+import logging
+import sys
+from pathlib import Path
+from typing import Any
+
+from scripts.sqa_core.clients import ConfluenceClient, GeminiClient, JiraClient, SonarQubeClient
+from scripts.sqa_core.config import SQAConfig, load_config
+from scripts.sqa_core.pdf_text import extract_text_from_pdf
+from scripts.sqa_core.reporting import render_markdown_report, write_summary_json
+
+logger = logging.getLogger("wf2_inspeccion_arquitectura")
+
+ARCHITECTURE_PROMPT: str = (
+    "Eres un arquitecto SQA experto. Analiza el siguiente texto extraido "
+    "de un Documento de Arquitectura de Software (DAS) basado en el modelo C4 "
+    "y los hallazgos de SonarQube proporcionados. Evalua la consistencia entre "
+    "la arquitectura documentada y el codigo real, e identifica deuda tecnica. "
+    "Devuelve ESTRICTAMENTE un array JSON con objetos que tengan estos campos: "
+    '{"id":"string","severity":"Alta|Media|Baja","type":"task|bug",'
+    '"description":"string","component":"string"}. '
+    "Si no hay hallazgos, devuelve un array vacio []."
+)
+
+CONFLUENCE_SPACE: str = "SQA"
+CONFLUENCE_PARENT: str | None = None
+SONAR_PROJECT_KEY: str = "gestion-bibliotecaria-sqa"
+DAS_TEXT_MAX_LEN: int = 8000
+SONAR_ISSUES_MAX_LEN: int = 4000
+SONAR_MEASURES_MAX_LEN: int = 2000
+SONAR_METRICS: list[str] = [
+    "code_smells",
+    "bugs",
+    "vulnerabilities",
+    "coverage",
+    "duplicated_lines_density",
+]
+
+
+class WF2InspeccionArquitectura:
+    """Orquesta la inspeccion arquitectonica y de codigo."""
+
+    def __init__(self, config: SQAConfig) -> None:
+        self.config = config
+        self.gemini = GeminiClient(config)
+        self.confluence = ConfluenceClient(config)
+        self.jira = JiraClient(config)
+        self.sonar = SonarQubeClient(config)
+
+    def run(self) -> Path:
+        """Ejecuta el flujo completo de WF2."""
+        logger.info("=== WF2 Inspeccion Arquitectonica — Inicio ===")
+
+        das_pdf = self._detect_das_pdf()
+        if not das_pdf:
+            logger.warning("No se encontro PDF DAS en documentacion/")
+            return self._write_summary(
+                status="failed",
+                artifacts=[],
+                page_id=None,
+                jira_keys=[],
+                findings=[],
+            )
+
+        artifact = str(das_pdf)
+
+        try:
+            das_text = extract_text_from_pdf(das_pdf)
+        except Exception as exc:
+            logger.error("Error extrayendo texto de DAS: %s", exc)
+            return self._write_summary(
+                status="failed",
+                artifacts=[artifact],
+                page_id=None,
+                jira_keys=[],
+                findings=[],
+            )
+
+        sonar_data: dict[str, Any] = {}
+        try:
+            sonar_data = self._fetch_sonar_data()
+        except Exception as exc:
+            logger.error("Error conectando con SonarQube: %s", exc)
+            return self._write_summary(
+                status="failed",
+                artifacts=[artifact],
+                page_id=None,
+                jira_keys=[],
+                findings=[],
+            )
+
+        try:
+            findings = self._analyze_with_gemini(das_text, sonar_data)
+        except Exception as exc:
+            logger.error("Error en analisis Gemini: %s", exc)
+            return self._write_summary(
+                status="failed",
+                artifacts=[artifact],
+                page_id=None,
+                jira_keys=[],
+                findings=[],
+            )
+
+        page_id: str | None = None
+        jira_keys: list[str] = []
+
+        if not self.config.dry_run:
+            page_id = self._publish_tech_debt_report(artifact, findings)
+            jira_keys = self._create_jira_tasks(findings)
+        else:
+            logger.info("[DRY RUN] Omitiendo creacion en Confluence/Jira")
+
+        status = "success" if not findings else "partial"
+        return self._write_summary(
+            status=status,
+            artifacts=[artifact],
+            page_id=page_id,
+            jira_keys=jira_keys,
+            findings=findings,
+        )
+
+    def _detect_das_pdf(self) -> Path | None:
+        """Detecta el archivo DAS en documentacion/."""
+        if self.config.documentacion_dir.exists():
+            for pdf in sorted(self.config.documentacion_dir.glob("*.pdf")):
+                if "DAS" in pdf.name.upper():
+                    return pdf
+        return None
+
+    def _fetch_sonar_data(self) -> dict[str, Any]:
+        """Recupera issues y medidas desde SonarQube."""
+        logger.info("Consultando SonarQube para proyecto %s", SONAR_PROJECT_KEY)
+        issues = self.sonar.get_issues(SONAR_PROJECT_KEY)
+        measures = self.sonar.get_measures(SONAR_PROJECT_KEY, SONAR_METRICS)
+        return {"issues": issues, "measures": measures}
+
+    def _analyze_with_gemini(
+        self, das_text: str, sonar_data: dict[str, Any]
+    ) -> list[dict[str, Any]]:
+        """Envia DAS + SonarQube a Gemini y parsea hallazgos."""
+        prompt = (
+            f"{ARCHITECTURE_PROMPT}\n\n"
+            f"--- DAS ---\n{das_text[:DAS_TEXT_MAX_LEN]}\n\n"
+            f"--- SonarQube Issues ---\n{json.dumps(sonar_data.get('issues', {}), ensure_ascii=False)[:SONAR_ISSUES_MAX_LEN]}\n\n"
+            f"--- SonarQube Measures ---\n{json.dumps(sonar_data.get('measures', {}), ensure_ascii=False)[:SONAR_MEASURES_MAX_LEN]}"
+        )
+        raw = self.gemini.generate(prompt)
+        data = json.loads(raw)
+        findings: list[dict[str, Any]] = []
+        if isinstance(data, list):
+            for item in data:
+                if isinstance(item, dict):
+                    findings.append(item)
+        return findings
+
+    def _publish_tech_debt_report(
+        self,
+        artifact: str,
+        findings: list[dict[str, Any]],
+    ) -> str | None:
+        """Publica el Reporte de Deuda Tecnica en Confluence."""
+        title = f"Deuda Tecnica — {Path(artifact).name}"
+        body = render_markdown_report(
+            workflow="wf2",
+            status="success" if not findings else "partial",
+            artifacts=[artifact],
+            findings=findings,
+        )
+        try:
+            existing = self.confluence.get_page_by_title(CONFLUENCE_SPACE, title)
+            if existing:
+                logger.info("Actualizando pagina existente %s", existing["id"])
+                version = existing.get("version", {}).get("number", 1)
+                result = self.confluence.update_page(
+                    existing["id"], version, title, body
+                )
+                return result.get("id")
+            parent = CONFLUENCE_PARENT
+            result = self.confluence.create_page(CONFLUENCE_SPACE, parent, title, body)
+            return result.get("id")
+        except Exception as exc:
+            logger.error("Error publicando en Confluence: %s", exc)
+            return None
+
+    def _create_jira_tasks(self, findings: list[dict[str, Any]]) -> list[str]:
+        """Crea tareas en Jira para cada hallazgo de severidad Alta/Media."""
+        keys: list[str] = []
+        for finding in findings:
+            if finding.get("severity") not in ("Alta", "Media"):
+                continue
+            summary = f"[WF2] {finding.get('id', 'ARCH-??')} — {finding.get('component', 'Sistema')}"
+            description = (
+                f"{finding.get('description', 'Sin descripcion')}\n\n"
+                f"Componente: {finding.get('component', 'N/A')}"
+            )
+            try:
+                issue = self.jira.create_issue({
+                    "project": {"key": "SQA"},
+                    "summary": summary,
+                    "description": description,
+                    "issuetype": {"name": "Task"},
+                })
+                keys.append(issue.key)
+                logger.info("Tarea creada: %s", issue.key)
+            except Exception as exc:
+                logger.error("Error creando tarea en Jira: %s", exc)
+        return keys
+
+    def _write_summary(
+        self,
+        status: str,
+        artifacts: list[str],
+        page_id: str | None,
+        jira_keys: list[str],
+        findings: list[dict[str, Any]],
+    ) -> Path:
+        """Escribe el summary JSON en sqa/reportes/."""
+        path = self.config.reportes_dir / "wf2_summary.json"
+        return write_summary_json(
+            path=path,
+            workflow="wf2",
+            status=status,
+            source_artifacts=artifacts,
+            confluence_page_id=page_id,
+            jira_keys=jira_keys,
+            findings=findings,
+        )
+
+
+def main() -> None:
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(name)s — %(message)s",
+    )
+    try:
+        config = load_config()
+    except EnvironmentError as exc:
+        logger.critical("Error de configuracion: %s", exc)
+        sys.exit(1)
+
+    wf2 = WF2InspeccionArquitectura(config)
+    try:
+        summary_path = wf2.run()
+        print(f"\n[OK] WF2 completado. Summary: {summary_path}")
+    except Exception as exc:
+        logger.critical("Error fatal en WF2: %s", exc)
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
