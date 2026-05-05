@@ -1,0 +1,127 @@
+{
+  "artifact_type": "PAC",
+  "standard": "IEEE 730-2014",
+  "version": "1.0",
+  "items": [
+    {
+      "id": "PAC-01",
+      "category": "Objetivos de Calidad (ISO/IEC 25010)",
+      "description": "¿Se definen explícitamente los atributos de calidad a evaluar?",
+      "verification_type": "Boolean",
+      "evidence_location": "Sección 'Objetivos de Calidad'",
+      "standard_reference": "730-5.1.1"
+    },
+    {
+      "id": "PAC-02",
+      "category": "Objetivos de Calidad (ISO/IEC 25010)",
+      "description": "¿Cada atributo tiene sub-características medibles?",
+      "verification_type": "Boolean",
+      "evidence_location": "Ej: Mantenibilidad → Capacidad para ser probado, Reusabilidad, Analizabilidad",
+      "standard_reference": "730-5.1.2"
+    },
+    {
+      "id": "PAC-03",
+      "category": "Objetivos de Calidad (ISO/IEC 25010)",
+      "description": "¿Los objetivos de calidad del producto están diferenciados de los del proceso?",
+      "verification_type": "Boolean",
+      "evidence_location": "ISO 25010 vs IEEE 730 / ISO 12207",
+      "standard_reference": "730-5.1.3"
+    },
+    {
+      "id": "PAC-04",
+      "category": "Gestión y Organización",
+      "description": "¿Están definidos los roles y responsabilidades del equipo SQA?",
+      "verification_type": "Boolean",
+      "evidence_location": "Alberto (Responsable), Oscar (Tecnología), Daniel (Funcional), Edwin (Métricas), Samuel (Escriba)",
+      "standard_reference": "730-5.2.1"
+    },
+    {
+      "id": "PAC-05",
+      "category": "Gestión y Organización",
+      "description": "¿Se describe la estrategia de validación (¿construimos el sistema correcto?)?",
+      "verification_type": "Boolean",
+      "evidence_location": "Validación vs Verificación",
+      "standard_reference": "730-5.2.2"
+    },
+    {
+      "id": "PAC-06",
+      "category": "Gestión y Organización",
+      "description": "¿Se describe la estrategia de verificación (¿construimos correctamente?)?",
+      "verification_type": "Boolean",
+      "evidence_location": "Pruebas estáticas + dinámicas",
+      "standard_reference": "730-5.2.3"
+    },
+    {
+      "id": "PAC-07",
+      "category": "Documentación, Estándares y Guías",
+      "description": "¿El PAC lista los artefactos a auditar (ERS, DAS, Código)?",
+      "verification_type": "Boolean",
+      "evidence_location": "Inventario documental",
+      "standard_reference": "730-5.3.1"
+    },
+    {
+      "id": "PAC-08",
+      "category": "Documentación, Estándares y Guías",
+      "description": "¿Se especifica qué estándar se aplica a cada artefacto?",
+      "verification_type": "Boolean",
+      "evidence_location": "Ej: 29148 para ERS, 42010 para DAS, 25010 para Código",
+      "standard_reference": "730-5.3.2"
+    },
+    {
+      "id": "PAC-09",
+      "category": "Documentación, Estándares y Guías",
+      "description": "¿Se declaran las herramientas tecnológicas para cada fase?",
+      "verification_type": "Boolean",
+      "evidence_location": "Ver sqa/PACS-Fase2-Herramientas.md",
+      "standard_reference": "730-5.3.3"
+    },
+    {
+      "id": "PAC-10",
+      "category": "Métricas y Control Estadístico",
+      "description": "¿Cada métrica tiene nombre, definición, objetivo, fórmula y responsable?",
+      "verification_type": "Boolean",
+      "evidence_location": "Densidad de Defectos = Defectos / Tamaño (KLOC)",
+      "standard_reference": "730-5.4.1"
+    },
+    {
+      "id": "PAC-11",
+      "category": "Métricas y Control Estadístico",
+      "description": "¿Se incluye Cobertura de Revisiones?",
+      "verification_type": "Boolean",
+      "evidence_location": "Fórmula: (Artefactos revisados / Artefactos planificados) × 100",
+      "standard_reference": "730-5.4.2"
+    },
+    {
+      "id": "PAC-12",
+      "category": "Métricas y Control Estadístico",
+      "description": "¿Se incluye Densidad de Defectos con unidad de medida?",
+      "verification_type": "Boolean",
+      "evidence_location": "Debe especificar 'Defectos por KLOC' o 'Defectos por Punto de Función'",
+      "standard_reference": "730-5.4.3"
+    },
+    {
+      "id": "PAC-13",
+      "category": "Ejecución y Cronograma",
+      "description": "¿Existe un vínculo al Plan de Pruebas (PP)?",
+      "verification_type": "Boolean",
+      "evidence_location": "Fase 2: Pruebas Dinámicas",
+      "standard_reference": "730-5.5.1"
+    },
+    {
+      "id": "PAC-14",
+      "category": "Ejecución y Cronograma",
+      "description": "¿El cronograma mapea actividades por iteración?",
+      "verification_type": "Boolean",
+      "evidence_location": "Iteraciones del proyecto",
+      "standard_reference": "730-5.5.2"
+    },
+    {
+      "id": "PAC-15",
+      "category": "Ejecución y Cronograma",
+      "description": "¿Se define el proceso de gestión de defectos (tickets en Jira)?",
+      "verification_type": "Boolean",
+      "evidence_location": "Workflow de resolución",
+      "standard_reference": "730-5.5.3"
+    }
+  ]
+}

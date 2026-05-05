@@ -1,0 +1,135 @@
+{
+  "artifact_type": "CÓDIGO",
+  "standard": "ISO/IEC 25010",
+  "version": "1.0",
+  "items": [
+    {
+      "id": "COD-01",
+      "category": "Mantenibilidad — Análisis Estático",
+      "description": "¿El backend sigue el patrón de capas declarado en el DAS?",
+      "verification_type": "Boolean",
+      "evidence_location": "PARCIAL: Estructura de paquetes correcta, pero Controller.java maneja 6 dominios en un solo archivo (458 líneas) — viola SRP",
+      "standard_reference": "25010-Mantenibilidad"
+    },
+    {
+      "id": "COD-02",
+      "category": "Mantenibilidad — Análisis Estático",
+      "description": "¿La inyección de dependencias usa constructor (recomendación Spring)?",
+      "verification_type": "Boolean",
+      "evidence_location": "DEFECTO: Usa @Autowired por campo en lugar de constructor",
+      "standard_reference": "25010-Mantenibilidad"
+    },
+    {
+      "id": "COD-03",
+      "category": "Mantenibilidad — Análisis Estático",
+      "description": "¿Las clases de servicio tienen una única responsabilidad?",
+      "verification_type": "Boolean",
+      "evidence_location": "PARCIAL: Cada servicio maneja un dominio, pero Controller monolítico rompe la separación",
+      "standard_reference": "25010-Mantenibilidad"
+    },
+    {
+      "id": "COD-04",
+      "category": "Mantenibilidad — Análisis Estático",
+      "description": "¿Los DTOs se usan para controlar exposición de datos?",
+      "verification_type": "Boolean",
+      "evidence_location": "Solo 3 DTOs: ComentarioResenaRequest, PrestamoRequest, ResenaRequest",
+      "standard_reference": "25010-Mantenibilidad"
+    },
+    {
+      "id": "COD-05",
+      "category": "Mantenibilidad — Análisis Estático",
+      "description": "¿El código tiene convenciones de nomenclatura consistentes?",
+      "verification_type": "Boolean",
+      "evidence_location": "DEFECTO: Clase principal duplicada '__1.spring_boot.GestionBibliotecariaApplication'",
+      "standard_reference": "25010-Mantenibilidad"
+    },
+    {
+      "id": "COD-06",
+      "category": "Mantenibilidad — Análisis Estático",
+      "description": "¿El pom.xml está limpio (sin dependencias duplicadas)?",
+      "verification_type": "Boolean",
+      "evidence_location": "DEFECTO: 'spring-boot-starter-data-jpa' aparece DOS veces (líneas 43 y 65)",
+      "standard_reference": "25010-Mantenibilidad"
+    },
+    {
+      "id": "COD-07",
+      "category": "Seguridad — Análisis Estático",
+      "description": "¿Las contraseñas se hashean antes de persistir?",
+      "verification_type": "Boolean",
+      "evidence_location": "UsuarioService usa passwordEncoder.encode()",
+      "standard_reference": "25010-Seguridad"
+    },
+    {
+      "id": "COD-08",
+      "category": "Seguridad — Análisis Estático",
+      "description": "¿El backend valida la complejidad de contraseña antes de hashear?",
+      "verification_type": "Boolean",
+      "evidence_location": "DEFECTO: ERS exige 8 caracteres + mayúscula + número + símbolo. Backend NO valida esto.",
+      "standard_reference": "25010-Seguridad"
+    },
+    {
+      "id": "COD-09",
+      "category": "Seguridad — Análisis Estático",
+      "description": "¿El frontend valida la complejidad de contraseña antes de enviar?",
+      "verification_type": "Boolean",
+      "evidence_location": "DEFECTO: RegistroUsuario.vue línea 104 tiene la validación COMENTADA: // if (password.length < 8)...",
+      "standard_reference": "25010-Seguridad"
+    },
+    {
+      "id": "COD-10",
+      "category": "Seguridad — Análisis Estático",
+      "description": "¿Las credenciales de base de datos están externalizadas?",
+      "verification_type": "Boolean",
+      "evidence_location": "DEFECTO: application.properties tiene 'password=admin' hardcodeado",
+      "standard_reference": "25010-Seguridad"
+    },
+    {
+      "id": "COD-11",
+      "category": "Seguridad — Análisis Estático",
+      "description": "¿SecurityConfig protege endpoints sensibles por rol?",
+      "verification_type": "Boolean",
+      "evidence_location": "PARCIAL: DELETE /api/libros protegido, pero POST /api/libros depende de lógica de negocio, no de seguridad",
+      "standard_reference": "25010-Seguridad"
+    },
+    {
+      "id": "COD-12",
+      "category": "Seguridad — Análisis Estático",
+      "description": "¿Hay manejo global de excepciones (@ControllerAdvice)?",
+      "verification_type": "Boolean",
+      "evidence_location": "DEFECTO: No existe — riesgo de exponer stack traces",
+      "standard_reference": "25010-Seguridad"
+    },
+    {
+      "id": "COD-13",
+      "category": "Fiabilidad — Análisis Estático",
+      "description": "¿El código captura excepciones en operaciones críticas (acceso a DB, parsing)?",
+      "verification_type": "Boolean",
+      "evidence_location": "DEFECTO: PrestamoService hace LocalDate.parse(fechaPrestamoStr) sin try-catch",
+      "standard_reference": "25010-Fiabilidad"
+    },
+    {
+      "id": "COD-14",
+      "category": "Fiabilidad — Análisis Estático",
+      "description": "¿Hay mecanismos de recuperación o fallback documentados en código?",
+      "verification_type": "Boolean",
+      "evidence_location": "DEFECTO: No hay retry, circuit breaker, ni fallback",
+      "standard_reference": "25010-Fiabilidad"
+    },
+    {
+      "id": "COD-15",
+      "category": "Trazabilidad",
+      "description": "¿Cada endpoint REST corresponde a una funcionalidad del ERS?",
+      "verification_type": "Boolean",
+      "evidence_location": "PARCIAL: Algunos endpoints no tienen HU directa (ej. edición de perfil)",
+      "standard_reference": "29148-9.3"
+    },
+    {
+      "id": "COD-16",
+      "category": "Trazabilidad",
+      "description": "¿Cada componente Vue se vincula con una historia del ERS?",
+      "verification_type": "Boolean",
+      "evidence_location": "PARCIAL: DAS lista asociaciones, pero algunos componentes como InicioSesion.vue no tienen HU asignada",
+      "standard_reference": "29148-9.3"
+    }
+  ]
+}

@@ -1,0 +1,111 @@
+{
+  "artifact_type": "ERS",
+  "standard": "ISO/IEC/IEEE 29148:2018",
+  "version": "1.0",
+  "items": [
+    {
+      "id": "ERS-01",
+      "category": "Control de Documento",
+      "description": "¿El documento tiene control de versiones con histórico?",
+      "verification_type": "Boolean",
+      "evidence_location": "Histórico v1.0→v1.1→v1.2 — Página 2",
+      "standard_reference": "29148-6.3.1"
+    },
+    {
+      "id": "ERS-02",
+      "category": "Control de Documento",
+      "description": "¿La versión en portada coincide con la del histórico?",
+      "verification_type": "Boolean",
+      "evidence_location": "DEFECTO: Portada dice 'Versión: 1.1', archivo y histórico dicen 1.2 — Página 1 vs Página 2",
+      "standard_reference": "29148-6.3.2"
+    },
+    {
+      "id": "ERS-03",
+      "category": "Control de Documento",
+      "description": "¿Cada historia tiene identificación única?",
+      "verification_type": "Boolean",
+      "evidence_location": "HU1 a HU5 numeradas — Páginas 4-8",
+      "standard_reference": "29148-6.3.3"
+    },
+    {
+      "id": "ERS-04",
+      "category": "Estructura de Historias de Usuario",
+      "description": "¿Cada historia tiene formato estructurado (Historia + Conversación + Criterios)?",
+      "verification_type": "Boolean",
+      "evidence_location": "5 historias con formato 3C — Páginas 4-8",
+      "standard_reference": "29148-7.1.1"
+    },
+    {
+      "id": "ERS-05",
+      "category": "Estructura de Historias de Usuario",
+      "description": "¿La historia declara el actor (quién), la acción (qué) y el beneficio (por qué)?",
+      "verification_type": "Boolean",
+      "evidence_location": "'Como [rol] quiero [acción] para [beneficio]' — Todas las HUs",
+      "standard_reference": "29148-7.1.2"
+    },
+    {
+      "id": "ERS-06",
+      "category": "Estructura de Historias de Usuario",
+      "description": "¿La conversación incluye escenarios de uso claros?",
+      "verification_type": "Boolean",
+      "evidence_location": "Todas las HUs incluyen escenario — Páginas 4-8",
+      "standard_reference": "29148-7.1.3"
+    },
+    {
+      "id": "ERS-07",
+      "category": "Estructura de Historias de Usuario",
+      "description": "¿Las reglas de negocio son coherentes con los criterios de aceptación?",
+      "verification_type": "Boolean",
+      "evidence_location": "DEFECTO: HU5 — Regla dice 'una amonestación a la vez', criterio dice 'una o varias' — Página 8",
+      "standard_reference": "29148-7.1.4"
+    },
+    {
+      "id": "ERS-08",
+      "category": "Estructura de Historias de Usuario",
+      "description": "¿Los criterios de aceptación son exhaustivos (camino feliz + errores)?",
+      "verification_type": "Boolean",
+      "evidence_location": "HU1-HU4: cumplen. HU5: solo camino feliz — Páginas 4-8",
+      "standard_reference": "29148-7.1.5"
+    },
+    {
+      "id": "ERS-09",
+      "category": "Estructura de Historias de Usuario",
+      "description": "¿No hay redundancia exacta entre criterios de aceptación?",
+      "verification_type": "Boolean",
+      "evidence_location": "DEFECTO: HU3 — 'La contraseña se guarda de forma segura (hasheada)' repetido dos veces — Página 6",
+      "standard_reference": "29148-7.1.6"
+    },
+    {
+      "id": "ERS-10",
+      "category": "Estructura de Historias de Usuario",
+      "description": "¿Las dependencias están identificadas?",
+      "verification_type": "Boolean",
+      "evidence_location": "'Dependencias: Acceso a base de datos' — HU1, HU2, HU4",
+      "standard_reference": "29148-7.1.7"
+    },
+    {
+      "id": "ERS-11",
+      "category": "Requisitos Suplementarios",
+      "description": "¿Los requisitos suplementarios cubren todos los atributos de calidad definidos en el PAC?",
+      "verification_type": "Boolean",
+      "evidence_location": "DEFECTO: Solo 4 de 12+ sub-características: Operabilidad, Ausencia de fallos, Integridad, Capacidad para ser modificado — Página 9",
+      "standard_reference": "25010-4.1"
+    },
+    {
+      "id": "ERS-12",
+      "category": "Requisitos Suplementarios",
+      "description": "¿Cada requisito suplementario es medible/verificable?",
+      "verification_type": "Boolean",
+      "evidence_location": "DEFECTO: 'sin errores internos, bloqueos inesperados o corrupción de datos' (no medible) — Página 9",
+      "standard_reference": "25010-4.2"
+    },
+    {
+      "id": "ERS-13",
+      "category": "Requisitos Suplementarios",
+      "description": "¿Existe matriz de trazabilidad historias ↔ requisitos suplementarios?",
+      "verification_type": "Boolean",
+      "evidence_location": "DEFECTO: No existe — Documento completo",
+      "standard_reference": "29148-9.3"
+    }
+  ]
+}
