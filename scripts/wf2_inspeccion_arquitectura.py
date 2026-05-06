@@ -14,7 +14,8 @@ from typing import Any
 
 from scripts.sqa_core.clients import ConfluenceClient, GeminiClient, JiraClient, SonarQubeClient
 from scripts.sqa_core.config import SQAConfig, load_config
-from scripts.sqa_core.pdf_text import extract_text_from_pdf
+from scripts.sqa_core.image_analysis import DiagramType, ImageAnalyzer
+from scripts.sqa_core.pdf_text import extract_images_from_pdf, extract_page_texts_from_pdf, extract_text_from_pdf
 from scripts.sqa_core.reporting import render_markdown_report, write_summary_json
 
 logger = logging.getLogger("wf2_inspeccion_arquitectura")
@@ -107,7 +108,15 @@ class WF2InspeccionArquitectura:
                 page_id=None,
                 jira_keys=[],
                 findings=[],
+                visual_findings=[],
             )
+
+        visual_inputs = self._collect_visual_inputs(das_pdf, das_text)
+        visual_findings: list[dict[str, Any]] = []
+        try:
+            visual_findings = self._analyze_visuals(visual_inputs)
+        except Exception as exc:
+            logger.warning("Error en analisis visual (degradacion controlada): %s", exc)
 
         page_id: str | None = None
         jira_keys: list[str] = []
@@ -118,13 +127,17 @@ class WF2InspeccionArquitectura:
         else:
             logger.info("[DRY RUN] Omitiendo creacion en Confluence/Jira")
 
-        status = "success" if not findings else "partial"
+        has_issues = bool(findings) or bool(visual_findings)
+        status = "success" if not has_issues else "partial"
+        all_artifacts = [artifact] + [str(img[0]) for img in visual_inputs]
+
         return self._write_summary(
             status=status,
-            artifacts=[artifact],
+            artifacts=all_artifacts,
             page_id=page_id,
             jira_keys=jira_keys,
             findings=findings,
+            visual_findings=visual_findings,
         )
 
     def _detect_das_pdf(self) -> Path | None:
@@ -214,6 +227,103 @@ class WF2InspeccionArquitectura:
                 logger.error("Error creando tarea en Jira: %s", exc)
         return keys
 
+    def _collect_visual_inputs(
+        self,
+        pdf_path: Path,
+        das_text: str,
+    ) -> list[tuple[Path, DiagramType, str]]:
+        """Extrae imágenes del PDF y las clasifica para análisis visual."""
+        output_dir = self.config.project_root / "sqa" / "extracted_images"
+        try:
+            image_paths = extract_images_from_pdf(pdf_path, output_dir)
+        except Exception as exc:
+            logger.warning("Error extrayendo imágenes de %s: %s", pdf_path, exc)
+            return []
+
+        if not image_paths:
+            return []
+
+        page_texts = extract_page_texts_from_pdf(pdf_path)
+        inputs: list[tuple[Path, DiagramType, str]] = []
+        for img_path in image_paths:
+            page_num = 0
+            parts = img_path.stem.split("_")
+            for part in parts:
+                if part.startswith("page"):
+                    try:
+                        page_num = int(part.replace("page", ""))
+                    except ValueError:
+                        pass
+            page_text = page_texts.get(page_num, das_text[:500])
+            diagram_type = self._classify_diagram_type(img_path, page_text)
+            inputs.append((img_path, diagram_type, das_text[:1000]))
+        return inputs
+
+    def _classify_diagram_type(
+        self,
+        image_path: Path,
+        page_text: str,
+    ) -> DiagramType:
+        """Clasifica el tipo de diagrama por nombre de archivo o texto de página."""
+        name = image_path.name.lower()
+        text = page_text.lower()
+        if "context" in name or "contexto" in text:
+            return DiagramType.C4_CONTEXT
+        if "container" in name or "contenedor" in text:
+            return DiagramType.C4_CONTAINER
+        if "component" in name or "componente" in text:
+            return DiagramType.C4_COMPONENT
+        if "uml" in name or "clase" in text or "class" in text:
+            return DiagramType.UML_CLASS
+        if "wireframe" in name or "mockup" in text:
+            return DiagramType.WIREFRAME
+        return DiagramType.UNKNOWN
+
+    def _analyze_visuals(
+        self,
+        visual_inputs: list[tuple[Path, DiagramType, str]],
+    ) -> list[dict[str, Any]]:
+        """Ejecuta análisis visual sobre las imágenes extraídas."""
+        if not visual_inputs:
+            return []
+
+        if self.config.dry_run:
+            logger.info("[DRY RUN] Generando hallazgos visuales simulados")
+            return self._mock_visual_findings(visual_inputs)
+
+        analyzer = ImageAnalyzer(self.gemini)
+        results = analyzer.batch_analyze(visual_inputs)
+        findings: list[dict[str, Any]] = []
+        for img_path, visual_findings_list in results:
+            for vf in visual_findings_list:
+                findings.append({
+                    "id": vf.id,
+                    "diagram_type": vf.diagram_type.value,
+                    "description": vf.description,
+                    "severity": vf.severity,
+                    "page_reference": vf.page_reference,
+                    "evidence": vf.evidence,
+                    "source_image": str(img_path),
+                })
+        return findings
+
+    def _mock_visual_findings(
+        self,
+        visual_inputs: list[tuple[Path, DiagramType, str]],
+    ) -> list[dict[str, Any]]:
+        """Genera hallazgos visuales determinísticos para modo DRY_RUN."""
+        findings: list[dict[str, Any]] = []
+        for idx, (img_path, diagram_type, _ctx) in enumerate(visual_inputs, start=1):
+            findings.append({
+                "id": f"VIS-MOCK-{idx:03d}",
+                "diagram_type": diagram_type.value,
+                "description": f"[DRY RUN] Hallazgo simulado para {img_path.name}",
+                "severity": "Baja",
+                "page_reference": str(img_path),
+                "evidence": "Generado en modo dry_run",
+            })
+        return findings
+
     def _write_summary(
         self,
         status: str,
@@ -221,6 +331,7 @@ class WF2InspeccionArquitectura:
         page_id: str | None,
         jira_keys: list[str],
         findings: list[dict[str, Any]],
+        visual_findings: list[dict[str, Any]] | None = None,
     ) -> Path:
         """Escribe el summary JSON en sqa/reportes/."""
         path = self.config.reportes_dir / "wf2_summary.json"
@@ -232,6 +343,7 @@ class WF2InspeccionArquitectura:
             confluence_page_id=page_id,
             jira_keys=jira_keys,
             findings=findings,
+            visual_findings=visual_findings,
         )
 
 

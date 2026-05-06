@@ -309,6 +309,176 @@ class TestWF2InspeccionArquitectura(unittest.TestCase):
         args = mock_write_json.call_args[1]
         self.assertEqual(args["jira_keys"], [])
 
+    @patch("scripts.wf2_inspeccion_arquitectura.ImageAnalyzer")
+    @patch("scripts.wf2_inspeccion_arquitectura.extract_images_from_pdf")
+    @patch("scripts.wf2_inspeccion_arquitectura.extract_page_texts_from_pdf")
+    @patch("scripts.wf2_inspeccion_arquitectura.extract_text_from_pdf")
+    @patch("scripts.wf2_inspeccion_arquitectura.SonarQubeClient")
+    @patch("scripts.wf2_inspeccion_arquitectura.GeminiClient")
+    @patch("scripts.wf2_inspeccion_arquitectura.ConfluenceClient")
+    @patch("scripts.wf2_inspeccion_arquitectura.JiraClient")
+    @patch("scripts.wf2_inspeccion_arquitectura.write_summary_json")
+    def test_happy_path_with_visual_findings(
+        self,
+        mock_write_json,
+        mock_jira_cls,
+        mock_conf_cls,
+        mock_gemini_cls,
+        mock_sonar_cls,
+        mock_extract,
+        mock_page_texts,
+        mock_extract_images,
+        mock_analyzer_cls,
+    ):
+        mock_doc_dir = MagicMock()
+        mock_doc_dir.glob.return_value = [Path("documentacion/DAS.pdf")]
+        config = self._make_config(dry_run=False, documentacion_dir=mock_doc_dir)
+
+        mock_extract.return_value = "Diagrama C4 de contexto"
+        mock_sonar_cls.return_value.get_issues.return_value = {"issues": []}
+        mock_sonar_cls.return_value.get_measures.return_value = {"component": {"measures": []}}
+        mock_gemini_cls.return_value.generate.return_value = "[]"
+
+        fake_image = Path("sqa/extracted_images/DAS_page1_img1.png")
+        mock_extract_images.return_value = [fake_image]
+        mock_page_texts.return_value = {1: "Diagrama de contexto"}
+
+        mock_vf = MagicMock()
+        mock_vf.id = "VIS-001"
+        mock_vf.diagram_type.value = "c4_context"
+        mock_vf.description = "Hallazgo visual"
+        mock_vf.severity = "Alta"
+        mock_vf.page_reference = "page 1"
+        mock_vf.evidence = "evidencia"
+        mock_analyzer_cls.return_value.batch_analyze.return_value = [
+            (fake_image, [mock_vf])
+        ]
+
+        wf2 = WF2InspeccionArquitectura(config)
+        wf2.run()
+
+        mock_extract_images.assert_called_once()
+        args = mock_write_json.call_args[1]
+        self.assertIn("visual_findings", args)
+        self.assertTrue(len(args["visual_findings"]) > 0)
+        self.assertEqual(args["visual_findings"][0]["diagram_type"], "c4_context")
+        self.assertEqual(args["visual_findings"][0]["severity"], "Alta")
+
+    @patch("scripts.wf2_inspeccion_arquitectura.extract_images_from_pdf")
+    @patch("scripts.wf2_inspeccion_arquitectura.extract_page_texts_from_pdf")
+    @patch("scripts.wf2_inspeccion_arquitectura.extract_text_from_pdf")
+    @patch("scripts.wf2_inspeccion_arquitectura.SonarQubeClient")
+    @patch("scripts.wf2_inspeccion_arquitectura.GeminiClient")
+    @patch("scripts.wf2_inspeccion_arquitectura.ConfluenceClient")
+    @patch("scripts.wf2_inspeccion_arquitectura.JiraClient")
+    @patch("scripts.wf2_inspeccion_arquitectura.write_summary_json")
+    def test_empty_images_skips_visual_analysis(
+        self,
+        mock_write_json,
+        mock_jira_cls,
+        mock_conf_cls,
+        mock_gemini_cls,
+        mock_sonar_cls,
+        mock_extract,
+        mock_page_texts,
+        mock_extract_images,
+    ):
+        mock_doc_dir = MagicMock()
+        mock_doc_dir.glob.return_value = [Path("documentacion/DAS.pdf")]
+        config = self._make_config(dry_run=True, documentacion_dir=mock_doc_dir)
+
+        mock_extract.return_value = "Diagrama C4"
+        mock_sonar_cls.return_value.get_issues.return_value = {"issues": []}
+        mock_sonar_cls.return_value.get_measures.return_value = {"component": {"measures": []}}
+        mock_gemini_cls.return_value.generate.return_value = "[]"
+        mock_extract_images.return_value = []
+
+        wf2 = WF2InspeccionArquitectura(config)
+        wf2.run()
+
+        args = mock_write_json.call_args[1]
+        self.assertEqual(args["visual_findings"], [])
+
+    @patch("scripts.wf2_inspeccion_arquitectura.extract_images_from_pdf")
+    @patch("scripts.wf2_inspeccion_arquitectura.extract_page_texts_from_pdf")
+    @patch("scripts.wf2_inspeccion_arquitectura.extract_text_from_pdf")
+    @patch("scripts.wf2_inspeccion_arquitectura.SonarQubeClient")
+    @patch("scripts.wf2_inspeccion_arquitectura.GeminiClient")
+    @patch("scripts.wf2_inspeccion_arquitectura.ConfluenceClient")
+    @patch("scripts.wf2_inspeccion_arquitectura.JiraClient")
+    @patch("scripts.wf2_inspeccion_arquitectura.write_summary_json")
+    def test_dry_run_generates_mock_visual_findings(
+        self,
+        mock_write_json,
+        mock_jira_cls,
+        mock_conf_cls,
+        mock_gemini_cls,
+        mock_sonar_cls,
+        mock_extract,
+        mock_page_texts,
+        mock_extract_images,
+    ):
+        mock_doc_dir = MagicMock()
+        mock_doc_dir.glob.return_value = [Path("documentacion/DAS.pdf")]
+        config = self._make_config(dry_run=True, documentacion_dir=mock_doc_dir)
+
+        mock_extract.return_value = "Diagrama C4"
+        mock_sonar_cls.return_value.get_issues.return_value = {"issues": []}
+        mock_sonar_cls.return_value.get_measures.return_value = {"component": {"measures": []}}
+        mock_gemini_cls.return_value.generate.return_value = "[]"
+
+        fake_image = Path("sqa/extracted_images/DAS_page1_img1.png")
+        mock_extract_images.return_value = [fake_image]
+        mock_page_texts.return_value = {1: "Página con diagrama"}
+
+        wf2 = WF2InspeccionArquitectura(config)
+        wf2.run()
+
+        args = mock_write_json.call_args[1]
+        self.assertEqual(len(args["visual_findings"]), 1)
+        self.assertTrue(args["visual_findings"][0]["id"].startswith("VIS-MOCK"))
+        self.assertEqual(args["visual_findings"][0]["severity"], "Baja")
+
+    @patch("scripts.wf2_inspeccion_arquitectura.extract_images_from_pdf")
+    @patch("scripts.wf2_inspeccion_arquitectura.extract_page_texts_from_pdf")
+    @patch("scripts.wf2_inspeccion_arquitectura.extract_text_from_pdf")
+    @patch("scripts.wf2_inspeccion_arquitectura.SonarQubeClient")
+    @patch("scripts.wf2_inspeccion_arquitectura.GeminiClient")
+    @patch("scripts.wf2_inspeccion_arquitectura.ConfluenceClient")
+    @patch("scripts.wf2_inspeccion_arquitectura.JiraClient")
+    @patch("scripts.wf2_inspeccion_arquitectura.write_summary_json")
+    def test_visual_analysis_error_degrades_gracefully(
+        self,
+        mock_write_json,
+        mock_jira_cls,
+        mock_conf_cls,
+        mock_gemini_cls,
+        mock_sonar_cls,
+        mock_extract,
+        mock_page_texts,
+        mock_extract_images,
+    ):
+        mock_doc_dir = MagicMock()
+        mock_doc_dir.glob.return_value = [Path("documentacion/DAS.pdf")]
+        config = self._make_config(dry_run=False, documentacion_dir=mock_doc_dir)
+
+        mock_extract.return_value = "Diagrama C4"
+        mock_sonar_cls.return_value.get_issues.return_value = {"issues": []}
+        mock_sonar_cls.return_value.get_measures.return_value = {"component": {"measures": []}}
+        mock_gemini_cls.return_value.generate.return_value = "[]"
+
+        fake_image = Path("sqa/extracted_images/DAS_page1_img1.png")
+        mock_extract_images.return_value = [fake_image]
+        mock_page_texts.return_value = {1: "Página con diagrama"}
+
+        wf2 = WF2InspeccionArquitectura(config)
+        with patch.object(wf2, "_analyze_visuals", side_effect=Exception("Visual boom")):
+            wf2.run()
+
+        args = mock_write_json.call_args[1]
+        self.assertEqual(args["visual_findings"], [])
+        self.assertEqual(args["status"], "success")
+
 
 if __name__ == "__main__":
     unittest.main()

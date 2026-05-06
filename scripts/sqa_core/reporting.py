@@ -53,6 +53,7 @@ def write_summary_json(
     confluence_page_id: str | None,
     jira_keys: list[str],
     findings: list[dict[str, Any]],
+    visual_findings: list[dict[str, Any]] | None = None,
 ) -> Path:
     """Write a JSON summary following the SQA artifact contract."""
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -63,6 +64,7 @@ def write_summary_json(
         "confluence_page_id": confluence_page_id,
         "jira_keys": jira_keys,
         "findings": findings,
+        "visual_findings": visual_findings or [],
         "generated_at": datetime.now(timezone.utc).isoformat(),
     }
     path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
