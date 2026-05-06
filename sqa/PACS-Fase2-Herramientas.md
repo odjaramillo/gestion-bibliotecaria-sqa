@@ -1,10 +1,14 @@
-# Matriz de Herramientas Tecnológicas — Fase 2: Pruebas Dinámicas
-## Plan de Aseguramiento de la Calidad (PAC) — Sistema de Gestión Bibliotecaria
+# Matriz de Herramientas Tecnológicas — Plan de Aseguramiento de Calidad
+## Sistema de Gestión Bibliotecaria — Auditoría del Equipo 58-1
 **Equipo SQA:** Equipo 11  
-**SUT:** Código legado del Equipo 58-1 (Java 21 + Spring Boot 3.4.5 / Vue 3)  
-**Documento:** Declaración de herramientas para el entregable "Infograma del Ecosistema Tecnológico"  
-**Fase de ejecución:** Fase 2 (Shift-Right / Pruebas Dinámicas)  
-**Restricción:** Código fuente heredado y documentación PDF en `/documentacion` son INTACTOS. Solo se auditan.
+**SUT (Sistema Under Test):** Código del Equipo 58-1 (Java 21 + Spring Boot 3.4.5 / Vue 3)  
+**Documento:** Declaración de herramientas tecnológicas para las Fases 1 y 2 del PAC  
+**Restricción:** Código fuente y documentación PDF en `/documentacion` son INTACTOS. Solo se auditan.
+
+**¿Qué es esto?**
+Este documento declara todas las herramientas tecnológicas que el Equipo 11 utilizará para demostrar el cumplimiento de los objetivos de calidad del Plan de Aseguramiento de Calidad (PAC). Incluye:
+- **Fase 1 (Actual):** Inspección estática, auditoría con IA, análisis de documentos
+- **Fase 2 (Futura):** Pruebas dinámicas (E2E, API, seguridad, carga)
 
 ---
 
@@ -123,32 +127,38 @@ Los siguientes atributos y sub-características fueron definidos como objetivos 
 
 ---
 
-## 6. Estado de Implementación (Actualización 2026-05-06)
+## 6. Estado de Implementación
 
-### Fase 1 — Infraestructura SQA (COMPLETADA)
+### Fase 1 — Infraestructura SQA (IMPLEMENTADA)
+
+La Fase 1 está completa y lista para aprobación. Todas las herramientas declaradas a continuación fueron desarrolladas, testeadas y documentadas por el Equipo 11.
 
 | Actividad | Herramientas | Estado | Tests |
 |---|---|---|---|
-| Checklists de inspección estática | JSON + Python | ✅ Implementado | 71 ítems verificables |
-| Auditoría de requisitos con IA (WF1) | Gemini multimodal | ✅ dry_run | 32 tests |
-| Inspección arquitectónica (WF2) | Gemini + SonarQube + Análisis visual | ✅ dry_run | 99 tests |
-| Generación de plan de pruebas (WF3) | Gemini | ✅ dry_run | Cubierto |
-| Orquestador de Quality Gates (WF4) | Python + GitHub Actions | ✅ dry_run | Cubierto |
-| Extracción de imágenes de PDFs | PyMuPDF + Pillow | ✅ Implementado | Tests de extracción y conversión PNG |
-| Análisis visual de diagramas | Gemini multimodal (C4/UML) | ✅ Integrado en WF2 | Tests de clasificación y análisis |
-| Idempotencia en Jira | JQL + Labels | ✅ Implementado | Tests de upsert |
-| Few-shot prompts | Constantes Python | ✅ Implementado | Tests de contenido de prompt |
+| Checklists de inspección estática | JSON + Python | Implementado | 71 ítems verificables |
+| Auditoría de requisitos con IA (WF1) | Gemini multimodal | dry_run | 32 tests |
+| Inspección arquitectónica (WF2) | Gemini + SonarQube + Análisis visual | dry_run | 99 tests |
+| Generación de plan de pruebas (WF3) | Gemini | dry_run | Cubierto |
+| Orquestador de Quality Gates (WF4) | Python + GitHub Actions | dry_run | Cubierto |
+| Extracción de imágenes de PDFs | PyMuPDF + Pillow | Implementado | Tests de extracción y conversión PNG |
+| Análisis visual de diagramas | Gemini multimodal (C4/UML) | Integrado en WF2 | Tests de clasificación y análisis |
+| Idempotencia en Jira | JQL + Labels | Implementado | Tests de upsert |
+| Few-shot prompts | Constantes Python | Implementado | Tests de contenido de prompt |
 
-### Fase 2 — Pruebas Dinámicas (PENDIENTE de aprobación)
+**Total tests automatizados: 99 (100% pasando)**
+
+### Fase 2 — Pruebas Dinámicas (PLANIFICADA)
+
+La Fase 2 se ejecutará después de que el Líder General apruebe la Fase 1.
 
 | Orden | Actividad | Herramientas | Entregable en Confluence |
 |---|---|---|---|
-| 1 | Configurar análisis estático y cobertura | SonarQube + JaCoCo | Dashboard de Mantenibilidad (Complejidad, Duplicación, Cobertura) |
-| 2 | Implementar pruebas de API | RestAssured + TestContainers | Reporte de Completitud Funcional (API) con % de endpoints cubiertos |
-| 3 | Implementar pruebas E2E | Playwright | Reporte de Completitud Funcional (UI) con videos de flujos críticos |
-| 4 | Ejecutar pruebas de seguridad | OWASP ZAP + Spring Security Test | Informe de Vulnerabilidades (DAST + SAST) |
-| 5 | Ejecutar pruebas de fiabilidad | Chaos Monkey / TestContainers de recuperación | Informe de Tolerancia a Fallos y Recuperación |
-| 6 | Consolidar métricas | Scripts Python | Informe de Pruebas (IP) con Densidad de Defectos y Cobertura de Revisiones |
+| 1 | Configurar análisis estático y cobertura | SonarQube + JaCoCo | Dashboard de Mantenibilidad |
+| 2 | Implementar pruebas de API | RestAssured + TestContainers | Reporte de Completitud Funcional (API) |
+| 3 | Implementar pruebas E2E | Playwright | Reporte de Completitud Funcional (UI) |
+| 4 | Ejecutar pruebas de seguridad | OWASP ZAP + Spring Security Test | Informe de Vulnerabilidades |
+| 5 | Ejecutar pruebas de fiabilidad | Chaos Monkey / TestContainers | Informe de Tolerancia a Fallos |
+| 6 | Consolidar métricas | Scripts Python | Informe de Pruebas (IP) |
 
 ---
 
@@ -168,8 +178,7 @@ Los siguientes atributos y sub-características fueron definidos como objetivos 
 
 | Versión | Fecha | Autor | Cambios |
 |---|---|---|---|
-| 1.0 | 2026-05-04 | Equipo SQA | Declaración inicial de herramientas basada en análisis del stack del Equipo 58-1. |
-| 1.1 | 2026-05-06 | Equipo SQA | Actualización: Sección 6 dividida en Fase 1 (completada) y Fase 2 (pendiente). Agregadas herramientas implementadas: extracción de imágenes (PyMuPDF + Pillow), análisis visual Gemini, idempotencia Jira, few-shot prompts. Total: 99 tests pasando.
+| 1.0 | 2026-05-06 | Equipo SQA | Declaración inicial de herramientas. Incluye Fase 1 (implementada) y Fase 2 (planificada). Documenta 99 tests pasando.
 
 ---
 

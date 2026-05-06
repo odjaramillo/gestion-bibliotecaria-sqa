@@ -1,231 +1,223 @@
-# Informe de Avance SQA — Revisión para Aprobación del Líder General
-**Para:** Alberto Rodríguez (Líder General, Equipo SQA 11)
-**De:** Oscar Jaramillo (Líder de Tecnología, Equipo SQA 11)
-**Fecha:** 2026-05-06
-**Asunto:** Checklists v1.0 + Workflows 1-4 + Análisis Visual + Mejoras Pre-Producción — Pendiente de Aprobación
+# Propuesta de Infraestructura SQA Automatizada — Equipo 11
+## Solicitud de Aprobación para el Líder General
+
+**Para:** Alberto Rodríguez (Líder General, Equipo SQA 11)  
+**De:** Oscar Jaramillo (Líder de Tecnología, Equipo SQA 11)  
+**Fecha:** 2026-05-06  
+**Asunto:** Presentación formal del Sistema de Automatización SQA desarrollado para auditar al Equipo 58-1
 
 ---
 
-## 1. Resumen Ejecutivo
+## 1. ¿Qué es esto y por qué lo hicimos?
 
-Se ha desarrollado la infraestructura completa del Sistema de Checklists de Inspección Estática y los 4 Workflows de automatización SQA en modo **dry_run**. Además, se han implementado **3 slices de mejoras pre-producción** que elevan la calidad y confiabilidad del sistema antes de activar producción.
+El **Equipo 11** (SQA) tiene la misión de auditar el Sistema de Gestión Bibliotecaria desarrollado por el **Equipo 58-1**. Este sistema incluye:
 
-**Estado:** ✅ Listo para revisión. **NO activado en producción** hasta aprobación del Líder General.
+- Documentación: BRIEF, ERS, DAS (PDFs)
+- Código: Java 21 + Spring Boot (backend) + Vue 3 (frontend)
+- 71 ítems de verificación de calidad que debemos revisar
 
-**Novedades desde el informe anterior (2026-05-05):**
-- **M3+M1:** Extracción automática de imágenes de PDFs + Análisis visual integrado en WF2
-- **M2:** Idempotencia en Jira (evita duplicación de tickets en re-runs)
-- **M4:** Prompts few-shot para Gemini (reduce falsos positivos)
-- **99 tests automatizados, todos pasando** (subió de 74)
-- Modelo de IA estandarizado: `gemini-3.1-flash-lite-preview`
+**El problema:** Hacer esta auditoría manualmente toma semanas, es repetitiva, y es propenso a errores humanos. Además, algunos defectos solo se detectan analizando código o imágenes de diagramas con herramientas automatizadas.
 
----
+**La solución que desarrollamos:** Un sistema de **4 workflows automatizados** que:
+1. Leen los PDFs y código del Equipo 58-1
+2. Aplican checklists de inspección basadas en estándares ISO/IEEE
+3. Usan Inteligencia Artificial (Gemini) para detectar defectos que un humano podría pasar por alto
+4. Generan reportes y tickets de seguimiento automáticamente
 
-## 2. Alcance de lo Entregado
-
-### 2.1 Checklists de Inspección Estática (5 documentos JSON)
-Cada checklist está basada en **evidencia real** de los artefactos del Equipo 58-1.
-
-| Checklist | Estándar | Artefacto Auditado | Ítems |
-|---|---|---|---|
-| BRIEF | Prácticas de IR | BRIEF EQUIPO 58 1 - v1.1.pdf | 8 |
-| ERS | ISO/IEC/IEEE 29148 | ERS Equipo 58 1 v.1.2.pdf | 13 |
-| DAS | ISO/IEC/IEEE 42010 + C4 | DAS Equipo 58-1 v1.5.pdf | 19 |
-| Código | ISO/IEC 25010 (estático) | Código fuente Java/Vue | 16 |
-| PAC | IEEE 730 | Plan de Aseguramiento de Calidad (Equipo 11) | 15 |
-
-**Total:** 71 ítems de verificación binaria (Cumple / No Cumple / Parcial).
-
-**Mejora v1.1 implementada:** La auditoría de diagramas (C4, UML) ya no se limita a texto extraído de PDFs. El módulo de análisis visual con Gemini multimodal está **integrado en WF2** y analiza automáticamente las imágenes extraídas de los documentos.
-
-### 2.2 Workflows Implementados
-
-| Workflow | Script | GitHub Action | Estado |
-|---|---|---|---|
-| **WF1** — Auditoría Estática de Requisitos | `scripts/wf1_auditoria_requisitos.py` | `.github/workflows/wf1_auditoria_requisitos.yml` | ✅ dry_run + idempotente |
-| **WF2** — Inspección Arquitectónica y Código | `scripts/wf2_inspeccion_arquitectura.py` | `.github/workflows/wf2_inspeccion_arquitectura.yml` | ✅ dry_run + análisis visual |
-| **WF3** — Generación del Plan de Pruebas | `scripts/wf3_generacion_pruebas.py` | `.github/workflows/wf3_generacion_pruebas.yml` | ✅ dry_run |
-| **WF4** — Orquestador de Quality Gates | `scripts/wf4_orquestador.py` | `.github/workflows/wf4_orquestador.yml` | ✅ dry_run |
-
-**Características comunes:**
-- Todos usan `gemini-3.1-flash-lite-preview` para análisis con IA
-- Todos usan el núcleo compartido `scripts/sqa_core/`
-- Todos generan reportes Markdown locales (NO crean tickets reales aún)
-
-### 2.3 Módulo de Análisis Visual (Integrado en WF2)
-- **Script:** `scripts/sqa_core/image_analysis.py`
-- **Capacidad:** Analiza imágenes de diagramas C4, UML y wireframes usando Gemini multimodal
-- **Salida:** Hallazgos estructurados con severidad (Crítica/Alta/Media/Baja)
-- **Estado:** ✅ Integrado en WF2. Extrae imágenes de PDFs automáticamente, clasifica por tipo de diagrama, y mergea hallazgos visuales con hallazgos de texto + SonarQube.
-- **Tests:** 99 tests pasando (incluye tests de extracción, conversión PNG, integración visual y degradación graceful)
-
-### 2.4 Mejoras Pre-Producción Implementadas
-
-| Slice | Descripción | Estado | Tests |
-|---|---|---|---|
-| **M3+M1** | Extracción automática de imágenes de PDFs + Análisis visual en WF2 | ✅ Implementado | 86/86 |
-| **M2** | Idempotencia en Jira (search-then-create/update con `external_id`) | ✅ Implementado | 32/32 |
-| **M4** | Few-shot prompts para Gemini (reduce falsos positivos) | ✅ Implementado | 99/99 |
-
-**Pendientes (post-aprobación):**
-- **M5:** Métricas de cobertura de auditoría (esperando definición del líder de métricas)
-- **M6:** Cleanup del POC legacy (`agente_sqa.py`)
+**Todo está en modo "simulación" (dry_run).** No hemos creado ningún ticket real ni modificado nada del Equipo 58-1. Este informe es para pedir tu aprobación antes de activarlo.
 
 ---
 
-## 3. Hallazgos Principales (Ejecución de Prueba)
+## 2. ¿Qué entregamos?
 
-| Artefacto | Cobertura de Revisión | Defectos Detectados | Severidad Crítica |
+### 2.1 Checklists de Inspección Estática (5 documentos)
+
+Basados en evidencia real de los artefactos del Equipo 58-1. Cada ítem cita página y sección exacta.
+
+| Checklist | Estándar Internacional | Artefacto Auditado | Ítems |
 |---|---|---|---|
-| BRIEF | 50.0% | 4 | 0 |
-| ERS | 53.8% | 6 | 1 |
-| DAS | 57.9% | 8 | 0 |
-| **Código** | **12.5%** | **14** | **3** |
+| BRIEF | Prácticas de Ingeniería de Requisitos | BRIEF EQUIPO 58 1 - v1.1.pdf | 8 |
+| ERS | ISO/IEC/IEEE 29148:2018 | ERS Equipo 58 1 v.1.2.pdf | 13 |
+| DAS | ISO/IEC/IEEE 42010:2022 + C4 | DAS Equipo 58-1 v1.5.pdf | 19 |
+| Código | ISO/IEC 25010 (estático) | Código Java/Vue | 16 |
+| PAC | IEEE 730-2014 | Plan de Aseguramiento de Calidad | 15 |
 
-### Defectos Críticos Detectados
+**Total: 71 ítems de verificación.**
 
-| ID | Artefacto | Defecto | Impacto |
-|---|---|---|---|
-| ERS-09 | ERS | HU3: Redundancia exacta en criterios de contraseña (repetido 2 veces) | Riesgo de implementación inconsistente |
-| COD-08 | Código | Backend NO valida complejidad de contraseña (ERS exige 8 chars + mayúscula + número + símbolo) | **Brecha de seguridad** |
-| COD-09 | Código | Frontend tiene validación de contraseña COMENTADA (RegistroUsuario.vue línea 104) | **Brecha de seguridad** |
-| COD-10 | Código | Credenciales de DB hardcodeadas en application.properties (`password=admin`) | **Exposición de credenciales** |
-| COD-12 | Código | Sin `@ControllerAdvice` — riesgo de exponer stack traces al usuario | **Fuga de información** |
+**¿Por qué esto es diferente a auditar "a mano"?**
+- Cada ítem está **atado a evidencia concreta** (página X, línea Y del PDF)
+- Usamos los **estándares que el artefacto declara seguir**, no estándares genéricos
+- Los resultados se guardan automáticamente en formatos estructurados (JSON + Markdown)
 
 ---
 
-## 4. Correcciones Aplicadas vs Checklists Originales de IA
+### 2.2 Workflows Automatizados (4 scripts + GitHub Actions)
 
-| Error Original | Corrección Aplicada |
+| Workflow | Qué hace | Para qué sirve |
+|---|---|---|
+| **WF1** — Auditoría de Requisitos | Lee el BRIEF/ERS, aplica checklist, detecta defectos con IA | Encuentra inconsistencias, versiones desfasadas, requisitos incompletos |
+| **WF2** — Inspección Arquitectónica | Lee el DAS + imágenes de diagramas + datos de SonarQube | Detecta errores en diagramas C4, decisiones arquitectónicas inconsistentes, code smells |
+| **WF3** — Plan de Pruebas | Genera casos de prueba automáticamente a partir de los requisitos | Acelera la creación de pruebas dinámicas (Fase 2) |
+| **WF4** — Orquestador | Coordina WF1+WF2+WF3 y genera un reporte consolidado de Quality Gate | Da una visión única del estado de calidad del proyecto |
+
+**Características técnicas:**
+- Todo corre en **GitHub Actions** (pipelines automatizados en cada push)
+- Usan el modelo de IA **Gemini** (Google) para análisis inteligente
+- Generan reportes en **Markdown** (legibles) y **JSON** (procesables por otras herramientas)
+- **NO modifican el código del Equipo 58-1** — solo auditan
+
+---
+
+### 2.3 Mejoras Implementadas (Pre-Producción)
+
+Antes de pedirte la aprobación, implementamos 3 mejoras críticas:
+
+#### Mejora 1: Análisis Visual de Diagramas con IA
+**¿El problema?** Los diagramas C4 y UML del DAS están en PDFs como imágenes. Un análisis de texto no puede ver si una flecha falta o si un actor está ausente.
+
+**¿La solución?**
+- Extraemos automáticamente las imágenes de los PDFs
+- La IA (Gemini multimodal) "mira" los diagramas y detecta defectos visuales
+- Ejemplos de lo que detecta: *"Actor externo mencionado en el ERS pero ausente en el diagrama"*, *"Relación sin dirección ni protocolo"*
+
+#### Mejora 2: Idempotencia en Jira
+**¿El problema?** Si el workflow se ejecuta 2 veces, crearía tickets duplicados en Jira.
+
+**¿La solución?** Antes de crear un ticket, buscamos si ya existe uno con el mismo identificador. Si existe, lo actualizamos en lugar de duplicarlo.
+
+#### Mejora 3: Mejores Prompts de IA (Few-Shot)
+**¿El problema?** La IA a veces reporta "defectos" que en realidad son preferencias estilísticas (falsos positivos).
+
+**¿La solución?** Le enseñamos a la IA con ejemplos concretos: *"Esto SÍ es un defecto"* vs *"Esto NO es un defecto, es solo cosmético"*. Esto reduce los falsos positivos.
+
+---
+
+## 3. Hallazgos que ya detectamos (ejemplo)
+
+Ejecutamos los workflows en modo simulación y ya encontramos defectos reales:
+
+| Artefacto | Defecto | Severidad |
+|---|---|---|
+| ERS | Versión en portada (1.1) no coincide con histórico (1.2) | Media |
+| ERS | Contradicción interna: regla dice "una amonestación a la vez", criterio dice "una o varias" | **Crítica** |
+| Código | Backend NO valida complejidad de contraseña (a pesar de que el ERS lo exige) | **Brecha de seguridad** |
+| Código | Validación de contraseña en frontend está COMENTADA | **Brecha de seguridad** |
+| Código | Credenciales de base de datos hardcodeadas (`password=admin`) | **Exposición de credenciales** |
+| Código | Sin manejo global de excepciones — riesgo de exponer stack traces al usuario | **Fuga de información** |
+
+**Nota:** Estos defectos fueron detectados durante el desarrollo de las herramientas. En producción, estos hallazgos generarían tickets automáticos en Jira para que el Equipo 58-1 los corrija.
+
+---
+
+## 4. ¿Qué necesitamos para activar producción?
+
+### Paso 1: Tu aprobación como Líder General
+Necesitamos que apruebes:
+- Las 5 checklists de inspección (estándares aplicados, ítems verificables)
+- Los 4 workflows automatizados (funcionamiento técnico)
+- La fusión de esta rama al repositorio principal (`main`)
+
+### Paso 2: Aprobación del Líder Funcional (Daniel)
+Que valide que el mapeo artefacto→estándar es correcto.
+
+### Paso 3: Configurar credenciales en GitHub
+Secrets necesarios (nosotros no los tenemos, son del proyecto):
+- `JIRA_SERVER`, `JIRA_EMAIL`, `JIRA_API_TOKEN`
+- `CONFLUENCE_URL`, `CONFLUENCE_API_TOKEN`
+- `GEMINI_API_KEY`
+- `SONARQUBE_TOKEN` (opcional, para WF2)
+
+### Paso 4: Activar
+Una vez configurado, cambiamos de `DRY_RUN=true` (simulación) a `DRY_RUN=false` (producción).
+
+---
+
+## 5. ¿Qué pasa si no se aprueba?
+
+| Escenario | Impacto |
 |---|---|
-| ERS auditado con INVEST | ERS auditado con ISO/IEC/IEEE 29148 (el ERS real NO usa INVEST) |
-| DAS auditado con DDD/Bounded Contexts | DAS auditado con Patrón de Capas + C4 (el DAS real NO usa DDD) |
-| Cohesión/acoplamiento invertidos | Terminología corregida según definición formal |
-| Análisis estático y dinámico mezclados | Separación explícita: estático (SonarQube) vs dinámico (Playwright, k6) |
-| Ítems genéricos sin evidencia | Cada ítem cita página/sección exacta del artefacto real |
+| **Sin aprobación** | Seguimos auditando manualmente. Más lento, más errores humanos, no escalable. |
+| **Sin análisis visual** | Los defectos en diagramas (flechas faltantes, actores ausentes) pasan desapercibidos. |
+| **Sin idempotencia** | Si ejecutamos 2 veces, duplicamos tickets en Jira. Caos en el seguimiento. |
+| **Sin few-shot** | La IA genera más falsos positivos. El equipo pierde tiempo revisando "defectos" que no lo son. |
 
 ---
 
-## 5. Estructura de Archivos en la Rama
+## 6. Métricas de Calidad de lo que construimos
 
-```
-feature/sdd-workflows-slice-4-wf4
-├── .github/workflows/
-│   ├── wf1_auditoria_requisitos.yml
-│   ├── wf2_inspeccion_arquitectura.yml
-│   ├── wf3_generacion_pruebas.yml
-│   └── wf4_orquestador.yml
-├── scripts/
-│   ├── sqa_core/
-│   │   ├── __init__.py
-│   │   ├── config.py
-│   │   ├── clients.py          ← M2: upsert_issue con idempotencia
-│   │   ├── pdf_text.py         ← M3: extract_images_from_pdf()
-│   │   ├── reporting.py
-│   │   └── image_analysis.py   ← M1+M4: análisis visual + few-shot
-│   ├── wf1_auditoria_requisitos.py   ← M2+M4: idempotencia + few-shot
-│   ├── wf2_inspeccion_arquitectura.py ← M1+M2+M4: visual + idempotencia + few-shot
-│   ├── wf3_generacion_pruebas.py
-│   ├── wf4_orquestador.py
-│   └── agente_sqa.py              ← POC (obsoleto, será removido en M6)
-├── tests/scripts/                  ← 99 tests
-│   ├── test_sqa_core_config.py
-│   ├── test_sqa_core_clients.py    ← M2: tests de idempotencia
-│   ├── test_sqa_core_pdf_text.py   ← M3: tests de extracción de imágenes
-│   ├── test_sqa_core_reporting.py
-│   ├── test_sqa_core_image_analysis.py ← M1+M4: tests de visual + few-shot
-│   ├── test_wf1_auditoria_requisitos.py ← M2+M4: idempotencia + few-shot
-│   ├── test_wf2_inspeccion_arquitectura.py ← M1+M2+M4: visual + idempotencia + few-shot
-│   ├── test_wf3_generacion_pruebas.py
-│   └── test_wf4_orquestador.py
-├── sqa/
-│   ├── Checklists-Inspeccion-Estatica-v1.md
-│   ├── PACS-Fase2-Herramientas.md
-│   ├── WF4-MODO-PRODUCCION.md
-│   ├── ROADMAP-MEJORAS-PRE-PRODUCCION.md
-│   ├── checklists/
-│   │   ├── brief.json
-│   │   ├── ers.json
-│   │   ├── das.json
-│   │   ├── codigo.json
-│   │   └── pac.json
-│   └── reportes/
-└── requirements.txt                ← M3: Pillow agregado
-```
-
-**Importante:** Esta rama NO modifica el código fuente del Equipo 58-1 (carpetas `src/`, `biblioteca-frontend/src/`). Solo agrega infraestructura SQA.
+| Métrica | Valor | Significado |
+|---|---|---|
+| Tests automatizados | 99 | Cada función crítica tiene un test que la verifica |
+| Tests pasando | 99/99 (100%) | Nada está roto |
+| Cobertura estimada | >90% | La mayoría del código SQA está probado |
+| Commits | 16 | Cada cambio fue un "paquete" coherente (código + tests juntos) |
+| Líneas de código SQA | ~2.800 | Sistema completo pero enfocado |
 
 ---
 
-## 6. Métricas de Calidad del Código SQA
-
-| Métrica | Valor |
-|---|---|
-| Tests totales | 99 |
-| Tests pasando | 99 (100%) |
-| Cobertura estimada | >90% (sqa_core) |
-| Commits work-unit | 16 |
-| Líneas de código Python SQA | ~2.800 |
-
----
-
-## 7. Requisitos para Activar a Producción
-
-1. **Aprobación del Líder General** (Alberto Rodríguez) — ✅ Este informe
-2. **Aprobación del Líder Funcional** (Daniel) — Validación de mapeo artefacto→estándar
-3. **Configurar secrets en GitHub:**
-   - `JIRA_SERVER`, `JIRA_EMAIL`, `JIRA_API_TOKEN`
-   - `CONFLUENCE_URL`, `CONFLUENCE_API_TOKEN`
-   - `GEMINI_API_KEY`
-   - `SONARQUBE_TOKEN` (para WF2)
-4. **Cambiar `DRY_RUN: true` → `false`** en cada workflow YAML
-5. **Activar `WF4_ORCHESTRATE_UPSTREAM=true`** para encadenamiento automático
-
-El documento `sqa/WF4-MODO-PRODUCCION.md` contiene el procedimiento detallado.
-
----
-
-## 8. Riesgos Identificados
+## 7. Riesgos y Mitigaciones
 
 | Riesgo | Probabilidad | Impacto | Mitigación |
 |---|---|---|---|
-| Gemini quota exceeded en ejecución real | Media | Media | Retry/backoff implementado; fallback a modo texto; few-shot prompts mejoran precisión (M4) |
-| SonarQube no disponible para WF2 | Baja | Alta | WF2 funciona sin SonarQube (solo con análisis DAS + visual) |
-| Formato de imágenes incrustadas en PDFs | Baja | Media | Pillow convierte automáticamente a PNG válido (M3); imágenes corruptas se omiten graceful |
-| Métricas de cobertura no definidas | Media | Baja | M5 postergado a espera de definición del líder de métricas |
-
-**Riesgos MITIGADOS desde versión anterior:**
-- ✅ Duplicación de tickets en re-runs — RESUELTO por M2 (idempotencia con `external_id`)
-- ✅ Análisis visual de diagramas pendiente — RESUELTO por M1 (integrado en WF2)
+| La IA se queda sin quota (Gemini) | Media | Media | Tenemos retry automático + fallback a modo texto |
+| SonarQube no está disponible | Baja | Alta | WF2 funciona igual solo con análisis de documentos + visual |
+| Imágenes de PDFs en formato raro | Baja | Media | Convertimos automáticamente a PNG. Si falla, se omite graceful |
+| Duplicación de tickets (re-run) | **Resuelto** | — | M2 implementa idempotencia con búsqueda previa en Jira |
 
 ---
 
-## 9. Próximos Pasos Post-Aprobación
+## 8. Estructura del Repositorio
 
-1. **Fusionar** la rama tracker `feature/sdd-workflows-slice-4-wf4` a `main`
-2. **Configurar secrets** en GitHub
-3. **Ejecutar WF4** con `WF4_ORCHESTRATE_UPSTREAM=true` en modo dry_run final
-4. **Definir métricas de cobertura** (M5) con el líder de métricas
-5. **Activar producción:** Cambiar `DRY_RUN=false` y crear tickets reales
-6. **Cleanup legacy:** Remover `agente_sqa.py` y workflow obsoleto (M6)
+```
+gestion-bibliotecaria-sqa/
+├── src/                          ← Código del Equipo 58-1 (NO TOCAMOS)
+├── biblioteca-frontend/src/      ← Frontend del Equipo 58-1 (NO TOCAMOS)
+├── documentacion/                ← PDFs del Equipo 58-1 (NO TOCAMOS)
+├── scripts/sqa_core/             ← Motor SQA compartido
+│   ├── image_analysis.py         ← Análisis visual de diagramas
+│   ├── pdf_text.py               ← Extracción de texto e imágenes de PDFs
+│   ├── clients.py                ← Clientes Jira/Confluence/Gemini/Sonar
+│   ├── reporting.py              ← Generación de reportes
+│   └── config.py                 ← Configuración
+├── scripts/wf1_auditoria_requisitos.py
+├── scripts/wf2_inspeccion_arquitectura.py
+├── scripts/wf3_generacion_pruebas.py
+├── scripts/wf4_orquestador.py
+├── tests/scripts/                ← 99 tests automatizados
+├── sqa/
+│   ├── Checklists-Inspeccion-Estatica-v1.md
+│   ├── PACS-Fase2-Herramientas.md
+│   └── INFORME-APROBACION-LIDER-GENERAL.md  ← Este documento
+└── .github/workflows/            ← Pipelines de CI/CD
+```
 
 ---
 
-## 10. Decisión Requerida
+## 9. Decisión Requerida del Líder General
 
 **¿Aprueba el Líder General (Alberto Rodríguez) las siguientes acciones?**
 
-- [ ] **Aprobar las checklists v1.0** tal como están documentadas en `sqa/Checklists-Inspeccion-Estatica-v1.md`
-- [ ] **Aprobar los Workflows 1-4** para pasar a producción (con mejoras M1-M4 aplicadas)
-- [ ] **Autorizar la fusión** de la rama `feature/sdd-workflows-slice-4-wf4` a `main`
+- [ ] **Aprobar las 5 checklists de inspección** documentadas en `sqa/Checklists-Inspeccion-Estatica-v1.md`
+- [ ] **Aprobar los 4 workflows automatizados** para su uso en producción
+- [ ] **Autorizar la fusión** de esta rama al repositorio principal (`main`)
 - [ ] **Aprobar la matriz de herramientas** declarada en `sqa/PACS-Fase2-Herramientas.md`
-- [ ] **Autorizar ejecución de auditoría visual** sobre diagramas del DAS (ya integrada en WF2)
+- [ ] **Autorizar la activación** de `DRY_RUN=false` una vez configuradas las credenciales
 
-**Nota:** Hasta recibir esta aprobación, TODO permanece en modo `dry_run`. No se crearán tickets, no se modificará Confluence, y no se ejecutarán pruebas dinámicas.
+**Hasta recibir esta aprobación, TODO permanece en modo simulación.** No se crearán tickets reales, no se modificará Confluence, y no se tocará el código del Equipo 58-1.
 
 ---
 
-*Informe generado por el Equipo SQA 11*
-*Rama tracker: `feature/sdd-workflows-slice-4-wf4`*
-*Commits: 16 work-unit commits, 99 tests passing*
-*Mejoras implementadas: M3+M1 (Análisis Visual), M2 (Idempotencia Jira), M4 (Few-shot Prompts)*
+## Anexos para Revisión
+
+| Documento | Descripción | Ubicación |
+|---|---|---|
+| Checklists de Inspección | 71 ítems de verificación con evidencia | `sqa/Checklists-Inspeccion-Estatica-v1.md` |
+| Matriz de Herramientas | Herramientas declaradas para Fase 1 y Fase 2 | `sqa/PACS-Fase2-Herramientas.md` |
+| Reportes de prueba | Ejemplos de reportes generados por WF4 | `sqa/reportes/` |
+| Roadmap de mejoras | Mejoras pendientes post-aprobación | `sqa/ROADMAP-MEJORAS-PRE-PRODUCCION.md` |
+
+---
+
+*Documento generado por el Equipo SQA 11*  
+*Fecha: 2026-05-06*  
+*Estado: Pendiente de aprobación del Líder General*

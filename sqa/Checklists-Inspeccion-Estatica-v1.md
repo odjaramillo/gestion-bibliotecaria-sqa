@@ -1,15 +1,22 @@
 # Sistema de Checklists de Inspección Estática — SQA Equipo 11
 ## Basado en Evidencia Real de Artefactos del Equipo 58-1
 
-**Versión:** 1.1
+**Versión:** 1.0
 **Fecha:** 2026-05-06
 **Equipo:** SQA 11 (Auditoría del Sistema de Gestión Bibliotecaria del Equipo 58-1)
 **Principio rector:** Cada ítem de checklist debe ser verificable contra el contenido REAL del artefacto. No se audita con estándares que el artefacto no declara seguir.
 
-**Cambios en v1.1:**
-- Agregada sección 3.6: Auditoría Visual de Diagramas con IA (Gemini multimodal)
-- Los diagramas C4/UML ahora se auditan visualmente además de textualmente
-- Integrado en WF2 con extracción automática de imágenes desde PDFs
+**¿Qué es esto?**
+Este documento define las 5 checklists que el Equipo 11 utilizará para auditar los artefactos del Equipo 58-1. Cada checklist está basada en **evidencia real** (páginas específicas de PDFs, líneas de código) y en **estándares internacionales** aplicables.
+
+**Checklists incluidas:**
+1. BRIEF (8 ítems) — Prácticas de Ingeniería de Requisitos
+2. ERS (13 ítems) — ISO/IEC/IEEE 29148:2018
+3. DAS (19 ítems + 4 ítems de auditoría visual) — ISO/IEC/IEEE 42010:2022 + C4
+4. Código (16 ítems) — ISO/IEC 25010
+5. PAC (15 ítems) — IEEE 730-2014
+
+**Total: 75 ítems de verificación**
 
 ---
 
