@@ -111,6 +111,45 @@ class TestWF2InspeccionArquitectura(unittest.TestCase):
 
         mock_write_json.assert_called_once()
 
+    @patch("scripts.wf2_inspeccion_arquitectura.extract_text_from_pdf")
+    @patch("scripts.wf2_inspeccion_arquitectura.SonarQubeClient")
+    @patch("scripts.wf2_inspeccion_arquitectura.GeminiClient")
+    @patch("scripts.wf2_inspeccion_arquitectura.ConfluenceClient")
+    @patch("scripts.wf2_inspeccion_arquitectura.JiraClient")
+    @patch("scripts.wf2_inspeccion_arquitectura.write_summary_json")
+    def test_prompt_includes_few_shot_examples(
+        self,
+        mock_write_json,
+        mock_jira_cls,
+        mock_conf_cls,
+        mock_gemini_cls,
+        mock_sonar_cls,
+        mock_extract,
+    ):
+        mock_doc_dir = MagicMock()
+        mock_doc_dir.glob.return_value = [Path("documentacion/DAS.pdf")]
+        config = self._make_config(dry_run=False, documentacion_dir=mock_doc_dir)
+
+        mock_extract.return_value = "Diagrama C4: Contexto, Contenedores, Componentes."
+
+        mock_sonar = MagicMock()
+        mock_sonar.get_issues.return_value = {"issues": []}
+        mock_sonar.get_measures.return_value = {"component": {"measures": []}}
+        mock_sonar_cls.return_value = mock_sonar
+
+        mock_gemini_cls.return_value.generate.return_value = "[]"
+        mock_conf_cls.return_value.get_page_by_title.return_value = None
+        mock_jira_cls.return_value.upsert_issue.return_value = {"action": "created", "issue_key": "SQA-10"}
+
+        wf2 = WF2InspeccionArquitectura(config)
+        wf2.run()
+
+        mock_gemini_cls.return_value.generate.assert_called_once()
+        prompt = mock_gemini_cls.return_value.generate.call_args[0][0]
+        self.assertIn("EJEMPLOS DE HALLAZGOS", prompt)
+        self.assertIn("POSITIVOS", prompt)
+        self.assertIn("NEGATIVOS", prompt)
+
     @patch("scripts.wf2_inspeccion_arquitectura.write_summary_json")
     def test_no_das_pdf_found_exits_early(self, mock_write_json):
         mock_doc_dir = MagicMock()
