@@ -251,6 +251,52 @@ class TestJiraClient(unittest.TestCase):
         client.client.add_comment.assert_not_called()
         self.assertEqual(result, {"action": "error", "issue_key": None})
 
+    @patch("scripts.sqa_core.clients.JIRA")
+    def test_upsert_issue_searches_by_label_and_stores_external_id_on_create(self, mock_jira_cls):
+        """Verifica que upsert_issue busca por label y persiste external_id al crear."""
+        config = self._make_config()
+        config = SQAConfig(
+            jira_server=config.jira_server,
+            jira_email=config.jira_email,
+            jira_api_token=config.jira_api_token,
+            confluence_url=config.confluence_url,
+            confluence_user=config.confluence_user,
+            confluence_token=config.confluence_token,
+            gemini_api_key=config.gemini_api_key,
+            sonarqube_url=config.sonarqube_url,
+            sonarqube_token=config.sonarqube_token,
+            dry_run=False,
+            project_root=config.project_root,
+            documentacion_dir=config.documentacion_dir,
+            reportes_dir=config.reportes_dir,
+        )
+        client = JiraClient(config)
+        client.client.search_issues.return_value = []
+        mock_issue = MagicMock()
+        mock_issue.key = "SQA-1"
+        client.client.create_issue.return_value = mock_issue
+
+        result = client.upsert_issue(
+            "SQA-WF1-REQ-01",
+            {
+                "project": {"key": "SQA"},
+                "summary": "Bug",
+                "issuetype": {"name": "Bug"},
+            },
+        )
+
+        # La busqueda JQL debe incluir el external_id como label
+        search_call = client.client.search_issues.call_args
+        jql = search_call[0][0]
+        self.assertIn('labels = "SQA-WF1-REQ-01"', jql)
+
+        # Al crear, el external_id debe estar en labels
+        create_call = client.client.create_issue.call_args
+        fields = create_call[1]["fields"]
+        self.assertIn("SQA-WF1-REQ-01", fields["labels"])
+
+        self.assertEqual(result, {"action": "created", "issue_key": "SQA-1"})
+
 
 class TestConfluenceClient(unittest.TestCase):
     """Tests for ConfluenceClient wrapper."""

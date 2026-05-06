@@ -96,6 +96,19 @@ class TestWF2InspeccionArquitectura(unittest.TestCase):
         mock_gemini_cls.return_value.generate.assert_called_once()
         mock_conf_cls.return_value.create_page.assert_called_once()
         self.assertEqual(mock_jira_cls.return_value.upsert_issue.call_count, 1)
+
+        # Verificar que upsert_issue recibe external_id determinista y campos correctos
+        call = mock_jira_cls.return_value.upsert_issue.call_args
+        args, kwargs = call
+        self.assertTrue(
+            kwargs["external_id"].startswith("SQA-WF2-"),
+            f"external_id no cumple el prefijo esperado: {kwargs['external_id']}",
+        )
+        self.assertEqual(kwargs["fields"]["project"]["key"], "SQA")
+        self.assertEqual(kwargs["fields"]["issuetype"]["name"], "Task")
+        self.assertIn("ARCH-01", kwargs["fields"]["summary"])
+        self.assertIn("Inconsistencia C4 detectada", kwargs["fields"]["description"])
+
         mock_write_json.assert_called_once()
 
     @patch("scripts.wf2_inspeccion_arquitectura.write_summary_json")
@@ -269,6 +282,18 @@ class TestWF2InspeccionArquitectura(unittest.TestCase):
 
         wf2 = WF2InspeccionArquitectura(config)
         wf2.run()
+
+        # Verificar que upsert_issue recibe external_id determinista y campos correctos
+        call = mock_jira_cls.return_value.upsert_issue.call_args
+        args, kwargs = call
+        self.assertTrue(
+            kwargs["external_id"].startswith("SQA-WF2-"),
+            f"external_id no cumple el prefijo esperado: {kwargs['external_id']}",
+        )
+        self.assertEqual(kwargs["fields"]["project"]["key"], "SQA")
+        self.assertEqual(kwargs["fields"]["issuetype"]["name"], "Task")
+        self.assertIn("ARCH-02", kwargs["fields"]["summary"])
+        self.assertIn("Falta documentacion", kwargs["fields"]["description"])
 
         args = mock_write_json.call_args[1]
         self.assertEqual(args["status"], "partial")

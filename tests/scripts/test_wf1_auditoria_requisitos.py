@@ -91,6 +91,19 @@ class TestWF1AuditoriaRequisitos(unittest.TestCase):
         mock_gemini_cls.return_value.generate.assert_called()
         mock_conf_cls.return_value.create_page.assert_called_once()
         self.assertEqual(mock_jira_cls.return_value.upsert_issue.call_count, 2)
+
+        # Verificar que cada llamada a upsert_issue usa external_id determinista y campos correctos
+        for call in mock_jira_cls.return_value.upsert_issue.call_args_list:
+            args, kwargs = call
+            self.assertTrue(
+                kwargs["external_id"].startswith("SQA-WF1-"),
+                f"external_id no cumple el prefijo esperado: {kwargs['external_id']}",
+            )
+            self.assertEqual(kwargs["fields"]["project"]["key"], "SQA")
+            self.assertEqual(kwargs["fields"]["issuetype"]["name"], "Bug")
+            self.assertIn("REQ-01", kwargs["fields"]["summary"])
+            self.assertIn("No es específico", kwargs["fields"]["description"])
+
         mock_write_json.assert_called_once()
 
     @patch("scripts.wf1_auditoria_requisitos.extract_text_from_pdf")
@@ -182,6 +195,50 @@ class TestWF1AuditoriaRequisitos(unittest.TestCase):
         mock_jira_cls.return_value.upsert_issue.assert_not_called()
         mock_conf_cls.return_value.create_page.assert_not_called()
         mock_write_json.assert_called_once()
+
+    @patch("scripts.wf1_auditoria_requisitos.extract_text_from_pdf")
+    @patch("scripts.wf1_auditoria_requisitos.chunk_text")
+    @patch("scripts.wf1_auditoria_requisitos.GeminiClient")
+    @patch("scripts.wf1_auditoria_requisitos.ConfluenceClient")
+    @patch("scripts.wf1_auditoria_requisitos.JiraClient")
+    @patch("scripts.wf1_auditoria_requisitos.write_summary_json")
+    def test_prompt_includes_invest_few_shot(
+        self,
+        mock_write_json,
+        mock_jira_cls,
+        mock_conf_cls,
+        mock_gemini_cls,
+        mock_chunk,
+        mock_extract,
+    ):
+        mock_doc_dir = MagicMock()
+        mock_doc_dir.glob.return_value = [Path("documentacion/BRIEF.pdf")]
+        config = self._make_config(documentacion_dir=mock_doc_dir)
+
+        mock_extract.return_value = "Requisito: El sistema debe permitir prestamos."
+        mock_chunk.return_value = ["chunk1"]
+
+        captured_prompts = []
+        gemini_resp = "[]"
+
+        def capture_generate(prompt):
+            captured_prompts.append(prompt)
+            return gemini_resp
+
+        mock_gemini_cls.return_value.generate.side_effect = capture_generate
+
+        wf1 = WF1AuditoriaRequisitos(config)
+        wf1.run()
+
+        self.assertTrue(len(captured_prompts) > 0)
+        for prompt in captured_prompts:
+            self.assertIn("=== EJEMPLOS DE HALLAZGOS ===", prompt)
+            self.assertIn("[POSITIVOS", prompt)
+            self.assertIn("[NEGATIVOS", prompt)
+            self.assertIn("EJEMPLO 1", prompt)
+            self.assertIn("EJEMPLO 2", prompt)
+            self.assertIn("EJEMPLO 3", prompt)
+            self.assertIn("INVEST", prompt)
 
 
 if __name__ == "__main__":

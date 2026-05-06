@@ -29,8 +29,33 @@ INVEST_PROMPT: str = (
     "Si no hay defectos, devuelve un array vacío []."
 )
 
+INVEST_FEW_SHOT: str = (
+    "\n\n=== EJEMPLOS DE HALLAZGOS ===\n"
+    "[POSITIVOS - Buen Hallazgo: Violación válida y accionable]\n"
+    "- EJEMPLO 1: Historia 'Como usuario quiero gestionar libros' — no es testeable porque el criterio de aceptación es demasiado vago ('gestionar' no se puede verificar).\n"
+    "- EJEMPLO 2: Historia 'Como bibliotecario quiero integrar el sistema con 5 APIs externas, migrar la base de datos y rediseñar la UI' — demasiado grande, no cumple 'Small'.\n"
+    "- EJEMPLO 3: Historias HU-05 y HU-06 dependen mutuamente entre sí para poder desplegarse — violan 'Independent'.\n\n"
+    "[NEGATIVOS - Falso Positivo: Subjetivo o cosmético]\n"
+    "- EJEMPLO 1: 'La redacción de la historia podría sonar mejor' — subjetivo, no es un defecto INVEST.\n"
+    "- EJEMPLO 2: Uso de sinónimos en la descripción ('prestar' vs 'alquilar') — no altera el significado ni la verificabilidad.\n"
+    "- EJEMPLO 3: 'Prefiero que el título de la historia esté en formato Yo como...' — preferencia de formato, no es una violación."
+)
+
 CONFLUENCE_SPACE: str = "SQA"
 CONFLUENCE_PARENT: str | None = None
+
+
+def _build_invest_prompt(chunk: str, filename: str, idx: int, total: int) -> str:
+    """Construye el prompt de auditoría INVEST incluyendo ejemplos few-shot.
+
+    Meta de precisión esperada: >= 70% de hallazgos válidos tras validación humana.
+    """
+    base = (
+        f"{INVEST_PROMPT}\n\n"
+        f"Documento: {filename} (chunk {idx + 1}/{total})\n\n"
+        f"{chunk}"
+    )
+    return f"{base}{INVEST_FEW_SHOT}"
 
 
 class WF1AuditoriaRequisitos:
@@ -109,7 +134,7 @@ class WF1AuditoriaRequisitos:
         """Envía chunks a Gemini y parsea hallazgos."""
         findings: list[dict[str, Any]] = []
         for idx, chunk in enumerate(chunks):
-            prompt = f"{INVEST_PROMPT}\n\nDocumento: {filename} (chunk {idx + 1}/{len(chunks)})\n\n{chunk}"
+            prompt = _build_invest_prompt(chunk, filename, idx, len(chunks))
             try:
                 raw = self.gemini.generate(prompt)
                 data = json.loads(raw)

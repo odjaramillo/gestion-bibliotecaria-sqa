@@ -139,6 +139,71 @@ class ImageAnalyzer:
         ),
     }
 
+    # Bloques few-shot por dominio visual para reducir falsos positivos.
+    # Meta de precision esperada: >= 70% de hallazgos validos tras validacion humana.
+    FEW_SHOT_C4: str = (
+        "\n\n=== EJEMPLOS DE HALLAZGOS ===\n"
+        "[POSITIVOS - Buen Hallazgo: Violacion valida y accionable]\n"
+        "- EJEMPLO 1: Actor externo 'Biblioteca Externa' mencionado en el ERS pero ausente en el diagrama de contexto.\n"
+        "- EJEMPLO 2: Contenedor 'API Gateway' documentado en el DAS pero no representado en el diagrama de contenedores.\n"
+        "- EJEMPLO 3: Relacion entre 'Frontend' y 'Backend' sin direccion ni protocolo indicado, impidiendo inferir el flujo de datos.\n\n"
+        "[NEGATIVOS - Falso Positivo: Cosmetico o subjetivo]\n"
+        "- EJEMPLO 1: 'El color azul de las cajas es confuso' — cosmetico, no afecta la arquitectura.\n"
+        "- EJEMPLO 2: 'Las cajas del diagrama estan desalineadas' — preferencia estilistica, no es un defecto estructural.\n"
+        "- EJEMPLO 3: 'Preferiria que se usen iconos diferentes para los actores' — subjetivo, no accionable."
+    )
+
+    FEW_SHOT_UML: str = (
+        "\n\n=== EJEMPLOS DE HALLAZGOS ===\n"
+        "[POSITIVOS - Buen Hallazgo: Violacion valida y accionable]\n"
+        "- EJEMPLO 1: Clase 'PrestamoController' aparece en el diagrama pero no existe en el codigo fuente.\n"
+        "- EJEMPLO 2: Multiplicidad omitida en la asociacion entre 'Usuario' y 'Prestamo', critica para entender cardinalidad.\n"
+        "- EJEMPLO 3: Herencia indicada en el diagrama entre 'Usuario' y 'Administrador' que contradice la implementacion actual.\n\n"
+        "[NEGATIVOS - Falso Positivo: Cosmetico o subjetivo]\n"
+        "- EJEMPLO 1: 'La tipografia del diagrama es pequena pero aun legible' — no es un defecto funcional.\n"
+        "- EJEMPLO 2: 'El color de las flechas de asociacion deberia ser rojo' — preferencia estilistica.\n"
+        "- EJEMPLO 3: 'Los nombres de las clases suenan poco elegantes' — subjetivo, no es una inconsistencia tecnica."
+    )
+
+    FEW_SHOT_WIREFRAME: str = (
+        "\n\n=== EJEMPLOS DE HALLAZGOS ===\n"
+        "[POSITIVOS - Buen Hallazgo: Violacion valida y accionable]\n"
+        "- EJEMPLO 1: Campo obligatorio 'ISBN' en el formulario de alta de libro no tiene etiqueta ni indicador de requerido.\n"
+        "- EJEMPLO 2: Boton de accion principal 'Confirmar Prestamo' ausente en el wireframe respecto a la historia de usuario HU-03.\n"
+        "- EJEMPLO 3: Flujo del wireframe muestra confirmacion antes de validacion, contradiciendo el ERS seccion 4.2.\n\n"
+        "[NEGATIVOS - Falso Positivo: Cosmetico o subjetivo]\n"
+        "- EJEMPLO 1: 'El color verde del boton Guardar no me gusta' — preferencia subjetiva de diseno.\n"
+        "- EJEMPLO 2: 'Sugiero aumentar el espaciado entre campos' — cosmetico, no afecta usabilidad funcional.\n"
+        "- EJEMPLO 3: 'Preferiria que la barra lateral este a la derecha' — layout subjetivo, no es un defecto."
+    )
+
+    FEW_SHOT_UNKNOWN: str = (
+        "\n\n=== EJEMPLOS DE HALLAZGOS ===\n"
+        "[POSITIVOS - Buen Hallazgo: Violacion valida y accionable]\n"
+        "- EJEMPLO 1: Elemento importante del documento (tabla, diagrama o figura) esta cortado o incompleto en la imagen.\n"
+        "- EJEMPLO 2: Texto dentro de la imagen es ilegible o de muy baja resolucion, impidiendo su verificacion.\n"
+        "- EJEMPLO 3: Numeracion o titulo de figura en la imagen no coincide con la referencia del texto del documento.\n\n"
+        "[NEGATIVOS - Falso Positivo: Cosmetico o subjetivo]\n"
+        "- EJEMPLO 1: 'La imagen tiene bordes blancos' — cosmetico, no afecta el contenido.\n"
+        "- EJEMPLO 2: 'Preferiria que la figura este centrada en la pagina' — preferencia de maquetacion.\n"
+        "- EJEMPLO 3: 'La calidad de la imagen podria ser mejor' — subjetivo sin evidencia de ilegibilidad."
+    )
+
+    _FEW_SHOT_MAP: dict[DiagramType, str] = {
+        DiagramType.C4_CONTEXT: FEW_SHOT_C4,
+        DiagramType.C4_CONTAINER: FEW_SHOT_C4,
+        DiagramType.C4_COMPONENT: FEW_SHOT_C4,
+        DiagramType.UML_CLASS: FEW_SHOT_UML,
+        DiagramType.UML_SEQUENCE: FEW_SHOT_UML,
+        DiagramType.WIREFRAME: FEW_SHOT_WIREFRAME,
+        DiagramType.UNKNOWN: FEW_SHOT_UNKNOWN,
+    }
+
+    @staticmethod
+    def _few_shot_for(diagram_type: DiagramType) -> str:
+        """Devuelve el bloque few-shot correspondiente al tipo de diagrama."""
+        return ImageAnalyzer._FEW_SHOT_MAP.get(diagram_type, ImageAnalyzer.FEW_SHOT_UNKNOWN)
+
     def __init__(self, gemini_client: Any) -> None:
         """Inicializa con un GeminiClient (scripts.sqa_core.clients)."""
         self.gemini = gemini_client
@@ -209,10 +274,15 @@ class ImageAnalyzer:
         return results
 
     def _build_prompt(self, diagram_type: DiagramType, context: str) -> str:
-        """Construye el prompt para Gemini incluyendo el contexto del sistema."""
+        """Construye el prompt para Gemini incluyendo contexto y ejemplos few-shot.
+
+        Meta de precision esperada: >= 70% de hallazgos validos tras validacion humana.
+        """
         template = self._PROMPTS.get(diagram_type, self._PROMPTS[DiagramType.UNKNOWN])
+        few_shot = self._few_shot_for(diagram_type)
         # Usamos replace en lugar de format para no interpretar las llaves JSON
-        return template.replace("{context}", context or "Sistema de Gestión Bibliotecaria")
+        base = template.replace("{context}", context or "Sistema de Gestion Bibliotecaria")
+        return f"{base}{few_shot}"
 
     def _infer_mime_type(self, path: Path) -> str:
         """Infiere el MIME type de la imagen por extensión."""

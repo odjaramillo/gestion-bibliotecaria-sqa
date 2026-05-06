@@ -217,6 +217,85 @@ class TestImageAnalyzer(unittest.TestCase):
         self.assertEqual(result, '{"findings": []}')
 
 
+    @patch("pathlib.Path.exists", return_value=True)
+    @patch("pathlib.Path.read_bytes", return_value=b"fake_image_data")
+    def test_prompt_includes_few_shot_block(self, mock_read, mock_exists):
+        analyzer = self._make_analyzer()
+        captured_prompts = []
+        base_response = json.dumps({"findings": []})
+        analyzer._generate_multimodal = lambda p, b, m: (captured_prompts.append(p) or base_response)
+
+        analyzer.analyze_image(
+            image_path=Path("/tmp/test.png"),
+            diagram_type=DiagramType.C4_CONTEXT,
+            context="Sistema de gestion bibliotecaria",
+        )
+        self.assertEqual(len(captured_prompts), 1)
+        prompt = captured_prompts[0]
+        self.assertIn("=== EJEMPLOS DE HALLAZGOS ===", prompt)
+        self.assertIn("[POSITIVOS", prompt)
+        self.assertIn("[NEGATIVOS", prompt)
+        self.assertIn("EJEMPLO 1", prompt)
+        self.assertIn("EJEMPLO 2", prompt)
+        self.assertIn("EJEMPLO 3", prompt)
+
+    @patch("pathlib.Path.exists", return_value=True)
+    @patch("pathlib.Path.read_bytes", return_value=b"fake_image_data")
+    def test_prompt_few_shot_by_diagram_type_c4(self, mock_read, mock_exists):
+        analyzer = self._make_analyzer()
+        captured = []
+        base_response = json.dumps({"findings": []})
+        analyzer._generate_multimodal = lambda p, b, m: (captured.append(p) or base_response)
+
+        analyzer.analyze_image(
+            Path("/tmp/test.png"), DiagramType.C4_CONTEXT, "ctx"
+        )
+        self.assertEqual(len(captured), 1)
+        self.assertIn("Actor externo", captured[0])
+
+    @patch("pathlib.Path.exists", return_value=True)
+    @patch("pathlib.Path.read_bytes", return_value=b"fake_image_data")
+    def test_prompt_few_shot_by_diagram_type_uml(self, mock_read, mock_exists):
+        analyzer = self._make_analyzer()
+        captured = []
+        base_response = json.dumps({"findings": []})
+        analyzer._generate_multimodal = lambda p, b, m: (captured.append(p) or base_response)
+
+        analyzer.analyze_image(
+            Path("/tmp/test.png"), DiagramType.UML_CLASS, "ctx"
+        )
+        self.assertEqual(len(captured), 1)
+        self.assertIn("Clase", captured[0])
+
+    @patch("pathlib.Path.exists", return_value=True)
+    @patch("pathlib.Path.read_bytes", return_value=b"fake_image_data")
+    def test_prompt_few_shot_by_diagram_type_wireframe(self, mock_read, mock_exists):
+        analyzer = self._make_analyzer()
+        captured = []
+        base_response = json.dumps({"findings": []})
+        analyzer._generate_multimodal = lambda p, b, m: (captured.append(p) or base_response)
+
+        analyzer.analyze_image(
+            Path("/tmp/test.png"), DiagramType.WIREFRAME, "ctx"
+        )
+        self.assertEqual(len(captured), 1)
+        self.assertIn("wireframe", captured[0].lower())
+
+    @patch("pathlib.Path.exists", return_value=True)
+    @patch("pathlib.Path.read_bytes", return_value=b"fake_image_data")
+    def test_prompt_few_shot_by_diagram_type_unknown(self, mock_read, mock_exists):
+        analyzer = self._make_analyzer()
+        captured = []
+        base_response = json.dumps({"findings": []})
+        analyzer._generate_multimodal = lambda p, b, m: (captured.append(p) or base_response)
+
+        analyzer.analyze_image(
+            Path("/tmp/test.png"), DiagramType.UNKNOWN, "ctx"
+        )
+        self.assertEqual(len(captured), 1)
+        self.assertIn("Elemento importante", captured[0])
+
+
 class TestNormalizeSeverity(unittest.TestCase):
     """Tests for severity normalization."""
 

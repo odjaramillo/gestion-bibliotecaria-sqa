@@ -31,9 +31,35 @@ ARCHITECTURE_PROMPT: str = (
     "Si no hay hallazgos, devuelve un array vacio []."
 )
 
+ARCHITECTURE_FEW_SHOT: str = (
+    "\n\n=== EJEMPLOS DE HALLAZGOS ===\n"
+    "[POSITIVOS - Buen Hallazgo: Violacion valida y accionable]\n"
+    "- EJEMPLO 1: Componente 'Servicio de Notificaciones' documentado en el DAS no existe en el codigo fuente del repositorio.\n"
+    "- EJEMPLO 2: SonarQube reporta deuda tecnica critica en el modulo 'auth-service' que no esta documentado en el DAS.\n"
+    "- EJEMPLO 3: Diagrama C4 de contenedores indica dependencia directa entre 'Frontend' y 'Base de Datos', pero el codigo real utiliza 'Backend' como intermediario.\n\n"
+    "[NEGATIVOS - Falso Positivo: Subjetivo o cosmetico]\n"
+    "- EJEMPLO 1: 'Los nombres de los paquetes deberian ser mas lindos' — subjetivo, no es una inconsistencia tecnica.\n"
+    "- EJEMPLO 2: 'Preferiria que se use el patron CQRS en lugar de MVC' — sin evidencia de que el patron actual cause problemas.\n"
+    "- EJEMPLO 3: 'El diagrama C4 no tiene suficiente sombreado' — critica cosmetica, no afecta la arquitectura."
+)
+
 CONFLUENCE_SPACE: str = "SQA"
 CONFLUENCE_PARENT: str | None = None
 SONAR_PROJECT_KEY: str = "gestion-bibliotecaria-sqa"
+
+
+def _build_architecture_prompt(das_text: str, sonar_data: dict[str, Any]) -> str:
+    """Construye el prompt de inspeccion arquitectonica incluyendo ejemplos few-shot.
+
+    Meta de precision esperada: >= 70% de hallazgos validos tras validacion humana.
+    """
+    base = (
+        f"{ARCHITECTURE_PROMPT}\n\n"
+        f"--- DAS ---\n{das_text[:DAS_TEXT_MAX_LEN]}\n\n"
+        f"--- SonarQube Issues ---\n{json.dumps(sonar_data.get('issues', {}), ensure_ascii=False)[:SONAR_ISSUES_MAX_LEN]}\n\n"
+        f"--- SonarQube Measures ---\n{json.dumps(sonar_data.get('measures', {}), ensure_ascii=False)[:SONAR_MEASURES_MAX_LEN]}"
+    )
+    return f"{base}{ARCHITECTURE_FEW_SHOT}"
 DAS_TEXT_MAX_LEN: int = 8000
 SONAR_ISSUES_MAX_LEN: int = 4000
 SONAR_MEASURES_MAX_LEN: int = 2000
@@ -158,13 +184,8 @@ class WF2InspeccionArquitectura:
     def _analyze_with_gemini(
         self, das_text: str, sonar_data: dict[str, Any]
     ) -> list[dict[str, Any]]:
-        """Envia DAS + SonarQube a Gemini y parsea hallazgos."""
-        prompt = (
-            f"{ARCHITECTURE_PROMPT}\n\n"
-            f"--- DAS ---\n{das_text[:DAS_TEXT_MAX_LEN]}\n\n"
-            f"--- SonarQube Issues ---\n{json.dumps(sonar_data.get('issues', {}), ensure_ascii=False)[:SONAR_ISSUES_MAX_LEN]}\n\n"
-            f"--- SonarQube Measures ---\n{json.dumps(sonar_data.get('measures', {}), ensure_ascii=False)[:SONAR_MEASURES_MAX_LEN]}"
-        )
+        """Envía DAS + SonarQube a Gemini y parsea hallazgos."""
+        prompt = _build_architecture_prompt(das_text, sonar_data)
         raw = self.gemini.generate(prompt)
         data = json.loads(raw)
         findings: list[dict[str, Any]] = []
