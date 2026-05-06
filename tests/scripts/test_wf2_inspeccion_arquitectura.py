@@ -479,6 +479,46 @@ class TestWF2InspeccionArquitectura(unittest.TestCase):
         self.assertEqual(args["visual_findings"], [])
         self.assertEqual(args["status"], "success")
 
+    @patch("scripts.wf2_inspeccion_arquitectura.extract_images_from_pdf")
+    @patch("scripts.wf2_inspeccion_arquitectura.extract_page_texts_from_pdf")
+    @patch("scripts.wf2_inspeccion_arquitectura.extract_text_from_pdf")
+    @patch("scripts.wf2_inspeccion_arquitectura.SonarQubeClient")
+    @patch("scripts.wf2_inspeccion_arquitectura.GeminiClient")
+    @patch("scripts.wf2_inspeccion_arquitectura.ConfluenceClient")
+    @patch("scripts.wf2_inspeccion_arquitectura.JiraClient")
+    @patch("scripts.wf2_inspeccion_arquitectura.write_summary_json")
+    def test_page_texts_failure_degrades_gracefully(
+        self,
+        mock_write_json,
+        mock_jira_cls,
+        mock_conf_cls,
+        mock_gemini_cls,
+        mock_sonar_cls,
+        mock_extract,
+        mock_page_texts,
+        mock_extract_images,
+    ):
+        mock_doc_dir = MagicMock()
+        mock_doc_dir.glob.return_value = [Path("documentacion/DAS.pdf")]
+        config = self._make_config(dry_run=True, documentacion_dir=mock_doc_dir)
+
+        mock_extract.return_value = "Diagrama C4"
+        mock_sonar_cls.return_value.get_issues.return_value = {"issues": []}
+        mock_sonar_cls.return_value.get_measures.return_value = {"component": {"measures": []}}
+        mock_gemini_cls.return_value.generate.return_value = "[]"
+
+        fake_image = Path("sqa/extracted_images/DAS_page1_img1.png")
+        mock_extract_images.return_value = [fake_image]
+        mock_page_texts.side_effect = Exception("PDF corrupto")
+
+        wf2 = WF2InspeccionArquitectura(config)
+        wf2.run()
+
+        args = mock_write_json.call_args[1]
+        self.assertEqual(args["status"], "partial")
+        self.assertEqual(len(args["visual_findings"]), 1)
+        self.assertTrue(args["visual_findings"][0]["id"].startswith("VIS-MOCK"))
+
 
 if __name__ == "__main__":
     unittest.main()

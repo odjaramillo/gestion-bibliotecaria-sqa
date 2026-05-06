@@ -243,7 +243,14 @@ class WF2InspeccionArquitectura:
         if not image_paths:
             return []
 
-        page_texts = extract_page_texts_from_pdf(pdf_path)
+        try:
+            page_texts = extract_page_texts_from_pdf(pdf_path)
+        except Exception as exc:
+            logger.warning(
+                "Error extrayendo texto por pagina de %s: %s", pdf_path, exc
+            )
+            page_texts = {}
+
         inputs: list[tuple[Path, DiagramType, str]] = []
         for img_path in image_paths:
             page_num = 0

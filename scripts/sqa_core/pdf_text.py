@@ -1,10 +1,16 @@
 """PDF text extraction and chunking for frozen documentation."""
 from __future__ import annotations
 
+import io
 import logging
 from pathlib import Path
 
 import fitz
+
+try:
+    from PIL import Image
+except ImportError:
+    Image = None
 
 logger = logging.getLogger("sqa_core.pdf_text")
 
@@ -68,9 +74,21 @@ def extract_images_from_pdf(
                     )
                     continue
                 image_bytes = base_image["image"]
+                try:
+                    img = Image.open(io.BytesIO(image_bytes))
+                    if img.mode not in ("RGB", "RGBA"):
+                        img = img.convert("RGB")
+                    png_buffer = io.BytesIO()
+                    img.save(png_buffer, format="PNG")
+                    png_bytes = png_buffer.getvalue()
+                except Exception as exc:
+                    logger.warning(
+                        "Error convirtiendo imagen xref=%s a PNG: %s", xref, exc
+                    )
+                    continue
                 image_filename = f"{pdf_name}_page{page_num + 1}_img{img_index}.png"
                 image_path = output_dir / image_filename
-                image_path.write_bytes(image_bytes)
+                image_path.write_bytes(png_bytes)
                 extracted.append(image_path)
                 logger.info("Imagen guardada: %s (%sx%s)", image_path, width, height)
 

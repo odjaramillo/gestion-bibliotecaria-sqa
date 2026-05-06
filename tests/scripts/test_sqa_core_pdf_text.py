@@ -76,10 +76,11 @@ class TestChunkText(unittest.TestCase):
 class TestExtractImagesFromPdf(unittest.TestCase):
     """Tests para extracción de imágenes desde PDF."""
 
+    @patch("scripts.sqa_core.pdf_text.Image")
     @patch("pathlib.Path.mkdir")
     @patch("pathlib.Path.write_bytes")
     @patch("scripts.sqa_core.pdf_text.fitz")
-    def test_extracts_valid_images_and_filters_small(self, mock_fitz, mock_write, mock_mkdir):
+    def test_extracts_valid_images_and_filters_small(self, mock_fitz, mock_write, mock_mkdir, mock_pil_image):
         mock_doc = MagicMock()
         mock_doc.__len__ = MagicMock(return_value=1)
 
@@ -106,11 +107,21 @@ class TestExtractImagesFromPdf(unittest.TestCase):
         mock_fitz.open.return_value.__enter__ = MagicMock(return_value=mock_doc)
         mock_fitz.open.return_value.__exit__ = MagicMock(return_value=False)
 
+        mock_img = MagicMock()
+        mock_img.mode = "RGB"
+
+        def _save_to_buffer(buffer, format=None):
+            buffer.write(b"\x89PNG\r\n\x1a\nfake_png_data")
+
+        mock_img.save.side_effect = _save_to_buffer
+        mock_pil_image.open.return_value = mock_img
+
         result = extract_images_from_pdf("/fake/DAS.pdf", Path("/out"))
 
         self.assertEqual(len(result), 1)
         self.assertIn("DAS_page1_img1.png", str(result[0]))
-        mock_write.assert_called_once_with(b"large_image_bytes")
+        written_bytes = mock_write.call_args[0][0]
+        self.assertTrue(written_bytes.startswith(b"\x89PNG"))
 
     @patch("pathlib.Path.mkdir")
     @patch("scripts.sqa_core.pdf_text.fitz")
@@ -137,6 +148,28 @@ class TestExtractImagesFromPdf(unittest.TestCase):
         mock_doc.extract_image.side_effect = Exception("corrupt")
         mock_fitz.open.return_value.__enter__ = MagicMock(return_value=mock_doc)
         mock_fitz.open.return_value.__exit__ = MagicMock(return_value=False)
+
+        result = extract_images_from_pdf("/fake/bad.pdf", Path("/out"))
+        self.assertEqual(result, [])
+
+    @patch("scripts.sqa_core.pdf_text.Image")
+    @patch("pathlib.Path.mkdir")
+    @patch("scripts.sqa_core.pdf_text.fitz")
+    def test_skips_images_that_fail_conversion(self, mock_fitz, mock_mkdir, mock_pil_image):
+        mock_doc = MagicMock()
+        mock_doc.__len__ = MagicMock(return_value=1)
+        mock_page = MagicMock()
+        mock_page.get_images.return_value = [(1,)]
+        mock_doc.__getitem__ = MagicMock(return_value=mock_page)
+        mock_doc.extract_image.return_value = {
+            "width": 300,
+            "height": 250,
+            "image": b"some_image_bytes",
+        }
+        mock_fitz.open.return_value.__enter__ = MagicMock(return_value=mock_doc)
+        mock_fitz.open.return_value.__exit__ = MagicMock(return_value=False)
+
+        mock_pil_image.open.side_effect = Exception("unsupported format")
 
         result = extract_images_from_pdf("/fake/bad.pdf", Path("/out"))
         self.assertEqual(result, [])
