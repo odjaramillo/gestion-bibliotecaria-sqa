@@ -191,6 +191,31 @@ class TestImageAnalyzer(unittest.TestCase):
         )
         self.assertEqual(findings, [])
 
+    def test_generate_multimodal_uses_gemini_model(self):
+        """Verifica que se accede correctamente a self.gemini.model para llamadas multimodales."""
+        mock_client = MagicMock()
+        analyzer = ImageAnalyzer(gemini_client=mock_client)
+        mock_response = MagicMock()
+        mock_response.text = '{"findings": []}'
+        mock_client.model.generate_content.return_value = mock_response
+
+        result = analyzer._generate_multimodal("prompt", "b64data", "image/png")
+
+        mock_client.model.generate_content.assert_called_once()
+        self.assertEqual(result, '{"findings": []}')
+
+    def test_generate_multimodal_fallback_when_no_model(self):
+        """Verifica el fallback a generate() cuando no existe el atributo model."""
+        mock_client = MagicMock()
+        del mock_client.model
+        analyzer = ImageAnalyzer(gemini_client=mock_client)
+        mock_client.generate.return_value = '{"findings": []}'
+
+        result = analyzer._generate_multimodal("prompt", "b64data", "image/png")
+
+        mock_client.generate.assert_called_once()
+        self.assertEqual(result, '{"findings": []}')
+
 
 class TestNormalizeSeverity(unittest.TestCase):
     """Tests for severity normalization."""

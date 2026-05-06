@@ -236,7 +236,7 @@ class ImageAnalyzer:
         y deberá adaptarse.
         """
         # Intentar acceder al modelo subyacente del GeminiClient
-        model = getattr(self.gemini, "_model", None)
+        model = getattr(self.gemini, "model", None)
         if model is None:
             # Fallback: usar generate() con texto plano (no multimodal)
             # Esto no es ideal pero permite testing sin acceso al modelo real
