@@ -67,6 +67,89 @@ class JiraClient:
     def add_comment(self, issue: Any, body: str) -> None:
         _retry(lambda: self.client.add_comment(issue, body))
 
+    def upsert_issue(self, external_id: str, fields: dict[str, Any]) -> dict[str, Any]:
+        """Crea o actualiza un issue en Jira usando external_id como label.
+
+        Busca por JQL utilizando el label external_id. Si existe, agrega un
+        comentario de actualizacion; si no existe, crea el issue con el label.
+        En modo DRY_RUN solo registra la accion prevista sin mutar.
+
+        Retorna un dict con las claves ``action`` (created|updated|
+        dry-run-create|dry-run-update|error) y ``issue_key`` (str o None).
+        """
+        project_key = fields.get("project", {}).get("key", "SQA")
+        jql = f'project = "{project_key}" AND labels = "{external_id}" ORDER BY created ASC'
+
+        try:
+            existing = self.search_issues(jql, max_results=10)
+        except Exception as exc:
+            logger.error("Error buscando issue por external_id=%s: %s", external_id, exc)
+            return {"action": "error", "issue_key": None}
+
+        if existing:
+            issue = existing[0]
+            if len(existing) > 1:
+                logger.warning(
+                    "Multiples issues encontrados para external_id=%s; usando el primero (%s)",
+                    external_id,
+                    issue.key,
+                )
+
+            if self.config.dry_run:
+                logger.info(
+                    "[DRY RUN] Actualizaria issue %s para external_id=%s",
+                    issue.key,
+                    external_id,
+                )
+                return {"action": "dry-run-update", "issue_key": issue.key}
+
+            comment_body = (
+                f"Actualizacion automatica del workflow SQA.\n"
+                f"El hallazgo con external_id={external_id} fue re-procesado.\n\n"
+                f"Resumen: {fields.get('summary', 'N/A')}"
+            )
+            try:
+                self.add_comment(issue, comment_body)
+                logger.info(
+                    "Comentario agregado a issue %s para external_id=%s",
+                    issue.key,
+                    external_id,
+                )
+                return {"action": "updated", "issue_key": issue.key}
+            except Exception as exc:
+                logger.error(
+                    "Error agregando comentario a issue %s: %s",
+                    issue.key,
+                    exc,
+                )
+                return {"action": "error", "issue_key": issue.key}
+
+        # No existe -> crear
+        if self.config.dry_run:
+            logger.info("[DRY RUN] Crearia issue para external_id=%s", external_id)
+            return {"action": "dry-run-create", "issue_key": None}
+
+        create_fields = dict(fields)
+        labels = list(create_fields.get("labels", []))
+        labels.append(external_id)
+        create_fields["labels"] = labels
+
+        try:
+            issue = self.create_issue(create_fields)
+            logger.info(
+                "Issue creado: %s para external_id=%s",
+                issue.key,
+                external_id,
+            )
+            return {"action": "created", "issue_key": issue.key}
+        except Exception as exc:
+            logger.error(
+                "Error creando issue para external_id=%s: %s",
+                external_id,
+                exc,
+            )
+            return {"action": "error", "issue_key": None}
+
 
 class ConfluenceClient:
     """Lightweight Confluence REST client with retry semantics."""

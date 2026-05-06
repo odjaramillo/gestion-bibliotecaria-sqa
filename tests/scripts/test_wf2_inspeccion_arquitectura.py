@@ -85,7 +85,7 @@ class TestWF2InspeccionArquitectura(unittest.TestCase):
         mock_conf_cls.return_value.get_page_by_title.return_value = None
         mock_conf_cls.return_value.create_page.return_value = {"id": "PAGE-2"}
 
-        mock_jira_cls.return_value.create_issue.return_value = MagicMock(key="SQA-10")
+        mock_jira_cls.return_value.upsert_issue.return_value = {"action": "created", "issue_key": "SQA-10"}
 
         wf2 = WF2InspeccionArquitectura(config)
         wf2.run()
@@ -95,7 +95,7 @@ class TestWF2InspeccionArquitectura(unittest.TestCase):
         mock_sonar.get_measures.assert_called_once()
         mock_gemini_cls.return_value.generate.assert_called_once()
         mock_conf_cls.return_value.create_page.assert_called_once()
-        self.assertEqual(mock_jira_cls.return_value.create_issue.call_count, 1)
+        self.assertEqual(mock_jira_cls.return_value.upsert_issue.call_count, 1)
         mock_write_json.assert_called_once()
 
     @patch("scripts.wf2_inspeccion_arquitectura.write_summary_json")
@@ -137,7 +137,7 @@ class TestWF2InspeccionArquitectura(unittest.TestCase):
         wf2.run()
 
         mock_gemini_cls.return_value.generate.assert_not_called()
-        mock_jira_cls.return_value.create_issue.assert_not_called()
+        mock_jira_cls.return_value.upsert_issue.assert_not_called()
         mock_conf_cls.return_value.create_page.assert_not_called()
         mock_write_json.assert_called_once()
         args = mock_write_json.call_args[1]
@@ -170,7 +170,7 @@ class TestWF2InspeccionArquitectura(unittest.TestCase):
         wf2 = WF2InspeccionArquitectura(config)
         wf2.run()
 
-        mock_jira_cls.return_value.create_issue.assert_not_called()
+        mock_jira_cls.return_value.upsert_issue.assert_not_called()
         mock_conf_cls.return_value.create_page.assert_not_called()
         mock_write_json.assert_called_once()
 
@@ -201,7 +201,7 @@ class TestWF2InspeccionArquitectura(unittest.TestCase):
         wf2 = WF2InspeccionArquitectura(config)
         wf2.run()
 
-        mock_jira_cls.return_value.create_issue.assert_not_called()
+        mock_jira_cls.return_value.upsert_issue.assert_not_called()
         mock_conf_cls.return_value.create_page.assert_not_called()
         mock_write_json.assert_called_once()
         args = mock_write_json.call_args[1]
@@ -264,7 +264,7 @@ class TestWF2InspeccionArquitectura(unittest.TestCase):
             '[{"id":"ARCH-02","severity":"Media","type":"task",'
             '"description":"Falta documentacion","component":"API"}]'
         )
-        mock_jira_cls.return_value.create_issue.return_value = MagicMock(key="SQA-11")
+        mock_jira_cls.return_value.upsert_issue.return_value = {"action": "created", "issue_key": "SQA-11"}
         mock_conf_cls.return_value.create_page.return_value = {"id": "PAGE-3"}
 
         wf2 = WF2InspeccionArquitectura(config)
@@ -305,7 +305,7 @@ class TestWF2InspeccionArquitectura(unittest.TestCase):
         wf2 = WF2InspeccionArquitectura(config)
         wf2.run()
 
-        mock_jira_cls.return_value.create_issue.assert_not_called()
+        mock_jira_cls.return_value.upsert_issue.assert_not_called()
         args = mock_write_json.call_args[1]
         self.assertEqual(args["jira_keys"], [])
 

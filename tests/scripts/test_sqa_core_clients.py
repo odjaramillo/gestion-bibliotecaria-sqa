@@ -78,6 +78,179 @@ class TestJiraClient(unittest.TestCase):
         })
         self.assertEqual(result, mock_issue)
 
+    @patch("scripts.sqa_core.clients.JIRA")
+    def test_upsert_issue_creates_when_not_found(self, mock_jira_cls):
+        config = self._make_config()
+        config = SQAConfig(
+            jira_server=config.jira_server,
+            jira_email=config.jira_email,
+            jira_api_token=config.jira_api_token,
+            confluence_url=config.confluence_url,
+            confluence_user=config.confluence_user,
+            confluence_token=config.confluence_token,
+            gemini_api_key=config.gemini_api_key,
+            sonarqube_url=config.sonarqube_url,
+            sonarqube_token=config.sonarqube_token,
+            dry_run=False,
+            project_root=config.project_root,
+            documentacion_dir=config.documentacion_dir,
+            reportes_dir=config.reportes_dir,
+        )
+        client = JiraClient(config)
+        client.client.search_issues.return_value = []
+        mock_issue = MagicMock()
+        mock_issue.key = "SQA-1"
+        client.client.create_issue.return_value = mock_issue
+
+        result = client.upsert_issue(
+            "SQA-WF1-REQ-01",
+            {
+                "project": {"key": "SQA"},
+                "summary": "Bug",
+                "issuetype": {"name": "Bug"},
+            },
+        )
+
+        client.client.search_issues.assert_called_once()
+        client.client.create_issue.assert_called_once()
+        call_fields = client.client.create_issue.call_args[1]["fields"]
+        self.assertIn("SQA-WF1-REQ-01", call_fields["labels"])
+        self.assertEqual(result, {"action": "created", "issue_key": "SQA-1"})
+
+    @patch("scripts.sqa_core.clients.JIRA")
+    def test_upsert_issue_updates_when_found(self, mock_jira_cls):
+        config = self._make_config()
+        config = SQAConfig(
+            jira_server=config.jira_server,
+            jira_email=config.jira_email,
+            jira_api_token=config.jira_api_token,
+            confluence_url=config.confluence_url,
+            confluence_user=config.confluence_user,
+            confluence_token=config.confluence_token,
+            gemini_api_key=config.gemini_api_key,
+            sonarqube_url=config.sonarqube_url,
+            sonarqube_token=config.sonarqube_token,
+            dry_run=False,
+            project_root=config.project_root,
+            documentacion_dir=config.documentacion_dir,
+            reportes_dir=config.reportes_dir,
+        )
+        client = JiraClient(config)
+        mock_issue = MagicMock()
+        mock_issue.key = "SQA-1"
+        client.client.search_issues.return_value = [mock_issue]
+
+        result = client.upsert_issue(
+            "SQA-WF1-REQ-01",
+            {
+                "project": {"key": "SQA"},
+                "summary": "Bug",
+                "issuetype": {"name": "Bug"},
+            },
+        )
+
+        client.client.search_issues.assert_called_once()
+        client.client.add_comment.assert_called_once_with(
+            mock_issue,
+            "Actualizacion automatica del workflow SQA.\n"
+            "El hallazgo con external_id=SQA-WF1-REQ-01 fue re-procesado.\n\n"
+            "Resumen: Bug",
+        )
+        client.client.create_issue.assert_not_called()
+        self.assertEqual(result, {"action": "updated", "issue_key": "SQA-1"})
+
+    @patch("scripts.sqa_core.clients.JIRA")
+    def test_upsert_issue_respects_dry_run(self, mock_jira_cls):
+        config = self._make_config()  # dry_run=True por defecto
+        client = JiraClient(config)
+        client.client.search_issues.return_value = []
+
+        result = client.upsert_issue(
+            "SQA-WF1-REQ-01",
+            {
+                "project": {"key": "SQA"},
+                "summary": "Bug",
+                "issuetype": {"name": "Bug"},
+            },
+        )
+
+        client.client.search_issues.assert_called_once()
+        client.client.create_issue.assert_not_called()
+        client.client.add_comment.assert_not_called()
+        self.assertEqual(result, {"action": "dry-run-create", "issue_key": None})
+
+    @patch("scripts.sqa_core.clients.JIRA")
+    def test_upsert_issue_multiple_matches_uses_first(self, mock_jira_cls):
+        config = self._make_config()
+        config = SQAConfig(
+            jira_server=config.jira_server,
+            jira_email=config.jira_email,
+            jira_api_token=config.jira_api_token,
+            confluence_url=config.confluence_url,
+            confluence_user=config.confluence_user,
+            confluence_token=config.confluence_token,
+            gemini_api_key=config.gemini_api_key,
+            sonarqube_url=config.sonarqube_url,
+            sonarqube_token=config.sonarqube_token,
+            dry_run=False,
+            project_root=config.project_root,
+            documentacion_dir=config.documentacion_dir,
+            reportes_dir=config.reportes_dir,
+        )
+        client = JiraClient(config)
+        mock_issue1 = MagicMock()
+        mock_issue1.key = "SQA-1"
+        mock_issue2 = MagicMock()
+        mock_issue2.key = "SQA-2"
+        client.client.search_issues.return_value = [mock_issue1, mock_issue2]
+
+        result = client.upsert_issue(
+            "SQA-WF1-REQ-01",
+            {
+                "project": {"key": "SQA"},
+                "summary": "Bug",
+                "issuetype": {"name": "Bug"},
+            },
+        )
+
+        client.client.add_comment.assert_called_once_with(mock_issue1, unittest.mock.ANY)
+        client.client.create_issue.assert_not_called()
+        self.assertEqual(result, {"action": "updated", "issue_key": "SQA-1"})
+
+    @patch("scripts.sqa_core.clients.JIRA")
+    def test_upsert_issue_search_error_returns_error(self, mock_jira_cls):
+        config = self._make_config()
+        config = SQAConfig(
+            jira_server=config.jira_server,
+            jira_email=config.jira_email,
+            jira_api_token=config.jira_api_token,
+            confluence_url=config.confluence_url,
+            confluence_user=config.confluence_user,
+            confluence_token=config.confluence_token,
+            gemini_api_key=config.gemini_api_key,
+            sonarqube_url=config.sonarqube_url,
+            sonarqube_token=config.sonarqube_token,
+            dry_run=False,
+            project_root=config.project_root,
+            documentacion_dir=config.documentacion_dir,
+            reportes_dir=config.reportes_dir,
+        )
+        client = JiraClient(config)
+        client.client.search_issues.side_effect = Exception("JQL error")
+
+        result = client.upsert_issue(
+            "SQA-WF1-REQ-01",
+            {
+                "project": {"key": "SQA"},
+                "summary": "Bug",
+                "issuetype": {"name": "Bug"},
+            },
+        )
+
+        client.client.create_issue.assert_not_called()
+        client.client.add_comment.assert_not_called()
+        self.assertEqual(result, {"action": "error", "issue_key": None})
+
 
 class TestConfluenceClient(unittest.TestCase):
     """Tests for ConfluenceClient wrapper."""

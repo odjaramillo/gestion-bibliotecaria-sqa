@@ -82,7 +82,7 @@ class TestWF1AuditoriaRequisitos(unittest.TestCase):
         mock_conf_cls.return_value.get_page_by_title.return_value = None
         mock_conf_cls.return_value.create_page.return_value = {"id": "PAGE-1"}
 
-        mock_jira_cls.return_value.create_issue.return_value = MagicMock(key="SQA-1")
+        mock_jira_cls.return_value.upsert_issue.return_value = {"action": "created", "issue_key": "SQA-1"}
 
         wf1 = WF1AuditoriaRequisitos(config)
         wf1.run()
@@ -90,7 +90,7 @@ class TestWF1AuditoriaRequisitos(unittest.TestCase):
         mock_extract.assert_called()
         mock_gemini_cls.return_value.generate.assert_called()
         mock_conf_cls.return_value.create_page.assert_called_once()
-        self.assertEqual(mock_jira_cls.return_value.create_issue.call_count, 2)
+        self.assertEqual(mock_jira_cls.return_value.upsert_issue.call_count, 2)
         mock_write_json.assert_called_once()
 
     @patch("scripts.wf1_auditoria_requisitos.extract_text_from_pdf")
@@ -116,7 +116,7 @@ class TestWF1AuditoriaRequisitos(unittest.TestCase):
         mock_extract.assert_not_called()
         mock_gemini_cls.return_value.generate.assert_not_called()
         mock_conf_cls.return_value.create_page.assert_not_called()
-        mock_jira_cls.return_value.create_issue.assert_not_called()
+        mock_jira_cls.return_value.upsert_issue.assert_not_called()
         mock_write_json.assert_called_once()
         args = mock_write_json.call_args[1]
         self.assertEqual(args["status"], "failed")
@@ -147,7 +147,7 @@ class TestWF1AuditoriaRequisitos(unittest.TestCase):
         wf1 = WF1AuditoriaRequisitos(config)
         wf1.run()
 
-        mock_jira_cls.return_value.create_issue.assert_not_called()
+        mock_jira_cls.return_value.upsert_issue.assert_not_called()
         mock_conf_cls.return_value.create_page.assert_not_called()
         mock_write_json.assert_called_once()
         args = mock_write_json.call_args[1]
@@ -179,7 +179,7 @@ class TestWF1AuditoriaRequisitos(unittest.TestCase):
         wf1 = WF1AuditoriaRequisitos(config)
         wf1.run()
 
-        mock_jira_cls.return_value.create_issue.assert_not_called()
+        mock_jira_cls.return_value.upsert_issue.assert_not_called()
         mock_conf_cls.return_value.create_page.assert_not_called()
         mock_write_json.assert_called_once()
 

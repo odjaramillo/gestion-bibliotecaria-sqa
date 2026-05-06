@@ -152,23 +152,29 @@ class WF1AuditoriaRequisitos:
             return None
 
     def _create_jira_bugs(self, findings: list[dict[str, Any]]) -> list[str]:
-        """Crea bugs en Jira para cada hallazgo de severidad Alta/Media."""
+        """Crea o actualiza bugs en Jira para cada hallazgo de severidad Alta/Media."""
         keys: list[str] = []
         for finding in findings:
             if finding.get("severity") not in ("Alta", "Media"):
                 continue
+            external_id = f"SQA-WF1-{finding.get('id', 'REQ-??')}"
             summary = f"[WF1] {finding.get('id', 'REQ-??')} — {finding.get('invest_criteria', 'INVEST')}"
-            description = f"{finding.get('description', 'Sin descripción')}\n\n"
-            f"Criterio INVEST: {finding.get('invest_criteria', 'N/A')}"
+            description = (
+                f"{finding.get('description', 'Sin descripción')}\n\n"
+                f"Criterio INVEST: {finding.get('invest_criteria', 'N/A')}"
+            )
             try:
-                issue = self.jira.create_issue({
-                    "project": {"key": "SQA"},
-                    "summary": summary,
-                    "description": description,
-                    "issuetype": {"name": "Bug"},
-                })
-                keys.append(issue.key)
-                logger.info("Bug creado: %s", issue.key)
+                result = self.jira.upsert_issue(
+                    external_id=external_id,
+                    fields={
+                        "project": {"key": "SQA"},
+                        "summary": summary,
+                        "description": description,
+                        "issuetype": {"name": "Bug"},
+                    },
+                )
+                if result.get("issue_key"):
+                    keys.append(result["issue_key"])
             except Exception as exc:
                 logger.error("Error creando bug en Jira: %s", exc)
         return keys

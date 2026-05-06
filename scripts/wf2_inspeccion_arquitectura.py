@@ -204,25 +204,29 @@ class WF2InspeccionArquitectura:
             return None
 
     def _create_jira_tasks(self, findings: list[dict[str, Any]]) -> list[str]:
-        """Crea tareas en Jira para cada hallazgo de severidad Alta/Media."""
+        """Crea o actualiza tareas en Jira para cada hallazgo de severidad Alta/Media."""
         keys: list[str] = []
         for finding in findings:
             if finding.get("severity") not in ("Alta", "Media"):
                 continue
+            external_id = f"SQA-WF2-{finding.get('id', 'ARCH-??')}"
             summary = f"[WF2] {finding.get('id', 'ARCH-??')} — {finding.get('component', 'Sistema')}"
             description = (
                 f"{finding.get('description', 'Sin descripcion')}\n\n"
                 f"Componente: {finding.get('component', 'N/A')}"
             )
             try:
-                issue = self.jira.create_issue({
-                    "project": {"key": "SQA"},
-                    "summary": summary,
-                    "description": description,
-                    "issuetype": {"name": "Task"},
-                })
-                keys.append(issue.key)
-                logger.info("Tarea creada: %s", issue.key)
+                result = self.jira.upsert_issue(
+                    external_id=external_id,
+                    fields={
+                        "project": {"key": "SQA"},
+                        "summary": summary,
+                        "description": description,
+                        "issuetype": {"name": "Task"},
+                    },
+                )
+                if result.get("issue_key"):
+                    keys.append(result["issue_key"])
             except Exception as exc:
                 logger.error("Error creando tarea en Jira: %s", exc)
         return keys
