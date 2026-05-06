@@ -37,3 +37,6 @@ build/
 __pycache__/
 *.pyc
 skills-lock.json
+
+### Engram local database ###
+.engram/
