@@ -37,11 +37,16 @@ def _validate_required_keys(data: dict[str, Any], required: set[str], ctx: str) 
         raise PacConfigError(f"{ctx}: faltan campos obligatorios: {', '.join(sorted(missing))}")
 
 
-def _validate_type(value: Any, expected: type, path: str) -> None:
+def _validate_type(value: Any, expected: type | tuple[type, ...], path: str) -> None:
     """Raise PacConfigError if *value* is not an instance of *expected*."""
     if not isinstance(value, expected):
+        type_name = (
+            " or ".join(t.__name__ for t in expected)
+            if isinstance(expected, tuple)
+            else expected.__name__
+        )
         raise PacConfigError(
-            f"{path}: se esperaba {expected.__name__}, se obtuvo {type(value).__name__}"
+            f"{path}: se esperaba {type_name}, se obtuvo {type(value).__name__}"
         )
 
 

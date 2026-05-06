@@ -14,7 +14,7 @@ from xml.etree import ElementTree as ET
 
 def _ns(tag: str) -> str:
     """Return the fully-qualified Maven POM tag with default namespace."""
-    return f"{{{http://maven.apache.org/POM/4.0.0}}}{tag}"
+    return "{http://maven.apache.org/POM/4.0.0}" + tag
 
 
 def parse_pom(path: Path) -> dict[str, Any]:
@@ -102,7 +102,7 @@ def parse_package_json(path: Path) -> dict[str, Any]:
         "name": data.get("name", ""),
         "version": data.get("version", ""),
         "vue_version": deps.get("vue", "").lstrip("^~"),
-        "dependencies": sorted([{"name": k, "version": v.lstrip("^~")} for k, v in deps.items()]),
-        "dev_dependencies": sorted([{"name": k, "version": v.lstrip("^~")} for k, v in dev_deps.items()]),
+        "dependencies": sorted([{"name": k, "version": v.lstrip("^~")} for k, v in deps.items()], key=lambda d: d["name"]),
+        "dev_dependencies": sorted([{"name": k, "version": v.lstrip("^~")} for k, v in dev_deps.items()], key=lambda d: d["name"]),
         "build_tool": "npm / vue-cli",
     }
