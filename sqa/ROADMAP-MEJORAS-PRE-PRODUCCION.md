@@ -1,9 +1,9 @@
 # Roadmap de Mejoras Pre-Producción — SQA Workflows
 
-**Estado:** WF1-WF4 implementados en `dry_run`. Pendiente de mejoras antes de activar `DRY_RUN=false`.
+**Estado:** WF1-WF4 implementados en `dry_run`. M1, M2, M3, M4 completados. M5, M6, M7 pendientes.
 **Rama tracker:** `feature/sdd-workflows`
 **Branch actual:** `feature/sdd-workflows-slice-4-wf4`
-**Tests:** 74/74 pasando
+**Tests:** 99/99 pasando
 
 ---
 
@@ -11,9 +11,11 @@
 
 Este proyecto tiene:
 - 4 workflows (WF1-WF4) implementados en Python + GitHub Actions
-- Módulo de análisis visual de diagramas (`scripts/sqa_core/image_analysis.py`) listo pero NO integrado
-- 5 checklists JSON con 71 ítems de auditoría textual
-- 30+ imágenes de diagramas extraídas de PDFs pendientes de auditoría visual
+- Módulo de análisis visual de diagramas integrado en WF2 (`scripts/sqa_core/image_analysis.py`)
+- 5 checklists JSON con 75 ítems de auditoría (71 textual + 4 visual)
+- Imágenes de diagramas extraídas automáticamente de PDFs y auditadas por Gemini multimodal
+- Jira idempotente: `upsert_issue()` con `external_id` evita duplicados
+- Prompts few-shot para Gemini en WF1, WF2 e image_analysis (reduce falsos positivos)
 - Modelo Gemini estandarizado: `gemini-3.1-flash-lite-preview`
 
 **Regla de oro:** El código fuente del Equipo 58-1 (`src/`, `biblioteca-frontend/src/`) es INMUTABLE.
@@ -129,6 +131,41 @@ Este proyecto tiene:
 
 ---
 
+### M7: Generación Semi-Automatizada del PAC
+**Prioridad:** MEDIA (post-producción)
+**Por qué:** El PAC se escribe manualmente siguiendo IEEE 730-2014. Es repetitivo, propenso a olvidar secciones, y las herramientas/métricas dependen del stack del SUT. Semi-automatizarlo reduce errores y acelera el inicio de nuevos proyectos SQA.
+
+**Qué hay que hacer:**
+1. Crear `scripts/wf_pac_generator.py` que:
+   - Tome como input: stack del SUT, artefactos a auditar, estándar deseado (IEEE 730)
+   - Genere la estructura base del PAC con todas las secciones obligatorias
+   - Sugiera métricas estándar (Densidad de Defectos, Cobertura, Deuda Técnica) con fórmulas y fuentes de datos
+   - Sugiera herramientas según el stack (ej: Java+Spring → SonarQube, JaCoCo, RestAssured)
+   - Genere checklists base a partir de estándares ISO/IEEE
+2. Crear `scripts/wf_pac_auditor.py` que valide un PAC existente:
+   - Verifique que todas las secciones IEEE 730 estén presentes
+   - Valide que cada métrica tenga fórmula + responsable
+   - Verifique que herramientas declaradas estén en requirements.txt
+   - Genere un reporte de madurez del PAC
+3. Integrar como WF_PAC en el ecosistema SQA
+
+**Qué NO se puede automatizar (requiere humano):**
+- Objetivos de calidad (prioridades de negocio)
+- Roles y responsabilidades del equipo
+- Aceptación de riesgos
+- Umbral de calidad (% de cobertura aceptable)
+
+**Archivos a tocar:**
+- `scripts/wf_pac_generator.py` (nuevo)
+- `scripts/wf_pac_auditor.py` (nuevo)
+- `sqa/PACS-Fase2-Herramientas.md` (actualizar como output del generador)
+- `tests/scripts/test_wf_pac_generator.py` (nuevo)
+- `tests/scripts/test_wf_pac_auditor.py` (nuevo)
+
+**Nota:** M7 es una mejora de metodología, no bloquea producción. Se puede trabajar después de activar DRY_RUN=false.
+
+---
+
 ## Orden Sugerido de Implementación
 
 ```
@@ -141,14 +178,18 @@ M4 (Mejorar prompts) ─────────┘                             
 M5 (Cobertura) ────────────────────────────────────────────────┘
 
 M6 (Cleanup) ───> Puede hacerse en cualquier momento
+
+M7 (PAC semi-automatizado) ───> Post-producción / mejora de metodología
 ```
 
 **Secuencia recomendada:**
-1. M3 + M1 juntos (son dependientes)
-2. M2 (idempotencia — crítico para no romper Jira)
-3. M4 + M5 en paralelo (mejoras de calidad)
-4. M6 (limpieza)
-5. **Activar producción**
+1. ✅ M3 + M1 juntos (son dependientes) — COMPLETADOS
+2. ✅ M2 (idempotencia — crítico para no romper Jira) — COMPLETADO
+3. ✅ M4 (mejorar prompts) — COMPLETADO
+4. M5 (cobertura de auditoría) — PENDIENTE: esperando definición del líder de métricas
+5. M6 (limpieza legacy) — PENDIENTE
+6. **Activar producción**
+7. M7 (PAC semi-automatizado) — PENDIENTE: post-producción, mejora de metodología
 
 ---
 
@@ -157,16 +198,29 @@ M6 (Cleanup) ───> Puede hacerse en cualquier momento
 Cuando abras un chat nuevo, copiá y pegá esto:
 
 ```
-Retomemos el proyecto gestion-bibliotecaria-sqa. El último trabajo fue el SDD implementar-wf1-wf2-wf3. Necesito implementar las mejoras pre-producción del roadmap antes de activar DRY_RUN=false.
+Retomemos el proyecto gestion-bibliotecaria-sqa.
 
-Quiero arrancar con: [M3, M1, M2, etc.]
+ESTADO ACTUAL (2026-05-06):
+- M1 (Análisis visual en WF2): ✅ COMPLETADO — 86 tests
+- M2 (Idempotencia Jira): ✅ COMPLETADO — 32 tests
+- M3 (Extracción de imágenes): ✅ COMPLETADO — integrado en M1
+- M4 (Few-shot prompts): ✅ COMPLETADO — 99 tests
+- M5 (Cobertura métricas): 🔲 PENDIENTE — esperando definición del líder de métricas
+- M6 (Cleanup legacy): 🔲 PENDIENTE
+- M7 (PAC semi-automatizado): 🔲 PENDIENTE — idea guardada, no iniciada
+
+Total tests: 99/99 pasando
+Rama: feature/sdd-workflows-slice-4-wf4
+Documentos para el líder: actualizados y listos (INFORME-APROBACION, Checklists, PACS)
+
+Quiero trabajar en: [M5, M6, M7, o activar producción]
 ```
 
 El agente debería:
-1. Buscar en Engram `sdd/implementar-wf1-wf2-wf3/apply-progress`
+1. Buscar en Engram el estado de los slices completados (`sdd/mejoras-pre-produccion-*/archive-report`)
 2. Verificar la rama actual (`feature/sdd-workflows-slice-4-wf4`)
-3. Confirmar que hay 74 tests pasando
-4. Implementar las mejoras en el orden que elijas
+3. Confirmar que hay 99 tests pasando (`python3 -m unittest discover -s tests/scripts -v`)
+4. Implementar lo que pidas en el orden correcto
 
 ---
 
@@ -198,6 +252,7 @@ El agente debería:
 
 ---
 
-*Documento generado el 2026-05-05 por el Equipo SQA 11*  
-*Último commit: `27007b3`*  
+*Documento actualizado el 2026-05-06 por el Equipo SQA 11*
+*Último commit: `d5181d4` — docs(sqa): reescribe documentos como primera presentacion al lider*
 *Rama: `feature/sdd-workflows-slice-4-wf4`*
+*Slices completados: M1, M2, M3, M4 | Pendientes: M5, M6, M7*
