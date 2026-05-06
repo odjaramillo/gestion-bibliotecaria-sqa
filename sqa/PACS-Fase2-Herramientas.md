@@ -123,7 +123,23 @@ Los siguientes atributos y sub-características fueron definidos como objetivos 
 
 ---
 
-## 6. Roadmap de Implementación (Fase 2)
+## 6. Estado de Implementación (Actualización 2026-05-06)
+
+### Fase 1 — Infraestructura SQA (COMPLETADA)
+
+| Actividad | Herramientas | Estado | Tests |
+|---|---|---|---|
+| Checklists de inspección estática | JSON + Python | ✅ Implementado | 71 ítems verificables |
+| Auditoría de requisitos con IA (WF1) | Gemini multimodal | ✅ dry_run | 32 tests |
+| Inspección arquitectónica (WF2) | Gemini + SonarQube + Análisis visual | ✅ dry_run | 99 tests |
+| Generación de plan de pruebas (WF3) | Gemini | ✅ dry_run | Cubierto |
+| Orquestador de Quality Gates (WF4) | Python + GitHub Actions | ✅ dry_run | Cubierto |
+| Extracción de imágenes de PDFs | PyMuPDF + Pillow | ✅ Implementado | Tests de extracción y conversión PNG |
+| Análisis visual de diagramas | Gemini multimodal (C4/UML) | ✅ Integrado en WF2 | Tests de clasificación y análisis |
+| Idempotencia en Jira | JQL + Labels | ✅ Implementado | Tests de upsert |
+| Few-shot prompts | Constantes Python | ✅ Implementado | Tests de contenido de prompt |
+
+### Fase 2 — Pruebas Dinámicas (PENDIENTE de aprobación)
 
 | Orden | Actividad | Herramientas | Entregable en Confluence |
 |---|---|---|---|
@@ -153,6 +169,7 @@ Los siguientes atributos y sub-características fueron definidos como objetivos 
 | Versión | Fecha | Autor | Cambios |
 |---|---|---|---|
 | 1.0 | 2026-05-04 | Equipo SQA | Declaración inicial de herramientas basada en análisis del stack del Equipo 58-1. |
+| 1.1 | 2026-05-06 | Equipo SQA | Actualización: Sección 6 dividida en Fase 1 (completada) y Fase 2 (pendiente). Agregadas herramientas implementadas: extracción de imágenes (PyMuPDF + Pillow), análisis visual Gemini, idempotencia Jira, few-shot prompts. Total: 99 tests pasando.
 
 ---
 

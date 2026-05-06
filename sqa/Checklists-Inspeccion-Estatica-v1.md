@@ -1,10 +1,15 @@
 # Sistema de Checklists de Inspección Estática — SQA Equipo 11
 ## Basado en Evidencia Real de Artefactos del Equipo 58-1
 
-**Versión:** 1.0  
-**Fecha:** 2026-05-05  
-**Equipo:** SQA 11 (Auditoría del Sistema de Gestión Bibliotecaria del Equipo 58-1)  
+**Versión:** 1.1
+**Fecha:** 2026-05-06
+**Equipo:** SQA 11 (Auditoría del Sistema de Gestión Bibliotecaria del Equipo 58-1)
 **Principio rector:** Cada ítem de checklist debe ser verificable contra el contenido REAL del artefacto. No se audita con estándares que el artefacto no declara seguir.
+
+**Cambios en v1.1:**
+- Agregada sección 3.6: Auditoría Visual de Diagramas con IA (Gemini multimodal)
+- Los diagramas C4/UML ahora se auditan visualmente además de textualmente
+- Integrado en WF2 con extracción automática de imágenes desde PDFs
 
 ---
 
@@ -135,6 +140,20 @@
 | DAS-17 | ¿La arquitectura justifica cómo soporta Seguridad (autenticación/autorización)? | [ ] Cumple [ ] No Cumple | | ✅ Decisiones ID-5 y ID-6: SecurityConfig + encriptación — Pág. 5 |
 | DAS-18 | ¿La arquitectura justifica cómo soporta Fiabilidad (tolerancia a fallos)? | [ ] Cumple [ ] No Cumple | | **DEFECTO:** No hay mecanismos de redundancia, respaldo, o circuit breaker documentados |
 | DAS-19 | ¿Se identifican cuellos de botella o riesgos técnicos? | [ ] Cumple [ ] No Cumple | | **DEFECTO:** No se identifican riesgos técnicos explícitamente |
+
+### 3.6 Auditoría Visual de Diagramas (Nuevo en v1.1)
+
+**Herramienta:** WF2 con análisis visual Gemini multimodal (`scripts/sqa_core/image_analysis.py`)
+**Trigger:** Automático al detectar PDF con diagramas C4/UML
+
+| ID | Ítem | Verificación | Resultado | Evidencia |
+|---|---|---|---|---|
+| DAS-VIS-01 | ¿El Diagrama de Contexto incluye todos los actores externos mencionados en el ERS? | [ ] Cumple [ ] No Cumple | | Análisis visual por IA |
+| DAS-VIS-02 | ¿Las relaciones entre componentes tienen dirección y protocolo indicados? | [ ] Cumple [ ] No Cumple | | Análisis visual por IA |
+| DAS-VIS-03 | ¿Los contenedores del Nivel 2 corresponden a los componentes declarados en el DAS? | [ ] Cumple [ ] No Cumple | | Análisis visual + trazabilidad textual |
+| DAS-VIS-04 | ¿La notación C4 es correcta (cajas, personas, líneas etiquetadas)? | [ ] Cumple [ ] No Cumple | | Análisis visual por IA |
+
+**Nota técnica:** Los diagramas se extraen automáticamente de los PDFs del DAS, se clasifican por tipo (Contexto/Contenedor/Componente/UML), y se analizan con Gemini multimodal usando prompts few-shot para reducir falsos positivos. Los hallazgos visuales se mergean con los hallazgos textuales en el reporte consolidado de WF2.
 
 **Estándares NO aplicables (y por qué):**
 - ❌ **DDD / Bounded Contexts:** El DAS NO usa DDD. Usa Patrón de Capas.

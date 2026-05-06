@@ -1,21 +1,22 @@
 # Informe de Avance SQA — Revisión para Aprobación del Líder General
-**Para:** Alberto Rodríguez (Líder General, Equipo SQA 11)  
-**De:** Oscar Jaramillo (Líder de Tecnología, Equipo SQA 11)  
-**Fecha:** 2026-05-05  
-**Asunto:** Checklists v1.0 + Workflows 1-4 + Análisis Visual — Pendiente de Aprobación
+**Para:** Alberto Rodríguez (Líder General, Equipo SQA 11)
+**De:** Oscar Jaramillo (Líder de Tecnología, Equipo SQA 11)
+**Fecha:** 2026-05-06
+**Asunto:** Checklists v1.0 + Workflows 1-4 + Análisis Visual + Mejoras Pre-Producción — Pendiente de Aprobación
 
 ---
 
 ## 1. Resumen Ejecutivo
 
-Se ha desarrollado la infraestructura completa del Sistema de Checklists de Inspección Estática y los 4 Workflows de automatización SQA en modo **dry_run**.
+Se ha desarrollado la infraestructura completa del Sistema de Checklists de Inspección Estática y los 4 Workflows de automatización SQA en modo **dry_run**. Además, se han implementado **3 slices de mejoras pre-producción** que elevan la calidad y confiabilidad del sistema antes de activar producción.
 
 **Estado:** ✅ Listo para revisión. **NO activado en producción** hasta aprobación del Líder General.
 
-**Novedades desde el informe anterior:**
-- WF1, WF2, WF3 implementados formalmente (no solo WF4)
-- Módulo de análisis visual de diagramas con IA (Gemini multimodal)
-- 74 tests automatizados, todos pasando
+**Novedades desde el informe anterior (2026-05-05):**
+- **M3+M1:** Extracción automática de imágenes de PDFs + Análisis visual integrado en WF2
+- **M2:** Idempotencia en Jira (evita duplicación de tickets en re-runs)
+- **M4:** Prompts few-shot para Gemini (reduce falsos positivos)
+- **99 tests automatizados, todos pasando** (subió de 74)
 - Modelo de IA estandarizado: `gemini-3.1-flash-lite-preview`
 
 ---
@@ -35,14 +36,14 @@ Cada checklist está basada en **evidencia real** de los artefactos del Equipo 5
 
 **Total:** 71 ítems de verificación binaria (Cumple / No Cumple / Parcial).
 
-**Limitación conocida v1.0:** La auditoría de diagramas (C4, UML) en las checklists se basa en texto extraído de PDFs. Se detectaron 30+ imágenes incrustadas en los documentos que aún no fueron auditadas visualmente. El módulo de análisis visual está implementado y listo para usarse en v1.1.
+**Mejora v1.1 implementada:** La auditoría de diagramas (C4, UML) ya no se limita a texto extraído de PDFs. El módulo de análisis visual con Gemini multimodal está **integrado en WF2** y analiza automáticamente las imágenes extraídas de los documentos.
 
 ### 2.2 Workflows Implementados
 
 | Workflow | Script | GitHub Action | Estado |
 |---|---|---|---|
-| **WF1** — Auditoría Estática de Requisitos | `scripts/wf1_auditoria_requisitos.py` | `.github/workflows/wf1_auditoria_requisitos.yml` | ✅ dry_run |
-| **WF2** — Inspección Arquitectónica y Código | `scripts/wf2_inspeccion_arquitectura.py` | `.github/workflows/wf2_inspeccion_arquitectura.yml` | ✅ dry_run |
+| **WF1** — Auditoría Estática de Requisitos | `scripts/wf1_auditoria_requisitos.py` | `.github/workflows/wf1_auditoria_requisitos.yml` | ✅ dry_run + idempotente |
+| **WF2** — Inspección Arquitectónica y Código | `scripts/wf2_inspeccion_arquitectura.py` | `.github/workflows/wf2_inspeccion_arquitectura.yml` | ✅ dry_run + análisis visual |
 | **WF3** — Generación del Plan de Pruebas | `scripts/wf3_generacion_pruebas.py` | `.github/workflows/wf3_generacion_pruebas.yml` | ✅ dry_run |
 | **WF4** — Orquestador de Quality Gates | `scripts/wf4_orquestador.py` | `.github/workflows/wf4_orquestador.yml` | ✅ dry_run |
 
@@ -51,11 +52,24 @@ Cada checklist está basada en **evidencia real** de los artefactos del Equipo 5
 - Todos usan el núcleo compartido `scripts/sqa_core/`
 - Todos generan reportes Markdown locales (NO crean tickets reales aún)
 
-### 2.3 Módulo de Análisis Visual (Nuevo)
+### 2.3 Módulo de Análisis Visual (Integrado en WF2)
 - **Script:** `scripts/sqa_core/image_analysis.py`
 - **Capacidad:** Analiza imágenes de diagramas C4, UML y wireframes usando Gemini multimodal
 - **Salida:** Hallazgos estructurados con severidad (Crítica/Alta/Media/Baja)
-- **Estado:** Implementado y testeado (12 tests). Pendiente de integrar en WF2 para v1.1.
+- **Estado:** ✅ Integrado en WF2. Extrae imágenes de PDFs automáticamente, clasifica por tipo de diagrama, y mergea hallazgos visuales con hallazgos de texto + SonarQube.
+- **Tests:** 99 tests pasando (incluye tests de extracción, conversión PNG, integración visual y degradación graceful)
+
+### 2.4 Mejoras Pre-Producción Implementadas
+
+| Slice | Descripción | Estado | Tests |
+|---|---|---|---|
+| **M3+M1** | Extracción automática de imágenes de PDFs + Análisis visual en WF2 | ✅ Implementado | 86/86 |
+| **M2** | Idempotencia en Jira (search-then-create/update con `external_id`) | ✅ Implementado | 32/32 |
+| **M4** | Few-shot prompts para Gemini (reduce falsos positivos) | ✅ Implementado | 99/99 |
+
+**Pendientes (post-aprobación):**
+- **M5:** Métricas de cobertura de auditoría (esperando definición del líder de métricas)
+- **M6:** Cleanup del POC legacy (`agente_sqa.py`)
 
 ---
 
@@ -95,7 +109,7 @@ Cada checklist está basada en **evidencia real** de los artefactos del Equipo 5
 ## 5. Estructura de Archivos en la Rama
 
 ```
-feature/sdd-workflows
+feature/sdd-workflows-slice-4-wf4
 ├── .github/workflows/
 │   ├── wf1_auditoria_requisitos.yml
 │   ├── wf2_inspeccion_arquitectura.yml
@@ -105,29 +119,30 @@ feature/sdd-workflows
 │   ├── sqa_core/
 │   │   ├── __init__.py
 │   │   ├── config.py
-│   │   ├── clients.py
-│   │   ├── pdf_text.py
+│   │   ├── clients.py          ← M2: upsert_issue con idempotencia
+│   │   ├── pdf_text.py         ← M3: extract_images_from_pdf()
 │   │   ├── reporting.py
-│   │   └── image_analysis.py      ← NUEVO: análisis visual
-│   ├── wf1_auditoria_requisitos.py
-│   ├── wf2_inspeccion_arquitectura.py
+│   │   └── image_analysis.py   ← M1+M4: análisis visual + few-shot
+│   ├── wf1_auditoria_requisitos.py   ← M2+M4: idempotencia + few-shot
+│   ├── wf2_inspeccion_arquitectura.py ← M1+M2+M4: visual + idempotencia + few-shot
 │   ├── wf3_generacion_pruebas.py
 │   ├── wf4_orquestador.py
-│   └── agente_sqa.py              ← POC (obsoleto, será removido)
-├── tests/scripts/                  ← NUEVO: 74 tests
+│   └── agente_sqa.py              ← POC (obsoleto, será removido en M6)
+├── tests/scripts/                  ← 99 tests
 │   ├── test_sqa_core_config.py
-│   ├── test_sqa_core_clients.py
-│   ├── test_sqa_core_pdf_text.py
+│   ├── test_sqa_core_clients.py    ← M2: tests de idempotencia
+│   ├── test_sqa_core_pdf_text.py   ← M3: tests de extracción de imágenes
 │   ├── test_sqa_core_reporting.py
-│   ├── test_sqa_core_image_analysis.py
-│   ├── test_wf1_auditoria_requisitos.py
-│   ├── test_wf2_inspeccion_arquitectura.py
+│   ├── test_sqa_core_image_analysis.py ← M1+M4: tests de visual + few-shot
+│   ├── test_wf1_auditoria_requisitos.py ← M2+M4: idempotencia + few-shot
+│   ├── test_wf2_inspeccion_arquitectura.py ← M1+M2+M4: visual + idempotencia + few-shot
 │   ├── test_wf3_generacion_pruebas.py
 │   └── test_wf4_orquestador.py
 ├── sqa/
 │   ├── Checklists-Inspeccion-Estatica-v1.md
 │   ├── PACS-Fase2-Herramientas.md
 │   ├── WF4-MODO-PRODUCCION.md
+│   ├── ROADMAP-MEJORAS-PRE-PRODUCCION.md
 │   ├── checklists/
 │   │   ├── brief.json
 │   │   ├── ers.json
@@ -135,7 +150,7 @@ feature/sdd-workflows
 │   │   ├── codigo.json
 │   │   └── pac.json
 │   └── reportes/
-└── requirements.txt
+└── requirements.txt                ← M3: Pillow agregado
 ```
 
 **Importante:** Esta rama NO modifica el código fuente del Equipo 58-1 (carpetas `src/`, `biblioteca-frontend/src/`). Solo agrega infraestructura SQA.
@@ -146,11 +161,11 @@ feature/sdd-workflows
 
 | Métrica | Valor |
 |---|---|
-| Tests totales | 74 |
-| Tests pasando | 74 (100%) |
+| Tests totales | 99 |
+| Tests pasando | 99 (100%) |
 | Cobertura estimada | >90% (sqa_core) |
-| Commits work-unit | 14 |
-| Líneas de código Python SQA | ~2.500 |
+| Commits work-unit | 16 |
+| Líneas de código Python SQA | ~2.800 |
 
 ---
 
@@ -174,20 +189,25 @@ El documento `sqa/WF4-MODO-PRODUCCION.md` contiene el procedimiento detallado.
 
 | Riesgo | Probabilidad | Impacto | Mitigación |
 |---|---|---|---|
-| Checklists v1.0 no cubren análisis visual de diagramas | Alta | Media | Módulo implementado; se integrará en v1.1 post-aprobación |
-| Gemini quota exceeded en ejecución real | Media | Media | Retry/backoff implementado; fallback a modo texto |
-| SonarQube no disponible para WF2 | Baja | Alta | WF2 funciona sin SonarQube (solo con análisis DAS) |
-| Duplicación de tickets en re-runs | Media | Media | Idempotencia por checksum pendiente para v1.1 |
+| Gemini quota exceeded en ejecución real | Media | Media | Retry/backoff implementado; fallback a modo texto; few-shot prompts mejoran precisión (M4) |
+| SonarQube no disponible para WF2 | Baja | Alta | WF2 funciona sin SonarQube (solo con análisis DAS + visual) |
+| Formato de imágenes incrustadas en PDFs | Baja | Media | Pillow convierte automáticamente a PNG válido (M3); imágenes corruptas se omiten graceful |
+| Métricas de cobertura no definidas | Media | Baja | M5 postergado a espera de definición del líder de métricas |
+
+**Riesgos MITIGADOS desde versión anterior:**
+- ✅ Duplicación de tickets en re-runs — RESUELTO por M2 (idempotencia con `external_id`)
+- ✅ Análisis visual de diagramas pendiente — RESUELTO por M1 (integrado en WF2)
 
 ---
 
 ## 9. Próximos Pasos Post-Aprobación
 
-1. **Fusionar** la rama tracker `feature/sdd-workflows` a `main`
+1. **Fusionar** la rama tracker `feature/sdd-workflows-slice-4-wf4` a `main`
 2. **Configurar secrets** en GitHub
 3. **Ejecutar WF4** con `WF4_ORCHESTRATE_UPSTREAM=true` en modo dry_run final
-4. **Auditoría visual v1.1:** Ejecutar análisis de imágenes sobre los 30+ diagramas del DAS
+4. **Definir métricas de cobertura** (M5) con el líder de métricas
 5. **Activar producción:** Cambiar `DRY_RUN=false` y crear tickets reales
+6. **Cleanup legacy:** Remover `agente_sqa.py` y workflow obsoleto (M6)
 
 ---
 
@@ -196,15 +216,16 @@ El documento `sqa/WF4-MODO-PRODUCCION.md` contiene el procedimiento detallado.
 **¿Aprueba el Líder General (Alberto Rodríguez) las siguientes acciones?**
 
 - [ ] **Aprobar las checklists v1.0** tal como están documentadas en `sqa/Checklists-Inspeccion-Estatica-v1.md`
-- [ ] **Aprobar los Workflows 1-4** para pasar a producción
-- [ ] **Autorizar la fusión** de la rama `feature/sdd-workflows` a `main`
+- [ ] **Aprobar los Workflows 1-4** para pasar a producción (con mejoras M1-M4 aplicadas)
+- [ ] **Autorizar la fusión** de la rama `feature/sdd-workflows-slice-4-wf4` a `main`
 - [ ] **Aprobar la matriz de herramientas** declarada en `sqa/PACS-Fase2-Herramientas.md`
-- [ ] **Autorizar ejecución de auditoría visual v1.1** sobre diagramas del DAS (post-merge)
+- [ ] **Autorizar ejecución de auditoría visual** sobre diagramas del DAS (ya integrada en WF2)
 
 **Nota:** Hasta recibir esta aprobación, TODO permanece en modo `dry_run`. No se crearán tickets, no se modificará Confluence, y no se ejecutarán pruebas dinámicas.
 
 ---
 
-*Informe generado por el Equipo SQA 11*  
-*Rama tracker: `feature/sdd-workflows`*  
-*Commits: 14 work-unit commits, 74 tests passing*
+*Informe generado por el Equipo SQA 11*
+*Rama tracker: `feature/sdd-workflows-slice-4-wf4`*
+*Commits: 16 work-unit commits, 99 tests passing*
+*Mejoras implementadas: M3+M1 (Análisis Visual), M2 (Idempotencia Jira), M4 (Few-shot Prompts)*
