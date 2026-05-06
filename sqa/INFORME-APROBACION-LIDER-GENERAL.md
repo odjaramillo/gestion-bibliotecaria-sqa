@@ -98,14 +98,17 @@ Ejecutamos los workflows en modo simulación y ya encontramos defectos reales:
 
 | Artefacto | Defecto | Severidad |
 |---|---|---|
+| BRIEF | Backlog en formato visual (imagen) sin referencia textual — dificulta trazabilidad automática | Media |
 | ERS | Versión en portada (1.1) no coincide con histórico (1.2) | Media |
 | ERS | Contradicción interna: regla dice "una amonestación a la vez", criterio dice "una o varias" | **Crítica** |
+| DAS | Fechas de decisiones arquitectónicas posteriores a la fecha del documento | **Crítica** |
+| DAS | Error conceptual: "alto cohesivo" aplicado a un SPA | Media |
 | Código | Backend NO valida complejidad de contraseña (a pesar de que el ERS lo exige) | **Brecha de seguridad** |
 | Código | Validación de contraseña en frontend está COMENTADA | **Brecha de seguridad** |
 | Código | Credenciales de base de datos hardcodeadas (`password=admin`) | **Exposición de credenciales** |
 | Código | Sin manejo global de excepciones — riesgo de exponer stack traces al usuario | **Fuga de información** |
 
-**Nota:** Estos defectos fueron detectados durante el desarrollo de las herramientas. En producción, estos hallazgos generarían tickets automáticos en Jira para que el Equipo 58-1 los corrija.
+**Nota importante sobre validación:** Durante la preparación de este informe detectamos que parte del contenido de los PDFs (especialmente del BRIEF y DAS) está en formato de imágenes (tablas, diagramas), no solo en texto. Por eso implementamos extracción automática de imágenes de PDFs para asegurar que la auditoria sea completa. Las imágenes extraídas se encuentran en `sqa/extracted_images/`.
 
 ---
 

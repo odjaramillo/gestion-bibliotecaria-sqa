@@ -42,11 +42,15 @@ Este documento define las 5 checklists que el Equipo 11 utilizará para auditar 
 | BRIEF-01 | ¿El documento tiene identificación clara (nombre del sistema, versión, fecha, autores)? | [ ] Cumple [ ] No Cumple | | Portada v1.1, fecha 01/05/25 |
 | BRIEF-02 | ¿El propósito del documento está definido? | [ ] Cumple [ ] No Cumple | | "El propósito de este documento es recolectar, analizar y definir las necesidades a un alto nivel" — Pág. 3 |
 | BRIEF-03 | ¿Identifica stakeholders clave con sus roles? | [ ] Cumple [ ] No Cumple | | Tabla Meta/Personas/Impacto/Entregable — Pág. 4 |
-| BRIEF-04 | ¿El backlog está poblado con entregables concretos? | [ ] Cumple [ ] No Cumple | | **DEFECTO:** Sección "2. Backlog" está VACÍA — Pág. 5 |
+| BRIEF-04 | ¿El backlog está poblado con entregables concretos? | [ ] Cumple [ ] No Cumple | | ✅ Cumple: Sección 1 (Necesidad) incluye tabla de entregables; Sección 2 (Backlog) contiene imagen con User Story Map (5 épicas, 2 sprints, historias detalladas) — Pág. 5. **Nota:** El backlog está en formato visual/imagen, no en texto plano.
 | BRIEF-05 | ¿Las restricciones están clasificadas (negocio vs técnico)? | [ ] Cumple [ ] No Cumple | | **DEFECTO:** Mezcla "gestiona catálogo físico" (negocio) con "solo disponible en español y por navegador" (técnico) — Pág. 5 |
 | BRIEF-06 | ¿Los rangos de calidad son medibles/quantificables? | [ ] Cumple [ ] No Cumple | | **DEFECTO:** "Diseño atractivo y sencillo de usar" (subjetivo), "Seguridad básica" (sin métrica) — Pág. 5 |
 | BRIEF-07 | ¿El plan de trabajo está incluido o referenciado con acceso? | [ ] Cumple [ ] No Cumple | | **DEFECTO:** "Plan de trabajo creado en JIRA" sin link ni evidencia — Pág. 5 |
 | BRIEF-08 | ¿El histórico de revisiones documenta cambios significativos? | [ ] Cumple [ ] No Cumple | | v1.0 → v1.1: añadida amonestaciones, modificadas restricciones — Pág. 2 |
+
+**Nota importante sobre contenido visual:**
+Este BRIEF contiene información clave en formato de imágenes (tablas, diagramas) que no es capturable por extracción de texto. Las imágenes extraídas se encuentran en:
+- `sqa/extracted_images/brief/BRIEF EQUIPO 58 1 - v1.1_-001.png` (User Story Map / Backlog)
 
 **Estándares NO aplicables (y por qué):**
 - ❌ INVEST: El BRIEF no contiene historias de usuario.
