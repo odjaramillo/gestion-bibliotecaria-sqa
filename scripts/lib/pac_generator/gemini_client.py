@@ -22,7 +22,7 @@ class GeminiClient:
             import google.generativeai as genai
 
             genai.configure(api_key=api_key)
-            self._model = genai.GenerativeModel("gemini-pro")
+            self._model = genai.GenerativeModel("gemini-1.5-pro")
 
     @staticmethod
     def is_available() -> bool:
@@ -62,8 +62,9 @@ class GeminiClient:
         try:
             response = self._model.generate_content(prompt)
             result = response.text
-        except Exception:
-            result = f"[FORMATEO GEMINI NO DISPONIBLE: {section_name}]"
+        except Exception as exc:
+            print(f"[ERROR] Gemini format_section failed: {exc}")
+            result = f"[FORMATEO GEMINI FALLÓ ({type(exc).__name__}): {section_name}]"
 
         self._cache[cache_key] = result
         return result
