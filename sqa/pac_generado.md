@@ -27,10 +27,10 @@ Un fallo en este sistema impacta directamente la operatividad de la biblioteca y
 
 **Dentro del alcance (IN):**
 - Documentación de requisitos (ERS), arquitectura (DAS) y brief del proyecto.
-- Código fuente del backend (Java 21 + Spring Boot) y frontend (Vue 3).
 - Configuración de infraestructura CI/CD y pipelines de despliegue.
 - Checklists de inspección estática, métricas de calidad y gestión de defectos.
-- Plan de pruebas estáticas y dinámicas para la Fase 1 y Fase 2.
+- Plan de pruebas estáticas (Fase 1) y dinámicas (Fase 2).
+- Stack tecnológico del SUT (Java, Spring Boot, Vue) para contexto de auditoría.
 
 **Fuera del alcance (OUT):**
 - Mantenimiento evolutivo del SUT post-entrega final.
@@ -122,30 +122,12 @@ La siguiente tabla lista los documentos detectados en `/documentacion`, su prop�
 | `ERS Equipo 58 1 v.1.2.pdf` | Especificación funcional y no funcional de requisitos de software. | Fase 1 — Inspección estática |
 | `Equipo 58-1_ Diagrama de contexto, contenedores y componentes (6).pdf` | Vista C4 nivel 1 y 2: contexto del sistema, contenedores y componentes. | Fase 1 — Inspección estática |
 
-### 3.2 Código Fuente
-
-- **Java:** 26 archivos, 1362 LOC
-- **Vue:** 15 archivos, 2262 LOC
-
-**Arquitectura del backend (visión general):**
-- **Capa de presentación:** Controladores REST (`@RestController`) que exponen endpoints JSON.
-- **Capa de aplicación:** Servicios (`@Service`) que orquestan la lógica de negocio.
-- **Capa de dominio:** Entidades JPA, repositorios (`@Repository`) y DTOs de validación.
-- **Capa de infraestructura:** Configuración de seguridad, properties y adaptadores externos.
-
-**Arquitectura del frontend (visión general):**
-- **Componentes Vue:** Vistas reactivas organizadas por dominio (usuarios, libros, préstamos).
-- **Servicios de API:** Módulos `axios` para comunicación REST con el backend.
-- **Store / Estado:** Gestión de estado local mediante reactivity de Vue 3.
-- **Routing:** Vue Router para navegación entre vistas protegidas.
-
-### 3.3 Mapeo Artefacto → Estándar → Checklist
+### 3.2 Mapeo Artefacto → Estándar → Checklist
 
 | Artefacto | Estándar Aplicable | Checklist | Ruta |
 |---|---|---|---|
 | ERS | ISO/IEC/IEEE 29148:2018 | `sqa/checklists/ers.json` | `documentacion/ERS*.pdf` |
 | DAS | ISO/IEC/IEEE 42010:2022 | `sqa/checklists/das.json` | `documentacion/DAS*.pdf` |
-| Código Java | ISO/IEC 25010 + ISO 5055 | `sqa/checklists/codigo.json` | `src/main/java/` |
 | Brief | Buenas prácticas SQA | `sqa/checklists/brief.json` | `documentacion/BRIEF*.pdf` |
 | PAC | IEEE 730-2014 | `sqa/checklists/pac.json` | `sqa/pac_generado.md` |
 
@@ -175,7 +157,6 @@ El equipo SQA aplica los siguientes estándares internacionales para garantizar 
 |---|---|---|---|
 | ERS | ISO/IEC/IEEE 29148:2018 | `sqa/checklists/ers.json` | Obligatorio — 100% ítems verificables |
 | DAS | ISO/IEC/IEEE 42010:2022 | `sqa/checklists/das.json` | Obligatorio — 100% ítems verificables |
-| Código Java | ISO/IEC 25010 + IEEE 730 | `sqa/checklists/codigo.json` | Obligatorio — cobertura mínima definida en métricas |
 | Brief | Buenas prácticas SQA | `sqa/checklists/brief.json` | Recomendado — contexto de negocio validado |
 | PAC | IEEE 730-2014 | `sqa/checklists/pac.json` | Obligatorio — auto-auditoría con wf6_auditor_pac.yml |
 
@@ -288,9 +269,8 @@ REOPENED   REJECTED      REASSIGNED   REOPENED   REJECTED FIX
 
 ### 11.3 Gestión de Defectos por Fase
 
-- **Fase 1 (Inspección Estática):** Los defectos se detectan mediante checklists JSON aplicados a documentos PDF (ERS, DAS, Brief) y código fuente. Se registran en Jira con etiqueta `sqa-fase1`. No requieren fix de código salvo que el defecto sea arquitectónico crítico.
-- **Fase 2 (Pruebas Dinámicas):** Los defectos se detectan mediante pruebas E2E, API, seguridad y caos. Se registran en Jira con etiqueta `sqa-fase2` y vinculan el caso de prueba fallido (Playwright trace o RestAssured log).
-
+- **Fase 1 (Inspección Estática):** Los defectos se detectan mediante checklists JSON aplicados a documentos PDF (ERS, DAS, Brief). Se registran en Jira con etiqueta `sqa-fase1`. No requieren fix de código. El análisis de código fuente está planificado para Fase 2.
+- **Fase 2 (Pruebas Dinámicas):** Los defectos se detectan mediante pruebas E2E, API, seguridad y caos sobre el código fuente. Se registran en Jira con etiqueta `sqa-fase2` y vinculan el caso de prueba fallido (Playwright trace o RestAssured log).
 > **Nota sobre Segunda Entrega:** El análisis de defectos de código fuente mediante pruebas dinámicas (unitarias, integración, E2E, seguridad) está planificado para la **Segunda Entrega** (Fase 2: Pruebas Dinámicas). En la Primera Entrega se limita a inspección estática, auditoría documental y generación del plan de pruebas.
 
 ## 12. CI/CD
