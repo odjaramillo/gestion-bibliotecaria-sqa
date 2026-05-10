@@ -43,7 +43,8 @@ logger = logging.getLogger("wf4_orquestador")
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-DRY_RUN: bool = os.getenv("DRY_RUN", "true").lower() in ("1", "true", "yes", "on")
+MODO: str = os.getenv("MODO", "reporte").lower()
+DRY_RUN: bool = MODO in ("reporte", "propuesta")
 
 PROJECT_ROOT: Path = Path(__file__).resolve().parent.parent
 DOCUMENTACION_DIR: Path = PROJECT_ROOT / "documentacion"
@@ -501,8 +502,9 @@ class WF4Orchestrator:
         logger.info("=== WF4 Orquestador de Quality Gates — Inicio ===")
 
         dry_run = self.config.dry_run if self.config else DRY_RUN
+        modo = self.config.modo if self.config else MODO
         if dry_run:
-            logger.info("[DRY RUN] No se crearan tickets en Jira ni paginas en Confluence")
+            logger.info("[%s] No se crearan tickets en Jira ni paginas en Confluence", modo.upper())
         else:
             logger.info("[PRODUCCION] Sincronizacion con Jira/Confluence habilitada")
 

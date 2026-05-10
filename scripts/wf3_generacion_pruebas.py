@@ -23,11 +23,18 @@ TEST_PLAN_PROMPT: str = (
     "Eres un ingeniero SQA experto en planificacion de pruebas. Analiza los hallazgos "
     "de las auditorias anteriores (WF1: Requisitos y WF2: Arquitectura/Codigo) y genera "
     "un Plan de Pruebas con casos de prueba especificos. "
+    "REGLAS ESTRICTAS: "
+    "1. SOLO genera casos de prueba para hallazgos EXPLICITAMENTE listados en los "
+    "   resumenes de WF1 y WF2 proporcionados. NO inventes hallazgos nuevos. "
+    "2. El campo 'related_finding' DEBE corresponder al ID de un hallazgo real de WF1 o WF2. "
+    "3. Si no hay hallazgos en los resumenes, devuelve un array vacio []. "
+    "4. Prioridad Alta solo para hallazgos de severidad Alta; Media para severidad Media; "
+    "   Baja para severidad Baja."
     "Devuelve ESTRICTAMENTE un array JSON con objetos que tengan estos campos: "
     '{"id":"string","type":"Funcional|No Funcional|Integracion|Regresion",'
     '"priority":"Alta|Media|Baja","title":"string","description":"string",'
     '"related_finding":"string"}. '
-    "Si no hay hallazgos que requieran casos de prueba, devuelve un array vacio []."
+    "Si no hay hallazgos verificables, devuelve un array vacio []."
 )
 
 CONFLUENCE_SPACE: str = "SQA"
@@ -123,8 +130,11 @@ class WF3GeneracionPruebas:
     ) -> list[dict[str, Any]]:
         """Envia hallazgos upstream a Gemini y parsea casos de prueba."""
         findings_text = ""
+        upstream_ids: set[str] = set()
         for key, summary in upstream_data.items():
             findings = summary.get("findings", [])
+            for f in findings:
+                upstream_ids.add(f.get("id", ""))
             findings_text += f"\n--- {key.upper()} Findings ---\n"
             findings_text += json.dumps(findings, ensure_ascii=False)
 
@@ -136,7 +146,25 @@ class WF3GeneracionPruebas:
             for item in data:
                 if isinstance(item, dict):
                     test_cases.append(item)
-        return test_cases
+        # Validación: solo casos de prueba vinculados a hallazgos reales
+        validated = self._validate_test_cases(test_cases, upstream_ids)
+        return validated
+
+    def _validate_test_cases(
+        self, test_cases: list[dict[str, Any]], upstream_ids: set[str]
+    ) -> list[dict[str, Any]]:
+        """Filtra casos de prueba cuyo related_finding no existe en upstream."""
+        validated: list[dict[str, Any]] = []
+        for tc in test_cases:
+            related = tc.get("related_finding", "")
+            if related and related in upstream_ids:
+                validated.append(tc)
+            else:
+                logger.warning(
+                    "Caso de prueba descartado (hallazgo upstream inexistente): related=%s title=%s",
+                    related, tc.get("title", "")[:60]
+                )
+        return validated
 
     def _publish_test_plan(
         self,

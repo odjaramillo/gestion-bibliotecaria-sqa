@@ -21,12 +21,17 @@ logger = logging.getLogger("wf1_auditoria_requisitos")
 
 INVEST_PROMPT: str = (
     "Eres un auditor SQA experto en requisitos. Analiza el siguiente texto extraído "
-    "de un documento de requisitos (BRIEF o ERS) y evalúa cada requisito bajo los "
-    "criterios INVEST (Independent, Negotiable, Valuable, Estimable, Small, Testable). "
+    "de un documento de requisitos (BRIEF o ERS) y evalúa SOLO los requisitos que "
+    "aparezcan EXPLÍCITAMENTE en el texto proporcionado. NO inventes requisitos, IDs, "
+    "historias de usuario ni escenarios que no existan en el documento. "
+    "Evalúa cada requisito bajo los criterios INVEST (Independent, Negotiable, Valuable, "
+    "Estimable, Small, Testable). "
     "Devuelve ESTRICTAMENTE un array JSON con objetos que tengan estos campos: "
     '{"id":"string","severity":"Alta|Media|Baja","type":"bug|task",'
     '"description":"string","invest_criteria":"string"}. '
-    "Si no hay defectos, devuelve un array vacío []."
+    "El campo 'id' DEBE corresponder a un identificador real del documento (ej: REQ-01, HU-05). "
+    "Si un hallazgo no puede vincularse a un requisito específico del texto, NO lo reportes. "
+    "Si no hay defectos reales, devuelve un array vacío []."
 )
 
 INVEST_FEW_SHOT: str = (
@@ -145,7 +150,35 @@ class WF1AuditoriaRequisitos:
             except Exception as exc:
                 logger.error("Error en análisis Gemini para %s chunk %d: %s", filename, idx, exc)
                 raise
-        return findings
+        # Validación: descartar hallazgos que no referencian un requisito real del texto
+        full_text = "\n".join(chunks)
+        validated = self._validate_findings(findings, full_text)
+        return validated
+
+    def _validate_findings(
+        self, findings: list[dict[str, Any]], source_text: str
+    ) -> list[dict[str, Any]]:
+        """Filtra hallazgos que no referencian requisitos reales del documento.
+
+        Un hallazgo es válido si su 'id' o 'description' aparece en el texto fuente.
+        """
+        validated: list[dict[str, Any]] = []
+        for finding in findings:
+            req_id = finding.get("id", "")
+            description = finding.get("description", "")
+            # Verificar que el ID aparezca en el texto o que la descripción sea sustantiva
+            id_in_text = req_id and req_id in source_text
+            desc_in_text = len(description) > 20 and any(
+                phrase in source_text for phrase in description.split(".")[:2]
+            )
+            if id_in_text or desc_in_text:
+                validated.append(finding)
+            else:
+                logger.warning(
+                    "Hallazgo descartado (no verificable en documento): id=%s desc=%s",
+                    req_id, description[:80]
+                )
+        return validated
 
     def _publish_matrix(
         self,

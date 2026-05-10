@@ -23,12 +23,19 @@ logger = logging.getLogger("wf2_inspeccion_arquitectura")
 ARCHITECTURE_PROMPT: str = (
     "Eres un arquitecto SQA experto. Analiza el siguiente texto extraido "
     "de un Documento de Arquitectura de Software (DAS) basado en el modelo C4 "
-    "y los hallazgos de SonarQube proporcionados. Evalua la consistencia entre "
-    "la arquitectura documentada y el codigo real, e identifica deuda tecnica. "
+    "y los hallazgos de SonarQube proporcionados. "
+    "REGLAS ESTRICTAS: "
+    "1. SOLO reporta componentes, modulos o servicios que aparezcan EXPLICITAMENTE "
+    "   en el DAS o en los datos de SonarQube proporcionados. "
+    "2. NO inventes nombres de componentes, servicios ni modulos que no existan. "
+    "3. Si SonarQube no proporciona datos (array vacio o error), limita el analisis "
+    "   al DAS y NO generes hallazgos de deuda tecnica inventada. "
+    "4. Cada hallazgo debe ser verificable: debe indicar donde en el DAS o en "
+    "   SonarQube se encuentra la evidencia. "
     "Devuelve ESTRICTAMENTE un array JSON con objetos que tengan estos campos: "
     '{"id":"string","severity":"Alta|Media|Baja","type":"task|bug",'
-    '"description":"string","component":"string"}. '
-    "Si no hay hallazgos, devuelve un array vacio []."
+    '"description":"string","component":"string","evidence":"string"}. '
+    "Si no hay hallazgos verificables, devuelve un array vacio []."
 )
 
 ARCHITECTURE_FEW_SHOT: str = (
@@ -193,7 +200,35 @@ class WF2InspeccionArquitectura:
             for item in data:
                 if isinstance(item, dict):
                     findings.append(item)
-        return findings
+        # Validación: descartar hallazgos sin evidencia en DAS o SonarQube
+        validated = self._validate_findings(findings, das_text, sonar_data)
+        return validated
+
+    def _validate_findings(
+        self,
+        findings: list[dict[str, Any]],
+        das_text: str,
+        sonar_data: dict[str, Any],
+    ) -> list[dict[str, Any]]:
+        """Filtra hallazgos que no tienen evidencia en DAS o SonarQube."""
+        validated: list[dict[str, Any]] = []
+        sonar_issues = json.dumps(sonar_data.get("issues", {}), ensure_ascii=False)
+        for finding in findings:
+            component = finding.get("component", "")
+            evidence = finding.get("evidence", "")
+            description = finding.get("description", "")
+            # Verificar que el componente o evidencia aparezca en DAS o SonarQube
+            in_das = component and component in das_text
+            in_sonar = component and component in sonar_issues
+            has_evidence = len(evidence) > 10
+            if (in_das or in_sonar) and has_evidence:
+                validated.append(finding)
+            else:
+                logger.warning(
+                    "Hallazgo descartado (sin evidencia): component=%s evidence=%s",
+                    component, evidence[:80]
+                )
+        return validated
 
     def _publish_tech_debt_report(
         self,

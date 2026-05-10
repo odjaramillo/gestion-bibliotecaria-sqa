@@ -19,10 +19,15 @@ class SQAConfig:
     gemini_api_key: str
     sonarqube_url: str
     sonarqube_token: str
-    dry_run: bool
+    modo: str
     project_root: Path
     documentacion_dir: Path
     reportes_dir: Path
+
+    @property
+    def dry_run(self) -> bool:
+        """Modos 'reporte' y 'propuesta' son equivalentes a dry_run=True."""
+        return self.modo in ("reporte", "propuesta")
 
 
 def load_config() -> SQAConfig:
@@ -45,7 +50,11 @@ def load_config() -> SQAConfig:
             f"Variables de entorno faltantes: {', '.join(missing)}"
         )
 
-    dry_run = os.getenv("DRY_RUN", "true").lower() in ("1", "true", "yes", "on")
+    modo = os.getenv("MODO", "reporte").lower()
+    if modo not in ("reporte", "propuesta", "produccion"):
+        raise EnvironmentError(
+            f"MODO debe ser 'reporte', 'propuesta' o 'produccion', se obtuvo '{modo}'"
+        )
 
     project_root = Path(__file__).resolve().parent.parent.parent
     documentacion_dir = project_root / "documentacion"
@@ -61,7 +70,7 @@ def load_config() -> SQAConfig:
         gemini_api_key=required["GEMINI_API_KEY"],
         sonarqube_url=required["SONARQUBE_URL"],
         sonarqube_token=required["SONARQUBE_TOKEN"],
-        dry_run=dry_run,
+        modo=modo,
         project_root=project_root,
         documentacion_dir=documentacion_dir,
         reportes_dir=reportes_dir,

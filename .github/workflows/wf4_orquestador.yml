@@ -2,6 +2,16 @@ name: WF4 — Orquestador de Quality Gates
 
 on:
   workflow_dispatch:
+    inputs:
+      modo:
+        description: 'Modo de ejecución'
+        required: true
+        default: 'reporte'
+        type: choice
+        options:
+          - reporte
+          - propuesta
+          - produccion
   pull_request:
     paths:
       - 'sqa/checklists/**'
@@ -10,7 +20,7 @@ on:
       - 'requirements.txt'
 
 env:
-  DRY_RUN: true
+  MODO: ${{ inputs.modo || 'reporte' }}
 
 jobs:
   wf4-quality-gates:
@@ -31,6 +41,8 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Ejecutar WF4 Orquestador
+        env:
+          MODO: ${{ env.MODO }}
         run: python scripts/wf4_orquestador.py
 
       - name: Subir reporte como artifact
