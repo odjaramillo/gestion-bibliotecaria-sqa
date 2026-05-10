@@ -22,7 +22,7 @@ class GeminiClient:
             import google.generativeai as genai
 
             genai.configure(api_key=api_key)
-            self._model = genai.GenerativeModel("gemini-1.5-pro")
+            self._model = genai.GenerativeModel("gemini-3.1-flash-lite")
 
     @staticmethod
     def is_available() -> bool:
