@@ -1,0 +1,17 @@
+{
+  "workflow": "wf_pac_generator",
+  "fecha_ejecucion": "2026-05-10T09:25:45.148827",
+  "estado": "EXITOSO",
+  "archivo_pac": "/home/odjt/Documents/workspace/gestion-bibliotecaria-sqa/sqa/pac_generado.md",
+  "resumen": {
+    "total_secciones": 13,
+    "secciones_auto": 8,
+    "secciones_manual": 5,
+    "secciones_completadas": 13,
+    "secciones_pendientes": 0
+  },
+  "metricas": {
+    "cobertura_secciones": "100.0%"
+  },
+  "issues": []
+}
