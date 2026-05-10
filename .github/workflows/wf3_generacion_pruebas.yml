@@ -1,0 +1,61 @@
+name: WF3 — Generacion del Plan de Pruebas
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'sqa/reportes/**'
+      - 'scripts/wf3_generacion_pruebas.py'
+      - 'scripts/sqa_core/**'
+      - '.github/workflows/wf3_generacion_pruebas.yml'
+      - 'requirements.txt'
+
+env:
+  DRY_RUN: true
+
+jobs:
+  wf3-generacion-pruebas:
+    name: Ejecutar WF3 Generacion de Pruebas
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Ejecutar WF3 Generacion de Pruebas
+        env:
+          JIRA_SERVER: ${{ secrets.JIRA_SERVER }}
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          CONFLUENCE_URL: ${{ secrets.CONFLUENCE_URL }}
+          CONFLUENCE_USER: ${{ secrets.CONFLUENCE_USER }}
+          CONFLUENCE_TOKEN: ${{ secrets.CONFLUENCE_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          SONARQUBE_URL: ${{ secrets.SONARQUBE_URL }}
+          SONARQUBE_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+          DRY_RUN: ${{ env.DRY_RUN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python scripts/wf3_generacion_pruebas.py
+
+      - name: Subir reportes como artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: wf3-reportes
+          path: sqa/reportes/wf3_summary.json
+          if-no-files-found: warn
+
+      - name: Subir esqueleto de automatizacion
+        uses: actions/upload-artifact@v4
+        with:
+          name: wf3-test-automation
+          path: sqa/test-automation/**
+          if-no-files-found: warn

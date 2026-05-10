@@ -1,0 +1,34 @@
+proyecto:
+  name: "Sistema de Prueba"
+  version: "1.0.0"
+  descripcion: "Proyecto de prueba para tests"
+
+lider:
+  nombre: "Ana López"
+  email: "ana@ejemplo.com"
+  rol: "Líder de Métricas"
+
+objetivos_calidad:
+  funcionalidad: 40
+  fiabilidad: 30
+  usabilidad: 30
+
+roles:
+  lider_metricas: "Ana López"
+  responsable_sqa: "Carlos Ruiz"
+
+umbrales:
+  cobertura_revisiones: 100.0
+  densidad_defectos_max: 0.5
+
+riesgos:
+  - descripcion: "Retraso en entregables"
+    mitigacion: "Checkpoints semanales"
+    aceptado: false
+
+cronograma:
+  - fase: "Fase 1"
+    inicio: "2026-05-01"
+    fin: "2026-05-15"
+    entregables:
+      - "PAC aprobado"

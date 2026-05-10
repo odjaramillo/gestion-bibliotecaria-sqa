@@ -1,0 +1,27 @@
+proyecto:
+  name: "Sistema Inválido"
+  # Falta 'version' y 'descripcion'
+
+lider:
+  nombre: "Ana López"
+  email: "ana@ejemplo.com"
+  rol: "Líder"
+
+objetivos_calidad:
+  funcionalidad: 150  # Inválido: > 100
+
+roles:
+  lider_metricas: "Ana"
+
+umbrales:
+  cobertura_revisiones: "cien"  # Inválido: debe ser numérico
+
+riesgos:
+  - descripcion: "Riesgo 1"
+    mitigacion: "Mitigación 1"
+    aceptado: "no"  # Inválido: debe ser booleano
+
+cronograma:
+  - fase: "Fase 1"
+    inicio: "2026-05-01"
+    # Falta 'fin' y 'entregables'

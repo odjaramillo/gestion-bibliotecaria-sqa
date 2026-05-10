@@ -1,0 +1,159 @@
+{
+  "artifact_type": "DAS",
+  "standard": "ISO/IEC/IEEE 42010:2022 + Modelo C4",
+  "version": "1.0",
+  "items": [
+    {
+      "id": "DAS-01",
+      "category": "Control de Documento",
+      "description": "¿El documento tiene control de versiones con histórico detallado?",
+      "verification_type": "Boolean",
+      "evidence_location": "6 versiones (1.0 a 1.5) con descripciones — Página 2",
+      "standard_reference": "42010-5.2"
+    },
+    {
+      "id": "DAS-02",
+      "category": "Control de Documento",
+      "description": "¿Las fechas del histórico son coherentes cronológicamente?",
+      "verification_type": "Boolean",
+      "evidence_location": "DEFECTO: v1.5 dice '17/05/25' (mayo) pero debería ser junio — Página 2",
+      "standard_reference": "42010-5.2.1"
+    },
+    {
+      "id": "DAS-03",
+      "category": "Control de Documento",
+      "description": "¿La versión actual coincide con el nombre del archivo?",
+      "verification_type": "Boolean",
+      "evidence_location": "Archivo 'v1.5', documento dice 'Versión: 1.5' — Página 1",
+      "standard_reference": "42010-5.2.2"
+    },
+    {
+      "id": "DAS-04",
+      "category": "Decisiones Arquitectónicas",
+      "description": "¿Cada decisión tiene ID, fecha, descripción, justificación?",
+      "verification_type": "Boolean",
+      "evidence_location": "6 decisiones con tabla completa — Página 5",
+      "standard_reference": "42010-6.1"
+    },
+    {
+      "id": "DAS-05",
+      "category": "Decisiones Arquitectónicas",
+      "description": "¿Las fechas de decisiones son anteriores o iguales a la fecha del documento?",
+      "verification_type": "Boolean",
+      "evidence_location": "DEFECTO: ID-5 (21/06/25) e ID-6 (26/06/25) son POSTERIORES a la fecha del documento (17/06/25) — Página 5",
+      "standard_reference": "42010-6.1.1"
+    },
+    {
+      "id": "DAS-06",
+      "category": "Decisiones Arquitectónicas",
+      "description": "¿Las decisiones usan terminología arquitectónica correcta?",
+      "verification_type": "Boolean",
+      "evidence_location": "DEFECTO: ID-4 dice 'alto cohesivo' para un SPA — la cohesión mide relación entre responsabilidades de un módulo, no si es una sola página — Página 5",
+      "standard_reference": "42010-6.1.2"
+    },
+    {
+      "id": "DAS-07",
+      "category": "Diagramas y Vistas (Modelo C4)",
+      "description": "¿Existe Diagrama de Contexto (Nivel 1 C4)?",
+      "verification_type": "Boolean",
+      "evidence_location": "En PDF separado: 'Equipo 58-1_ Diagrama de contexto, contenedores y componentes'",
+      "standard_reference": "C4-L1"
+    },
+    {
+      "id": "DAS-08",
+      "category": "Diagramas y Vistas (Modelo C4)",
+      "description": "¿Existe Diagrama de Contenedores (Nivel 2 C4)?",
+      "verification_type": "Boolean",
+      "evidence_location": "En PDF separado",
+      "standard_reference": "C4-L2"
+    },
+    {
+      "id": "DAS-09",
+      "category": "Diagramas y Vistas (Modelo C4)",
+      "description": "¿Existe Diagrama de Componentes (Nivel 3 C4)?",
+      "verification_type": "Boolean",
+      "evidence_location": "En PDF separado (aunque es discutible si es C4 puro)",
+      "standard_reference": "C4-L3"
+    },
+    {
+      "id": "DAS-10",
+      "category": "Diagramas y Vistas (Modelo C4)",
+      "description": "¿Los diagramas C4 están embebidos en el DAS o referenciados con acceso?",
+      "verification_type": "Boolean",
+      "evidence_location": "DEFECTO: Placeholders vacíos en DAS (Páginas 8-11), reales en PDF separado",
+      "standard_reference": "C4-REF"
+    },
+    {
+      "id": "DAS-11",
+      "category": "Diagramas y Vistas",
+      "description": "¿Existe Diagrama de Clases UML?",
+      "verification_type": "Boolean",
+      "evidence_location": "Referenciado con link — Página 13",
+      "standard_reference": "UML-CLASES"
+    },
+    {
+      "id": "DAS-12",
+      "category": "Diagramas y Vistas",
+      "description": "¿Existe vista de despliegue/procesos?",
+      "verification_type": "Boolean",
+      "evidence_location": "DEFECTO: No existe — Documento completo",
+      "standard_reference": "42010-6.4"
+    },
+    {
+      "id": "DAS-13",
+      "category": "Trazabilidad y Consistencia",
+      "description": "¿La lista de archivos por componente es completa vs el código real?",
+      "verification_type": "Boolean",
+      "evidence_location": "DEFECTO: Faltan componentes Vue reales: EliminarLibroPantallaBusqueda.vue, ModificarLibroPantallaBusqueda.vue, etc. — Página 14",
+      "standard_reference": "42010-7.1"
+    },
+    {
+      "id": "DAS-14",
+      "category": "Trazabilidad y Consistencia",
+      "description": "¿La arquitectura declarada (Capas) se refleja en la estructura de paquetes del código?",
+      "verification_type": "Boolean",
+      "evidence_location": "model, controller, service, repository, config, security, dto — Página 14",
+      "standard_reference": "42010-7.2"
+    },
+    {
+      "id": "DAS-15",
+      "category": "Trazabilidad y Consistencia",
+      "description": "¿Cada componente del DAS se vincula con al menos una historia del ERS?",
+      "verification_type": "Boolean",
+      "evidence_location": "Interfaces de Usuario listan HUs asociadas — Páginas 15-24",
+      "standard_reference": "42010-7.3"
+    },
+    {
+      "id": "DAS-16",
+      "category": "Validación de Atributos de Calidad",
+      "description": "¿La arquitectura justifica cómo soporta Mantenibilidad (separación de responsabilidades)?",
+      "verification_type": "Boolean",
+      "evidence_location": "Decisiones ID-2 e ID-3: Controller/Service/Repository separados — Página 5",
+      "standard_reference": "25010-Mantenibilidad"
+    },
+    {
+      "id": "DAS-17",
+      "category": "Validación de Atributos de Calidad",
+      "description": "¿La arquitectura justifica cómo soporta Seguridad (autenticación/autorización)?",
+      "verification_type": "Boolean",
+      "evidence_location": "Decisiones ID-5 y ID-6: SecurityConfig + encriptación — Página 5",
+      "standard_reference": "25010-Seguridad"
+    },
+    {
+      "id": "DAS-18",
+      "category": "Validación de Atributos de Calidad",
+      "description": "¿La arquitectura justifica cómo soporta Fiabilidad (tolerancia a fallos)?",
+      "verification_type": "Boolean",
+      "evidence_location": "DEFECTO: No hay mecanismos de redundancia, respaldo, o circuit breaker documentados",
+      "standard_reference": "25010-Fiabilidad"
+    },
+    {
+      "id": "DAS-19",
+      "category": "Validación de Atributos de Calidad",
+      "description": "¿Se identifican cuellos de botella o riesgos técnicos?",
+      "verification_type": "Boolean",
+      "evidence_location": "DEFECTO: No se identifican riesgos técnicos explícitamente",
+      "standard_reference": "42010-6.5"
+    }
+  ]
+}

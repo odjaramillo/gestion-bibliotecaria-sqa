@@ -1,0 +1,100 @@
+# =============================================================================
+# Plantilla de Configuración para el Plan de Aseguramiento de Calidad (PAC)
+# =============================================================================
+# Instrucciones:
+#   1. Copie este archivo y llámalo ``pac_config.yaml``.
+#   2. Complete TODOS los campos marcados con "[COMPLETAR]".
+#   3. Ejecute ``python scripts/wf_pac_generator.py`` para regenerar el PAC.
+#   4. El generador completará automáticamente stack, artefactos y estándares.
+# =============================================================================
+
+proyecto:
+  name: "Sistema de Gestión Bibliotecaria"
+  version: "1.0.0"
+  descripcion: |
+    Sistema web para gestión de préstamos, catálogo y usuarios de una biblioteca. (Incluye administracios de reseñas, comentarios y amonestaciones por retrasos [transacciones monetarias simuladas]).
+
+lider:
+  nombre: "Alberto Rodriguez"
+  email: "aarodriguez.23@est.ucab.edu.ve"
+  rol: "Líder General"
+
+# -----------------------------------------------------------------------------
+# Objetivos de Calidad (ISO/IEC 25010)
+# -----------------------------------------------------------------------------
+# Asigne un peso (0-100) a cada atributo de calidad que el proyecto prioriza.
+# La suma NO necesita ser 100; los pesos son relativos.
+# -----------------------------------------------------------------------------
+objetivos_calidad:
+  funcionalidad: 40
+  fiabilidad: 30
+  usabilidad: 0
+  eficiencia: 0
+  mantenibilidad: 20
+  portabilidad: 0
+  seguridad: 10
+  compatibilidad: 0
+
+# -----------------------------------------------------------------------------
+# Roles y Responsabilidades del Equipo SQA
+# -----------------------------------------------------------------------------
+roles:
+  lider_metricas: "Edwin Li"
+  responsable_sqa: "Ernesto Suárez"
+  auditor_requisitos: "Daniel Cohen"
+  auditor_arquitectura: "Oscar Jaramillo"
+  escriba: "Samuel Artiles"
+
+# -----------------------------------------------------------------------------
+# Umbrales de Calidad (Métricas)
+# -----------------------------------------------------------------------------
+# Defina el valor mínimo aceptable para cada métrica.
+# -----------------------------------------------------------------------------
+umbrales:
+  cobertura_revisiones: 100.0       # % (meta: 100%)
+  densidad_defectos_max: 0.5         # defectos por KLOC
+  cobertura_pruebas_min: 0.0        # % (si aplica — segunda entrega)
+
+# -----------------------------------------------------------------------------
+# Análisis de Riesgos
+# -----------------------------------------------------------------------------
+# Liste los riesgos identificados, su mitigación y si son aceptados.
+# -----------------------------------------------------------------------------
+riesgos:
+  - descripcion: "Retraso en entrega de artefactos por parte del equipo de desarrollo"
+    mitigacion: "Revisiones tempranas y checkpoints semanales"
+    aceptado: false
+  - descripcion: "Cambios de requisitos durante la fase de auditoría"
+    mitigacion: "Congelar requisitos previo a cada inspección formal"
+    aceptado: false
+
+# -----------------------------------------------------------------------------
+# Cronograma por Fase / Iteración
+# -----------------------------------------------------------------------------
+# Mapee las actividades de SQA a las fases del proyecto.
+# -----------------------------------------------------------------------------
+cronograma:
+  - fase: "Fase 1: Pre-producción"
+    inicio: "2026-05-01"
+    fin: "2026-05-15"
+    entregables:
+      - "PAC generado y aprobado"
+      - "Checklists de auditoría definidas"
+  - fase: "Fase 2: Auditoría de Requisitos y Arquitectura"
+    inicio: "2026-05-16"
+    fin: "2026-05-30"
+    entregables:
+      - "Informe WF1: Auditoría de Requisitos"
+      - "Informe WF2: Inspección de Arquitectura"
+  - fase: "Fase 3: Generación de Pruebas"
+    inicio: "2026-06-01"
+    fin: "2026-06-15"
+    entregables:
+      - "Casos de prueba generados"
+      - "Informe WF3: Cobertura de Pruebas"
+  - fase: "Fase 4: Orquestación y Métricas"
+    inicio: "2026-06-16"
+    fin: "2026-06-30"
+    entregables:
+      - "Dashboard de métricas"
+      - "Informe WF4: Estado de Calidad"

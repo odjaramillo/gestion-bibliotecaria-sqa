@@ -1,0 +1,71 @@
+{
+  "artifact_type": "BRIEF",
+  "standard": "Prácticas de Ingeniería de Requisitos",
+  "version": "1.0",
+  "items": [
+    {
+      "id": "BRIEF-01",
+      "category": "Control de Documento",
+      "description": "¿El documento tiene identificación clara (nombre del sistema, versión, fecha, autores)?",
+      "verification_type": "Boolean",
+      "evidence_location": "Portada v1.1, fecha 01/05/25 — Página 1",
+      "standard_reference": "Práctica IR-1.1"
+    },
+    {
+      "id": "BRIEF-02",
+      "category": "Propósito y Alcance",
+      "description": "¿El propósito del documento está definido?",
+      "verification_type": "Boolean",
+      "evidence_location": "Página 3: 'El propósito de este documento es recolectar, analizar y definir las necesidades a un alto nivel'",
+      "standard_reference": "Práctica IR-2.1"
+    },
+    {
+      "id": "BRIEF-03",
+      "category": "Stakeholders",
+      "description": "¿Identifica stakeholders clave con sus roles?",
+      "verification_type": "Boolean",
+      "evidence_location": "Tabla Meta/Personas/Impacto/Entregable — Página 4",
+      "standard_reference": "Práctica IR-3.1"
+    },
+    {
+      "id": "BRIEF-04",
+      "category": "Backlog y Entregables",
+      "description": "¿El backlog está poblado con entregables concretos?",
+      "verification_type": "Boolean",
+      "evidence_location": "DEFECTO: Sección '2. Backlog' está VACÍA — Página 5",
+      "standard_reference": "Práctica IR-4.1"
+    },
+    {
+      "id": "BRIEF-05",
+      "category": "Restricciones",
+      "description": "¿Las restricciones están clasificadas (negocio vs técnico)?",
+      "verification_type": "Boolean",
+      "evidence_location": "DEFECTO: Mezcla 'gestiona catálogo físico' (negocio) con 'solo disponible en español y por navegador' (técnico) — Página 5",
+      "standard_reference": "Práctica IR-5.1"
+    },
+    {
+      "id": "BRIEF-06",
+      "category": "Rangos de Calidad",
+      "description": "¿Los rangos de calidad son medibles/cuantificables?",
+      "verification_type": "Boolean",
+      "evidence_location": "DEFECTO: 'Diseño atractivo y sencillo de usar' (subjetivo), 'Seguridad básica' (sin métrica) — Página 5",
+      "standard_reference": "Práctica IR-6.1"
+    },
+    {
+      "id": "BRIEF-07",
+      "category": "Plan de Trabajo",
+      "description": "¿El plan de trabajo está incluido o referenciado con acceso?",
+      "verification_type": "Boolean",
+      "evidence_location": "DEFECTO: 'Plan de trabajo creado en JIRA' sin link ni evidencia — Página 5",
+      "standard_reference": "Práctica IR-7.1"
+    },
+    {
+      "id": "BRIEF-08",
+      "category": "Control de Versiones",
+      "description": "¿El histórico de revisiones documenta cambios significativos?",
+      "verification_type": "Boolean",
+      "evidence_location": "v1.0 → v1.1: añadida amonestaciones, modificadas restricciones — Página 2",
+      "standard_reference": "Práctica IR-8.1"
+    }
+  ]
+}
