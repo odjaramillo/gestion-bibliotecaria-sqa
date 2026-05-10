@@ -46,14 +46,15 @@ roles:
   escriba: "Samuel Artiles"
 
 # -----------------------------------------------------------------------------
-# Umbrales de Calidad (Métricas)
+# Umbrales de Calidad (Métricas) — OPCIONAL
 # -----------------------------------------------------------------------------
-# Defina el valor mínimo aceptable para cada métrica.
+# Si se omiten, el generador utiliza las métricas definidas en código.
+# Solo modifique si necesita valores personalizados.
 # -----------------------------------------------------------------------------
-umbrales:
-  cobertura_revisiones: 100.0       # % (meta: 100%)
-  densidad_defectos_max: 0.5         # defectos por KLOC
-  cobertura_pruebas_min: 0.0        # % (Fase 1: inspección estática; no aplica código. Se activará en Fase 2)
+# umbrales:
+#   cobertura_revisiones: 100.0
+#   densidad_defectos_max: 0.5
+#   cobertura_pruebas_min: 0.0
 
 # -----------------------------------------------------------------------------
 # Análisis de Riesgos

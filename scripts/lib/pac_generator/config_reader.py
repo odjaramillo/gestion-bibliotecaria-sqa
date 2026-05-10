@@ -156,22 +156,26 @@ def read_config(path: Path) -> PacConfig:
     if not isinstance(raw, dict):
         raise PacConfigError(f"El archivo YAML debe contener un diccionario raíz, se obtuvo {type(raw).__name__}")
 
-    _validate_required_keys(raw, {"proyecto", "lider", "objetivos_calidad", "roles", "umbrales", "riesgos", "cronograma"}, "raíz")
+    required_keys = {"proyecto", "lider", "objetivos_calidad", "roles", "riesgos", "cronograma"}
+    _validate_required_keys(raw, required_keys, "raíz")
 
     _validate_proyecto(raw["proyecto"])
     _validate_lider(raw["lider"])
     _validate_objetivos_calidad(raw["objetivos_calidad"])
     _validate_roles(raw["roles"])
-    _validate_umbrales(raw["umbrales"])
     _validate_riesgos(raw["riesgos"])
     _validate_cronograma(raw["cronograma"])
+
+    umbrales = raw.get("umbrales", {})
+    if umbrales:
+        _validate_umbrales(umbrales)
 
     return PacConfig(
         proyecto=raw["proyecto"],
         lider=raw["lider"],
         objetivos_calidad=raw["objetivos_calidad"],
         roles=raw["roles"],
-        umbrales=raw["umbrales"],
+        umbrales=umbrales,
         riesgos=raw["riesgos"],
         cronograma=raw["cronograma"],
     )

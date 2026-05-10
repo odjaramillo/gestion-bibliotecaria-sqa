@@ -485,11 +485,66 @@ class PACAssembler:
         return self._assemble_manual_section("5. Gestión y Organización", content)
 
     def _build_metricas(self) -> str:
-        directives = {
-            "umbrales": self.config.umbrales,
-        }
-        content = self.gemini_client.format_section("8. Métricas", directives)
-        return self._assemble_manual_section("8. Métricas", content)
+        lines = [
+            "## 8. Métricas",
+            "",
+            "### 8.1 Definición y Control de Métricas del Proceso (PACS)",
+            "",
+            "#### 1. Métricas de la Fase Estática (Ejecución Actual)",
+            "",
+            "##### 1.1. Cobertura de Revisiones",
+            "*Dimensión:* Calidad del Proceso / Mitigación de Riesgos",
+            "",
+            "- **Propósito:** Garantizar que los artefactos críticos generados en esta etapa temprana sean sometidos a escrutinio y validación por pares antes de su aprobación.",
+            "- **Procedimiento de Medición:** Contrastar el inventario de documentos y modelos planificados contra aquellos que cuentan con evidencia de haber pasado por una inspección técnica formal.",
+            "- **Fórmula:** `(N° de artefactos o requerimientos revisados formalmente / N° total de artefactos entregables planificados) * 100`",
+            "- **Umbral/Meta:** 100% de cobertura para la documentación base.",
+            "",
+            "##### 1.2. Densidad de Defectos",
+            "*Dimensión:* Fiabilidad / Madurez Temprana",
+            "",
+            "- **Propósito:** Cuantificar la calidad inicial de los entregables mediante la concentración de errores o inconsistencias detectadas durante las inspecciones de documentos.",
+            "- **Procedimiento de Medición:** Contabilizar las no conformidades registradas durante las revisiones. Este total se divide entre el tamaño del artefacto evaluado.",
+            "- **Fórmula:** `Total de defectos detectados en las revisiones / Tamaño del entregable`",
+            "- **Umbral/Meta:** Menos de 2 defectos críticos por requerimiento documentado.",
+            "",
+            "#### 2. Métricas de la Fase Dinámica (Definición Teórica para Fases Futuras)",
+            "",
+            "##### 2.1. Cobertura de Pruebas Automatizadas",
+            "*Dimensión:* Calidad del Producto / Fase Dinámica",
+            "",
+            "- **Propósito:** Cuantificar el porcentaje del código fuente del sistema que es ejecutado y validado durante las pruebas automatizadas.",
+            "- **Procedimiento de Medición:** Utilizar herramientas de análisis de código integradas en GitHub Actions para medir la proporción de código cubierta por las pruebas.",
+            "- **Fórmula:** `(Líneas de código ejecutadas por las pruebas / Total de líneas de código del sistema) * 100`",
+            "- **Umbral/Meta:** Alcanzar un 70% - 80% de cobertura teórica.",
+            "",
+            "##### 2.2. Tasa de Éxito de Pruebas de Integración",
+            "*Dimensión:* Estabilidad / Fase Dinámica",
+            "",
+            "- **Propósito:** Evaluar la estabilidad del sistema al integrar nuevos cambios al repositorio en GitHub.",
+            "- **Procedimiento de Medición:** Contabilizar el número de ejecuciones exitosas del pipeline en relación con el total de intentos de integración de código.",
+            "- **Fórmula:** `(Número de construcciones exitosas / Número total de construcciones ejecutadas) * 100`",
+            "- **Umbral/Meta:** Un porcentaje de éxito superior al 90%.",
+            "",
+            "#### 3. Métricas de Proyecto y Gestión",
+            "",
+            "##### 3.1. Desviación del Tiempo Estimado",
+            "*Dimensión:* Gestión de Proyecto / Eficiencia",
+            "",
+            "- **Propósito:** Medir la precisión de las estimaciones realizadas por el equipo, identificando posibles cuellos de botella en la planificación.",
+            "- **Procedimiento de Medición:** Registrar mediante Jira el tiempo real invertido en completar una tarea y compararlo con la estimación de esfuerzo definida inicialmente.",
+            "- **Fórmula:** `((Tiempo Real Invertido - Tiempo Estimado) / Tiempo Estimado) * 100`",
+            "- **Umbral/Meta:** Mantener una desviación que no supere el ±15% del tiempo planificado.",
+            "",
+            "##### 3.2. Tiempo Promedio de Resolución de Defectos - MTTR",
+            "*Dimensión:* Mantenibilidad / Capacidad de Respuesta",
+            "",
+            "- **Propósito:** Determinar la agilidad del equipo para solucionar un defecto desde que es reportado en Jira hasta que es corregido y notificado a través de Slack.",
+            "- **Procedimiento de Medición:** Calcular el tiempo transcurrido entre la creación de la incidencia y la confirmación de su cierre exitoso.",
+            "- **Fórmula:** `Suma de los tiempos de resolución / Número total de defectos resueltos`",
+            "- **Umbral/Meta:** Resolución de defectos críticos en un máximo de 24 a 48 horas.",
+        ]
+        return "\n".join(lines)
 
     def _build_riesgos(self) -> str:
         directives = {
