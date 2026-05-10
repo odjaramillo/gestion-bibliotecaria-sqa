@@ -27,7 +27,10 @@ class GeminiClient:
     @staticmethod
     def is_available() -> bool:
         """Retorna True si google-generativeai está instalado."""
-        return importlib.util.find_spec("google.generativeai") is not None
+        try:
+            return importlib.util.find_spec("google.generativeai") is not None
+        except ModuleNotFoundError:
+            return False
 
     def format_section(self, section_name: str, directives: dict) -> str:
         """Formatea una sección del PAC usando Gemini como editor.
