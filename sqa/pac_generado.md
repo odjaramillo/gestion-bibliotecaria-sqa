@@ -10,7 +10,7 @@
 ## 1. Alcance y Propósito
 
 ### 1.1 Contexto del Proyecto
-Sistema web para gestión de préstamos, catálogo y usuarios de una biblioteca. (Incluye administracios de reseñas, comentarios y amonestaciones por retrasos [transacciones monetarias simuladas]).
+Sistema web para gestión de préstamos, catálogo y usuarios de una biblioteca. (Incluye administración de reseñas, comentarios y amonestaciones por retrasos [transacciones monetarias simuladas]).
 
 El presente Plan de Aseguramiento de Calidad (PAC) aplica al Sistema Under Test (SUT) desarrollado por el equipo de desarrollo, y será auditado por el equipo SQA asignado. El objetivo es garantizar que todos los artefactos entregados cumplan con los estándares de calidad definidos y que el producto final sea confiable, mantenible y seguro.
 
@@ -60,12 +60,11 @@ Stack tecnológico detectado: Backend: Maven (21, 3.4.5). Frontend: npm / vue-cl
 - lombok (org.projectlombok)
 - mysql-connector-java (mysql)
 - spring-boot-starter-data-jpa (org.springframework.boot)
-- spring-boot-starter-data-jpa (org.springframework.boot)
 - spring-boot-starter-security (org.springframework.boot)
 - spring-boot-starter-test (org.springframework.boot)
 - spring-boot-starter-web (org.springframework.boot)
 
-**Justificación técnica:** Java 21 ofrece mejoras de rendimiento (generational ZGC, virtual threads preview) y soporte LTS extendido. Spring Boot 3.4.x aprovecha Jakarta EE 9+, requiriendo Java 17+ como baseline. Maven fue seleccionado como build tool estándar del equipo de desarrollo, garantizando reproducibilidad de builds mediante `pom.xml` versionado.
+**Justificación técnica:** Java 21 ofrece mejoras de rendimiento (generational ZGC, virtual threads estables) y soporte LTS extendido. Spring Boot 3.4.x aprovecha Jakarta EE 9+, requiriendo Java 17+ como baseline. Maven fue seleccionado como build tool estándar del equipo de desarrollo, garantizando reproducibilidad de builds mediante `pom.xml` versionado.
 
 ### 2.2 Frontend
 - **Build tool:** npm / vue-cli
@@ -276,10 +275,12 @@ REOPENED   REJECTED      REASSIGNED   REOPENED   REJECTED FIX
 ## 12. CI/CD
 
 ### Workflows de GitHub Actions
-- `auditoria_sqa.yml`
-- `wf1_auditoria_requisitos.yml`
-- `wf2_inspeccion_arquitectura.yml`
-- `wf3_generacion_pruebas.yml`
-- `wf4_orquestador.yml`
-- `wf5_generador_pac.yml`
-- `wf6_auditor_pac.yml`
+| Workflow | Nombre | Trigger | Jobs |
+|---|---|---|---|
+| `auditoria_sqa.yml` | Auditoría Estática SQA | workflow_dispatch | auditoria-sqa |
+| `wf1_auditoria_requisitos.yml` | WF1 — Auditoría Estática de Requisitos | workflow_dispatch, push | wf1-auditoria-requisitos |
+| `wf2_inspeccion_arquitectura.yml` | WF2 — Inspeccion Arquitectonica y de Codigo | workflow_dispatch, push | wf2-inspeccion-arquitectura |
+| `wf3_generacion_pruebas.yml` | WF3 — Generacion del Plan de Pruebas | workflow_dispatch, push | wf3-generacion-pruebas |
+| `wf4_orquestador.yml` | WF4 — Orquestador de Quality Gates | workflow_dispatch, pull_request | wf4-quality-gates |
+| `wf5_generador_pac.yml` | WF5 — Generador de PAC | workflow_dispatch | wf5-generador-pac |
+| `wf6_auditor_pac.yml` | WF6 — Auditor de PAC | workflow_dispatch | wf6-auditor-pac |

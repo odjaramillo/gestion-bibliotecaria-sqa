@@ -10,6 +10,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+import yaml
+
 from scripts.lib.pac_generator.config_reader import PacConfig
 
 
@@ -162,7 +164,7 @@ class PACAssembler:
             lines.append(f"- {dep.get('artifactId', '')} ({dep.get('groupId', '')})")
         lines += [
             "",
-            "**Justificación técnica:** Java 21 ofrece mejoras de rendimiento (generational ZGC, virtual threads preview) y soporte LTS extendido. Spring Boot 3.4.x aprovecha Jakarta EE 9+, requiriendo Java 17+ como baseline. Maven fue seleccionado como build tool estándar del equipo de desarrollo, garantizando reproducibilidad de builds mediante `pom.xml` versionado.",
+            "**Justificación técnica:** Java 21 ofrece mejoras de rendimiento (generational ZGC, virtual threads estables) y soporte LTS extendido. Spring Boot 3.4.x aprovecha Jakarta EE 9+, requiriendo Java 17+ como baseline. Maven fue seleccionado como build tool estándar del equipo de desarrollo, garantizando reproducibilidad de builds mediante `pom.xml` versionado.",
             "",
             "### 2.2 Frontend",
             f"- **Build tool:** {ft_bt}",
@@ -423,16 +425,45 @@ class PACAssembler:
 
     def _build_cicd(self) -> str:
         workflows_dir = Path(".github/workflows")
-        files: list[str] = []
-        if workflows_dir.exists():
-            files = sorted([p.name for p in workflows_dir.iterdir() if p.is_file()])
         lines = ["## 12. CI/CD", ""]
         lines.append("### Workflows de GitHub Actions")
-        if files:
-            for f in files:
-                lines.append(f"- `{f}`")
-        else:
+        if not workflows_dir.exists():
             lines.append("- No se detectaron workflows.")
+            return "\n".join(lines)
+
+        rows: list[dict[str, str]] = []
+        for p in sorted(workflows_dir.iterdir()):
+            if not p.is_file():
+                continue
+            try:
+                data = yaml.safe_load(p.read_text(encoding="utf-8")) or {}
+            except Exception:
+                continue
+            name = data.get("name", p.stem)
+            on_events = data.get("on", {}) or data.get(True, {})
+            if isinstance(on_events, list):
+                triggers = ", ".join(str(e) for e in on_events)
+            elif isinstance(on_events, dict):
+                triggers = ", ".join(str(k) for k in on_events.keys() if not str(k).startswith("."))
+            else:
+                triggers = str(on_events) if on_events else "—"
+            jobs = list(data.get("jobs", {}).keys())
+            jobs_str = ", ".join(jobs) if jobs else "—"
+            rows.append({
+                "Workflow": f"`{p.name}`",
+                "Nombre": name,
+                "Trigger": triggers or "—",
+                "Jobs": jobs_str,
+            })
+
+        if rows:
+            headers = ["Workflow", "Nombre", "Trigger", "Jobs"]
+            lines.append("| " + " | ".join(headers) + " |")
+            lines.append("|" + "|".join("---" for _ in headers) + "|")
+            for row in rows:
+                lines.append("| " + " | ".join(row[h] for h in headers) + " |")
+        else:
+            lines.append("- No se detectaron workflows válidos.")
         return "\n".join(lines)
 
     # --- Manual sections (via Gemini) ----------------------------------------
@@ -442,7 +473,7 @@ class PACAssembler:
             "objetivos": self.config.objetivos_calidad,
         }
         content = self.gemini_client.format_section("4. Objetivos de Calidad", directives)
-        return f"## 4. Objetivos de Calidad\n\n{content}"
+        return self._assemble_manual_section("4. Objetivos de Calidad", content)
 
     def _build_gestion_organizacion(self) -> str:
         directives = {
@@ -450,25 +481,36 @@ class PACAssembler:
             "roles": self.config.roles,
         }
         content = self.gemini_client.format_section("5. Gestión y Organización", directives)
-        return f"## 5. Gestión y Organización\n\n{content}"
+        return self._assemble_manual_section("5. Gestión y Organización", content)
 
     def _build_metricas(self) -> str:
         directives = {
             "umbrales": self.config.umbrales,
         }
         content = self.gemini_client.format_section("8. Métricas", directives)
-        return f"## 8. Métricas\n\n{content}"
+        return self._assemble_manual_section("8. Métricas", content)
 
     def _build_riesgos(self) -> str:
         directives = {
             "riesgos": self.config.riesgos,
         }
         content = self.gemini_client.format_section("9. Análisis de Riesgos", directives)
-        return f"## 9. Análisis de Riesgos\n\n{content}"
+        return self._assemble_manual_section("9. Análisis de Riesgos", content)
 
     def _build_cronograma(self) -> str:
         directives = {
             "cronograma": self.config.cronograma,
         }
         content = self.gemini_client.format_section("10. Cronograma", directives)
-        return f"## 10. Cronograma\n\n{content}"
+        return self._assemble_manual_section("10. Cronograma", content)
+
+    def _assemble_manual_section(self, heading: str, content: str) -> str:
+        """Ensambla una sección manual evitando duplicar el título.
+
+        Gemini a veces devuelve el heading; si el contenido ya empieza con ##,
+        confiamos en él y no duplicamos.
+        """
+        stripped = content.strip()
+        if stripped.startswith("## "):
+            return stripped
+        return f"## {heading}\n\n{content}"

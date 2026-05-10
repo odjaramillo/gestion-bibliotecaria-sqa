@@ -55,12 +55,17 @@ def parse_pom(path: Path) -> dict[str, Any]:
 
     dependencies: list[dict[str, str]] = []
     deps = root.find(_ns("dependencies"))
+    seen: set[str] = set()
     if deps is not None:
         for dep in deps.findall(_ns("dependency")):
             g = dep.find(_ns("groupId"))
             a = dep.find(_ns("artifactId"))
             v = dep.find(_ns("version"))
             if g is not None and a is not None:
+                key = f"{g.text.strip() if g.text else ''}:{a.text.strip() if a.text else ''}"
+                if key in seen:
+                    continue
+                seen.add(key)
                 dependencies.append({
                     "groupId": g.text.strip() if g.text else "",
                     "artifactId": a.text.strip() if a.text else "",

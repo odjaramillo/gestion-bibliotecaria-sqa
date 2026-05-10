@@ -68,12 +68,27 @@ def _validate_objetivos_calidad(objetivos: Any) -> None:
     _validate_type(objetivos, dict, "objetivos_calidad")
     if not objetivos:
         raise PacConfigError("objetivos_calidad: no puede estar vacío")
+    total = 0
+    zeros = 0
     for attr, weight in objetivos.items():
         _validate_type(weight, (int, float), f"objetivos_calidad.{attr}")
         if not (0 <= weight <= 100):
             raise PacConfigError(
                 f"objetivos_calidad.{attr}: el peso debe estar entre 0 y 100, se obtuvo {weight}"
             )
+        total += weight
+        if weight == 0:
+            zeros += 1
+    if total == 0:
+        raise PacConfigError(
+            "objetivos_calidad: la suma de pesos no puede ser 0. Asigne al menos un peso > 0."
+        )
+    if zeros > 4:
+        raise PacConfigError(
+            f"objetivos_calidad: hay {zeros} atributos con peso 0. "
+            "Un sistema web debe priorizar al menos usabilidad o eficiencia. "
+            "Reasigne pesos para que la suma sea 100."
+        )
 
 
 def _validate_roles(roles: Any) -> None:
@@ -90,6 +105,10 @@ def _validate_umbrales(umbrales: Any) -> None:
         raise PacConfigError("umbrales: no puede estar vacío")
     for metric, target in umbrales.items():
         _validate_type(target, (int, float), f"umbrales.{metric}")
+        if metric == "cobertura_pruebas_min" and target < 0:
+            raise PacConfigError(
+                "umbrales.cobertura_pruebas_min: el umbral no puede ser negativo."
+            )
 
 
 def _validate_riesgos(riesgos: Any) -> None:

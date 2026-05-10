@@ -12,7 +12,7 @@ proyecto:
   name: "Sistema de Gestión Bibliotecaria"
   version: "1.0.0"
   descripcion: |
-    Sistema web para gestión de préstamos, catálogo y usuarios de una biblioteca. (Incluye administracios de reseñas, comentarios y amonestaciones por retrasos [transacciones monetarias simuladas]).
+    Sistema web para gestión de préstamos, catálogo y usuarios de una biblioteca. (Incluye administración de reseñas, comentarios y amonestaciones por retrasos [transacciones monetarias simuladas]).
 
 lider:
   nombre: "Alberto Rodriguez"
@@ -26,13 +26,13 @@ lider:
 # La suma NO necesita ser 100; los pesos son relativos.
 # -----------------------------------------------------------------------------
 objetivos_calidad:
-  funcionalidad: 40
-  fiabilidad: 30
-  usabilidad: 0
-  eficiencia: 0
-  mantenibilidad: 20
+  funcionalidad: 30
+  fiabilidad: 25
+  usabilidad: 10
+  eficiencia: 5
+  mantenibilidad: 15
   portabilidad: 0
-  seguridad: 10
+  seguridad: 15
   compatibilidad: 0
 
 # -----------------------------------------------------------------------------
@@ -53,7 +53,7 @@ roles:
 umbrales:
   cobertura_revisiones: 100.0       # % (meta: 100%)
   densidad_defectos_max: 0.5         # defectos por KLOC
-  cobertura_pruebas_min: 0.0        # % (si aplica — segunda entrega)
+  cobertura_pruebas_min: 0.0        # % (Fase 1: inspección estática; no aplica código. Se activará en Fase 2)
 
 # -----------------------------------------------------------------------------
 # Análisis de Riesgos
