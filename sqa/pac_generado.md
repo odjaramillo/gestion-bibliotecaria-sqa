@@ -285,7 +285,14 @@ GitHub Actions (trigger: push / workflow_dispatch)
 
 ## 10. Cronograma
 
-[FORMATEO GEMINI NO DISPONIBLE: 10. Cronograma]
+El presente cronograma detalla la planificación temporal para la ejecución de las actividades de aseguramiento de la calidad, especificando las fases, periodos de ejecución y los entregables correspondientes.
+
+| Fase | Inicio | Fin | Entregables |
+| :--- | :--- | :--- | :--- |
+| **Fase 1: Pre-producción** | 2026-05-01 | 2026-05-15 | • PAC generado y aprobado<br>• Checklists de auditoría definidas |
+| **Fase 2: Auditoría de Requisitos y Arquitectura** | 2026-05-16 | 2026-05-30 | • Informe WF1: Auditoría de Requisitos<br>• Informe WF2: Inspección de Arquitectura |
+| **Fase 3: Generación de Pruebas** | 2026-06-01 | 2026-06-15 | • Casos de prueba generados<br>• Informe WF3: Cobertura de Pruebas |
+| **Fase 4: Orquestación y Métricas** | 2026-06-16 | 2026-06-30 | • Dashboard de métricas<br>• Informe WF4: Estado de Calidad |
 
 ## 11. Gestión de Defectos
 

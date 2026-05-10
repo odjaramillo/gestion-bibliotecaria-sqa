@@ -1,28 +1,13 @@
 {
   "workflow": "wf_pac_auditor",
-  "fecha_ejecucion": "2026-05-10T23:31:32.073073+00:00",
-  "estado": "PARCIAL",
+  "fecha_ejecucion": "2026-05-10T23:55:34.804725+00:00",
+  "estado": "APROBADO",
   "archivo_pac": "sqa/pac_generado.md",
   "total_items": 15,
-  "items_aprobados": 13,
-  "items_pendientes": 2,
-  "cobertura": "86.7%",
-  "hallazgos": [
-    {
-      "id": "PAC-13",
-      "categoria": "Ejecución y Cronograma",
-      "estado": "PENDIENTE",
-      "motivo": "Sección tiene contenido insuficiente (47 caracteres)",
-      "severidad": "Media"
-    },
-    {
-      "id": "PAC-14",
-      "categoria": "Ejecución y Cronograma",
-      "estado": "PENDIENTE",
-      "motivo": "Sección tiene contenido insuficiente (47 caracteres)",
-      "severidad": "Media"
-    }
-  ],
+  "items_aprobados": 15,
+  "items_pendientes": 0,
+  "cobertura": "100.0%",
+  "hallazgos": [],
   "secciones_completadas": [
     "1",
     "2",
@@ -33,10 +18,9 @@
     "7",
     "8",
     "9",
+    "10",
     "11",
     "12"
   ],
-  "secciones_pendientes": [
-    "10"
-  ]
+  "secciones_pendientes": []
 }
