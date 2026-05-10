@@ -177,7 +177,9 @@ class PACAssembler:
         lines = [
             "## 11. Gestión de Defectos",
             "",
-            "Los defectos se gestionan mediante tickets en Jira, siguiendo los workflows de resolución definidos por el equipo SQA.",
+            "Los defectos detectados durante las revisiones de documentos y artefactos se gestionan mediante tickets en Jira, siguiendo los workflows de resolución definidos por el equipo SQA.",
+            "",
+            "> **Nota:** El análisis de defectos de código fuente está planificado para la **Segunda Entrega** (Fase 2: Pruebas Dinámicas).",
         ]
         return "\n".join(lines)
 
