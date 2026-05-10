@@ -7,6 +7,7 @@ con secciones manuales formateadas por Gemini.
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -507,10 +508,11 @@ class PACAssembler:
     def _assemble_manual_section(self, heading: str, content: str) -> str:
         """Ensambla una sección manual evitando duplicar el título.
 
-        Gemini a veces devuelve el heading; si el contenido ya empieza con ##,
-        confiamos en él y no duplicamos.
+        Gemini a veces devuelve el heading ya formateado (##, ###, etc.).
+        Si el contenido empieza con cualquier heading markdown, confiamos
+        en él y no duplicamos.
         """
         stripped = content.strip()
-        if stripped.startswith("## "):
+        if re.match(r"^#{1,6}\s", stripped):
             return stripped
         return f"## {heading}\n\n{content}"
