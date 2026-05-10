@@ -24,10 +24,14 @@ jobs:
       - name: Instalar dependencias
         run: pip install -r requirements.txt
 
+      - name: Configurar PYTHONPATH
+        run: echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
+
       - name: Ejecutar WF5 Generador de PAC
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           DRY_RUN: ${{ env.DRY_RUN }}
+          PYTHONPATH: ${{ github.workspace }}
         run: python scripts/wf_pac_generator.py --config sqa/pac_config.yaml --output sqa/pac_generado.md
 
       - name: Subir PAC generado como artifact

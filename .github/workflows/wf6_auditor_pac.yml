@@ -24,9 +24,13 @@ jobs:
       - name: Instalar dependencias
         run: pip install -r requirements.txt
 
+      - name: Configurar PYTHONPATH
+        run: echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
+
       - name: Ejecutar WF6 Auditor de PAC
         env:
           DRY_RUN: ${{ env.DRY_RUN }}
+          PYTHONPATH: ${{ github.workspace }}
         run: python scripts/wf_pac_auditor.py --pac sqa/pac_generado.md --output sqa/reportes/wf_pac_audit.json
 
       - name: Subir reporte de auditoría como artifact
