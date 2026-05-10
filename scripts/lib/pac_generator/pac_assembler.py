@@ -386,25 +386,23 @@ class PACAssembler:
             "",
             "### 11.1 Ciclo de Vida de un Defecto",
             "",
-            "Todo hallazgo identificado durante las actividades de SQA sigue un ciclo de vida estructurado para garantizar trazabilidad y cierre controlado:",
+            "Todo hallazgo identificado durante las actividades de SQA se gestiona en Jira siguiendo el flujo de trabajo definido para el proyecto:",
             "",
             "```",
-            "[OPEN] ──► [TRIAGE] ──► [ASSIGNED] ──► [FIX] ──► [VERIFY] ──► [CLOSED]",
-            "   │           │              │            │           │",
-            "   ▼           ▼              ▼            ▼           ▼",
-            "REOPENED   REJECTED      REASSIGNED   REOPENED   REJECTED FIX",
+            "[Pendiente de Revisión] ──► [Ajustando] ──► [Auditando] ──► [Finalizada]",
+            "        │                       │                  │",
+            "        └───────────────────────┴──────────────────┘",
+            "                    (loop de ajustes)",
             "```",
             "",
             "| Estado | Descripción | Responsable |",
             "|---|---|---|",
-            "| **OPEN** | Defecto reportado inicialmente. | Auditor SQA |",
-            "| **TRIAGE** | Validación de reproducibilidad, impacto y severidad. | Líder SQA |",
-            "| **ASSIGNED** | Asignación a desarrollador con fecha objetivo de corrección. | Líder SQA |",
-            "| **FIX** | Corrección implementada y commit vinculado al ticket. | Desarrollador |",
-            "| **VERIFY** | Re-ejecución del caso de prueba / checklist que evidenció el defecto. | Auditor SQA |",
-            "| **CLOSED** | Defecto verificado como corregido; evidencia documentada. | Auditor SQA |",
-            "| **REOPENED** | La verificación falla; el defecto vuelve a FIX. | Auditor SQA |",
-            "| **REJECTED** | El defecto no es válido (no reproducible, comportamiento esperado, duplicado). | Líder SQA |",
+            "| **Pendiente de Revisión** | Defecto reportado inicialmente, en espera de ser atendido. | Auditor SQA / Líder SQA |",
+            "| **Ajustando** | El equipo de desarrollo trabaja en la corrección del defecto. | Desarrollador |",
+            "| **Auditando** | El defecto corregido pasa por revisión/verificación antes del cierre. | Auditor SQA |",
+            "| **Finalizada** | Defecto verificado y cerrado exitosamente. | Auditor SQA |",
+            "",
+            "> **Nota sobre granularidad:** El flujo de Jira utiliza 4 estados principales. Para transiciones adicionales (rechazo, reasignación, re-apertura), el equipo documenta la acción mediante comentarios y etiquetas dentro del ticket.",
             "",
             "### 11.2 Clasificación por Severidad",
             "",
@@ -554,20 +552,38 @@ class PACAssembler:
         return self._assemble_manual_section("9. Análisis de Riesgos", content)
 
     def _build_cronograma(self) -> str:
-        directives = {
-            "cronograma": self.config.cronograma,
-        }
-        content = self.gemini_client.format_section("10. Cronograma", directives)
-        return self._assemble_manual_section("10. Cronograma", content)
+        lines = [
+            "## 10. Cronograma",
+            "",
+            "El presente cronograma detalla la planificación temporal para la ejecución de las actividades de aseguramiento de la calidad, especificando las fases, periodos de ejecución y los entregables correspondientes.",
+            "",
+            "| Fase | Inicio | Fin | Entregables |",
+            "| :--- | :--- | :--- | :--- |",
+        ]
+        for item in self.config.cronograma:
+            fase = item.get("fase", "")
+            inicio = item.get("inicio", "")
+            fin = item.get("fin", "")
+            entregables = item.get("entregables", [])
+            entregables_str = "<br>".join(f"• {e}" for e in entregables)
+            lines.append(f"| **{fase}** | {inicio} | {fin} | {entregables_str} |")
+        return "\n".join(lines)
 
     def _assemble_manual_section(self, heading: str, content: str) -> str:
         """Ensambla una sección manual evitando duplicar el título.
 
         Gemini a veces devuelve el heading ya formateado (##, ###, etc.).
         Si el contenido empieza con cualquier heading markdown, confiamos
-        en él y no duplicamos.
+        en él y no duplicamos. Si devuelve un heading de nivel 1 (#) lo
+        normalizamos a nivel 2 (##) para mantener la jerarquía del PAC.
         """
         stripped = content.strip()
-        if re.match(r"^#{1,6}\s", stripped):
+        match = re.match(r"^(#{1,6})\s+(.*)$", stripped, re.MULTILINE)
+        if match:
+            level = len(match.group(1))
+            title = match.group(2)
+            if level == 1:
+                # Normalizar # a ## para mantener jerarquía del PAC
+                return f"## {title}\n\n" + stripped[match.end():].strip()
             return stripped
         return f"## {heading}\n\n{content}"

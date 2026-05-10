@@ -291,25 +291,23 @@ GitHub Actions (trigger: push / workflow_dispatch)
 
 ### 11.1 Ciclo de Vida de un Defecto
 
-Todo hallazgo identificado durante las actividades de SQA sigue un ciclo de vida estructurado para garantizar trazabilidad y cierre controlado:
+Todo hallazgo identificado durante las actividades de SQA se gestiona en Jira siguiendo el flujo de trabajo definido para el proyecto:
 
 ```
-[OPEN] ──► [TRIAGE] ──► [ASSIGNED] ──► [FIX] ──► [VERIFY] ──► [CLOSED]
-   │           │              │            │           │
-   ▼           ▼              ▼            ▼           ▼
-REOPENED   REJECTED      REASSIGNED   REOPENED   REJECTED FIX
+[Pendiente de Revisión] ──► [Ajustando] ──► [Auditando] ──► [Finalizada]
+        │                       │                  │
+        └───────────────────────┴──────────────────┘
+                    (loop de ajustes)
 ```
 
 | Estado | Descripción | Responsable |
 |---|---|---|
-| **OPEN** | Defecto reportado inicialmente. | Auditor SQA |
-| **TRIAGE** | Validación de reproducibilidad, impacto y severidad. | Líder SQA |
-| **ASSIGNED** | Asignación a desarrollador con fecha objetivo de corrección. | Líder SQA |
-| **FIX** | Corrección implementada y commit vinculado al ticket. | Desarrollador |
-| **VERIFY** | Re-ejecución del caso de prueba / checklist que evidenció el defecto. | Auditor SQA |
-| **CLOSED** | Defecto verificado como corregido; evidencia documentada. | Auditor SQA |
-| **REOPENED** | La verificación falla; el defecto vuelve a FIX. | Auditor SQA |
-| **REJECTED** | El defecto no es válido (no reproducible, comportamiento esperado, duplicado). | Líder SQA |
+| **Pendiente de Revisión** | Defecto reportado inicialmente, en espera de ser atendido. | Auditor SQA / Líder SQA |
+| **Ajustando** | El equipo de desarrollo trabaja en la corrección del defecto. | Desarrollador |
+| **Auditando** | El defecto corregido pasa por revisión/verificación antes del cierre. | Auditor SQA |
+| **Finalizada** | Defecto verificado y cerrado exitosamente. | Auditor SQA |
+
+> **Nota sobre granularidad:** El flujo de Jira utiliza 4 estados principales. Para transiciones adicionales (rechazo, reasignación, re-apertura), el equipo documenta la acción mediante comentarios y etiquetas dentro del ticket.
 
 ### 11.2 Clasificación por Severidad
 
