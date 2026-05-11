@@ -41,6 +41,9 @@ jobs:
       - name: Instalar dependencias
         run: pip install -r requirements.txt
 
+      - name: Configurar PYTHONPATH
+        run: echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
+
       - name: Ejecutar WF1 Auditoría de Requisitos
         env:
           JIRA_SERVER: ${{ secrets.JIRA_SERVER }}
@@ -53,6 +56,7 @@ jobs:
           SONARQUBE_URL: ${{ secrets.SONARQUBE_URL }}
           SONARQUBE_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
           MODO: ${{ env.MODO }}
+          PYTHONPATH: ${{ github.workspace }}
         run: python scripts/wf1_auditoria_requisitos.py
 
       - name: Subir reportes como artifacts

@@ -43,6 +43,9 @@ jobs:
       - name: Instalar dependencias
         run: pip install -r requirements.txt
 
+      - name: Configurar PYTHONPATH
+        run: echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
+
       - name: Preparar directorio para imágenes extraídas
         run: mkdir -p sqa/extracted_images
 
@@ -58,6 +61,7 @@ jobs:
           SONARQUBE_URL: ${{ secrets.SONARQUBE_URL }}
           SONARQUBE_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
           MODO: ${{ env.MODO }}
+          PYTHONPATH: ${{ github.workspace }}
         run: python scripts/wf2_inspeccion_arquitectura.py
 
       - name: Subir reportes como artifacts

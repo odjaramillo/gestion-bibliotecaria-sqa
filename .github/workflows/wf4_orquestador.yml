@@ -40,9 +40,13 @@ jobs:
       - name: Instalar dependencias
         run: pip install -r requirements.txt
 
+      - name: Configurar PYTHONPATH
+        run: echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
+
       - name: Ejecutar WF4 Orquestador
         env:
           MODO: ${{ env.MODO }}
+          PYTHONPATH: ${{ github.workspace }}
         run: python scripts/wf4_orquestador.py
 
       - name: Subir reporte como artifact

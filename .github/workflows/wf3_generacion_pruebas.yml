@@ -41,6 +41,9 @@ jobs:
       - name: Instalar dependencias
         run: pip install -r requirements.txt
 
+      - name: Configurar PYTHONPATH
+        run: echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
+
       - name: Ejecutar WF3 Generacion de Pruebas
         env:
           JIRA_SERVER: ${{ secrets.JIRA_SERVER }}
@@ -54,6 +57,7 @@ jobs:
           SONARQUBE_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
           MODO: ${{ env.MODO }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PYTHONPATH: ${{ github.workspace }}
         run: python scripts/wf3_generacion_pruebas.py
 
       - name: Subir reportes como artifacts
