@@ -40,6 +40,14 @@
       "sessions": 12,
       "memories": 45,
       "prompts": 76
+    },
+    {
+      "id": "2e76317f",
+      "created_by": "odjt",
+      "created_at": "2026-05-11T23:47:04Z",
+      "sessions": 4,
+      "memories": 23,
+      "prompts": 94
     }
   ]
 }
