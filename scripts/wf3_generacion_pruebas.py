@@ -65,6 +65,11 @@ class WF3GeneracionPruebas:
                 jira_keys=[],
                 findings=[],
             )
+        
+        available = list(upstream_data.keys())
+        logger.info("Datos upstream disponibles: %s", available)
+        if "wf2" not in available:
+            logger.info("WF2 no disponible; generando plan de pruebas solo con WF1")
 
         artifact_names = [f"sqa/reportes/{k}_summary.json" for k in upstream_data.keys()]
 

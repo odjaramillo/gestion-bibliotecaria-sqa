@@ -12,6 +12,9 @@ on:
           - reporte
           - propuesta
           - produccion
+  workflow_run:
+    workflows: ["WF1 — Auditoría Estática de Requisitos", "WF2 — Inspeccion Arquitectonica y de Codigo"]
+    types: [completed]
   push:
     paths:
       - 'sqa/reportes/**'
@@ -43,6 +46,20 @@ jobs:
 
       - name: Configurar PYTHONPATH
         run: echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
+
+      - name: Descargar artifacts de WF1
+        uses: actions/download-artifact@v4
+        with:
+          name: wf1-reportes
+          path: sqa/reportes/
+        continue-on-error: true
+
+      - name: Descargar artifacts de WF2
+        uses: actions/download-artifact@v4
+        with:
+          name: wf2-reportes
+          path: sqa/reportes/
+        continue-on-error: true
 
       - name: Ejecutar WF3 Generacion de Pruebas
         env:
