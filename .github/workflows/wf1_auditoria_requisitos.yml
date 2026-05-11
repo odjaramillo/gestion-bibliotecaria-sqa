@@ -1,4 +1,4 @@
-name: WF1 — Auditoría Estática de Requisitos
+name: WF1 — Auditoría Estática de Requisitos y Arquitectura Documental
 
 on:
   workflow_dispatch:

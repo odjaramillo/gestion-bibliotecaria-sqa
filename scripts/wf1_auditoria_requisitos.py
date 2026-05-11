@@ -46,6 +46,37 @@ INVEST_FEW_SHOT: str = (
     "- EJEMPLO 3: 'Prefiero que el título de la historia esté en formato Yo como...' — preferencia de formato, no es una violación."
 )
 
+DAS_PROMPT: str = (
+    "Eres un arquitecto SQA experto en auditoría de documentos de arquitectura (DAS). "
+    "Analiza el siguiente texto extraído de un Documento de Arquitectura de Software "
+    "basado en el modelo C4 y evalúa su CALIDAD como documento. NO inventes componentes, "
+    "servicios ni decisiones que no aparezcan EXPLÍCITAMENTE en el texto proporcionado. "
+    "Evalúa los siguientes criterios: "
+    "1. Completitud: ¿Tiene vistas de contexto, contenedores, componentes y despliegue? "
+    "2. Consistencia interna: ¿Las decisiones arquitectónicas son coherentes entre secciones? "
+    "3. Trazabilidad: ¿Se vincula con los requisitos del ERS? "
+    "4. Claridad: ¿Los diagramas y descripciones son comprensibles sin ambigüedad? "
+    "5. Justificación: ¿Las decisiones arquitectónicas tienen razón de ser documentada? "
+    "Devuelve ESTRICTAMENTE un array JSON con objetos que tengan estos campos: "
+    '{"id":"string","severity":"Alta|Media|Baja","type":"bug|task",'
+    '"description":"string","criterio":"string"}. '
+    "El campo 'id' DEBE referenciar una sección o decisión real del documento. "
+    "Si un hallazgo no puede vincularse a contenido específico del DAS, NO lo reportes. "
+    "Si no hay defectos reales, devuelve un array vacío []."
+)
+
+DAS_FEW_SHOT: str = (
+    "\n\n=== EJEMPLOS DE HALLAZGOS ===\n"
+    "[POSITIVOS - Buen Hallazgo: Violación válida y accionable]\n"
+    "- EJEMPLO 1: La decisión arquitectónica DA-03 menciona 'microservicios' pero el diagrama de contenedores muestra un monolito sin separación de servicios.\n"
+    "- EJEMPLO 2: El DAS no incluye vista de despliegue (C4 Nivel 4), impidiendo entender la infraestructura objetivo.\n"
+    "- EJEMPLO 3: La decisión DA-01 justifica el uso de MySQL por 'rendimiento' pero no presenta métricas ni comparativa con alternativas.\n\n"
+    "[NEGATIVOS - Falso Positivo: Subjetivo o cosmético]\n"
+    "- EJEMPLO 1: 'El diagrama debería tener más colores' — preferencia estética, no afecta la calidad técnica.\n"
+    "- EJEMPLO 2: 'Prefiero que la sección 3 vaya antes que la 2' — organización subjetiva, no es un defecto.\n"
+    "- EJEMPLO 3: Uso de 'base de datos' vs 'DB' — sinónimos técnicos, no altera el significado."
+)
+
 CONFLUENCE_SPACE: str = "SQA"
 CONFLUENCE_PARENT: str | None = None
 
@@ -63,8 +94,18 @@ def _build_invest_prompt(chunk: str, filename: str, idx: int, total: int) -> str
     return f"{base}{INVEST_FEW_SHOT}"
 
 
+def _build_das_prompt(chunk: str, filename: str, idx: int, total: int) -> str:
+    """Construye el prompt de auditoría DAS incluyendo ejemplos few-shot."""
+    base = (
+        f"{DAS_PROMPT}\n\n"
+        f"Documento: {filename} (chunk {idx + 1}/{total})\n\n"
+        f"{chunk}"
+    )
+    return f"{base}{DAS_FEW_SHOT}"
+
+
 class WF1AuditoriaRequisitos:
-    """Orquesta la auditoría estática de requisitos."""
+    """Orquesta la auditoría estática de requisitos y arquitectura documental (Fase 1)."""
 
     def __init__(self, config: SQAConfig) -> None:
         self.config = config
@@ -126,20 +167,24 @@ class WF1AuditoriaRequisitos:
         )
 
     def _detect_pdfs(self) -> list[Path]:
-        """Detecta archivos BRIEF y ERS en documentacion/."""
+        """Detecta archivos BRIEF, ERS y DAS en documentacion/."""
         pdfs: list[Path] = []
         if self.config.documentacion_dir.exists():
             for pdf in sorted(self.config.documentacion_dir.glob("*.pdf")):
                 upper = pdf.name.upper()
-                if "BRIEF" in upper or "ERS" in upper:
+                if "BRIEF" in upper or "ERS" in upper or "DAS" in upper:
                     pdfs.append(pdf)
         return pdfs
 
     def _analyze_chunks(self, chunks: list[str], filename: str) -> list[dict[str, Any]]:
-        """Envía chunks a Gemini y parsea hallazgos."""
+        """Envía chunks a Gemini y parsea hallazgos según el tipo de documento."""
+        is_das = "DAS" in filename.upper()
         findings: list[dict[str, Any]] = []
         for idx, chunk in enumerate(chunks):
-            prompt = _build_invest_prompt(chunk, filename, idx, len(chunks))
+            if is_das:
+                prompt = _build_das_prompt(chunk, filename, idx, len(chunks))
+            else:
+                prompt = _build_invest_prompt(chunk, filename, idx, len(chunks))
             try:
                 raw = self.gemini.generate(prompt)
                 data = json.loads(raw)
@@ -150,7 +195,7 @@ class WF1AuditoriaRequisitos:
             except Exception as exc:
                 logger.error("Error en análisis Gemini para %s chunk %d: %s", filename, idx, exc)
                 raise
-        # Validación: descartar hallazgos que no referencian un requisito real del texto
+        # Validación: descartar hallazgos que no referencian contenido real del texto
         full_text = "\n".join(chunks)
         validated = self._validate_findings(findings, full_text)
         return validated
@@ -158,7 +203,7 @@ class WF1AuditoriaRequisitos:
     def _validate_findings(
         self, findings: list[dict[str, Any]], source_text: str
     ) -> list[dict[str, Any]]:
-        """Filtra hallazgos que no referencian requisitos reales del documento.
+        """Filtra hallazgos que no referencian contenido real del documento.
 
         Un hallazgo es válido si su 'id' o 'description' aparece en el texto fuente.
         """
