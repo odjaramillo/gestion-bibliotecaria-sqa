@@ -563,7 +563,7 @@ def _default_config() -> SQAConfig:
         gemini_api_key="",
         sonarqube_url="",
         sonarqube_token="",
-        dry_run=True,
+        modo="reporte",
         project_root=project_root,
         documentacion_dir=project_root / "documentacion",
         reportes_dir=project_root / "sqa" / "reportes",
@@ -572,7 +572,7 @@ def _default_config() -> SQAConfig:
 
 def main() -> None:
     try:
-        config = load_config()
+        config = load_config(required_services=[])
     except EnvironmentError:
         logger.warning("Variables de entorno incompletas; usando configuracion por defecto (dry_run)")
         config = _default_config()
