@@ -1,0 +1,56 @@
+name: WF7 — Agente de Ingesta de PDFs a Confluence
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'sqa/pdfs/**'
+      - 'scripts/wf7_agente_pdf_confluence.py'
+      - 'scripts/sqa_core/pdf_auditoria.py'
+      - 'scripts/sqa_core/xhtml_confluence.py'
+      - 'scripts/sqa_core/clients.py'
+      - 'scripts/sqa_core/reporting.py'
+      - '.github/workflows/wf7_agente_pdf_confluence.yml'
+      - 'requirements.txt'
+
+env:
+  DRY_RUN: true
+
+jobs:
+  wf7-agente-pdf-confluence:
+    name: Ejecutar WF7 Agente PDF→Confluence
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Ejecutar WF7 Agente PDF→Confluence
+        env:
+          JIRA_SERVER: ${{ secrets.JIRA_SERVER }}
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          CONFLUENCE_URL: ${{ secrets.CONFLUENCE_URL }}
+          CONFLUENCE_USER: ${{ secrets.CONFLUENCE_USER }}
+          CONFLUENCE_TOKEN: ${{ secrets.CONFLUENCE_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          SONARQUBE_URL: ${{ secrets.SONARQUBE_URL }}
+          SONARQUBE_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+          DRY_RUN: ${{ env.DRY_RUN }}
+        run: python scripts/wf7_agente_pdf_confluence.py
+
+      - name: Subir resumen como artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: wf7-resumen
+          path: sqa/reportes/wf7_summary.json
+          if-no-files-found: warn

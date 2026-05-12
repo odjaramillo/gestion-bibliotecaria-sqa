@@ -70,3 +70,63 @@ def write_summary_json(
     path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
     logger.info("Summary JSON escrito: %s", path)
     return path
+
+
+def escribir_resumen_ingesta_pdf(
+    resultados: list[dict[str, Any]],
+    output_path: Path,
+) -> Path:
+    """Escribe un JSON de resumen para la ingesta de PDFs de auditoría.
+
+    Cada entrada en *resultados* debe contener al menos:
+    ``pdf_name``, ``confluence_page_id``, ``confluence_url``,
+    ``jira_keys``, ``defect_count`` y ``status``.
+
+    Args:
+        resultados: Lista de dicts con el resultado por PDF procesado.
+        output_path: Ruta donde se guardará el archivo JSON.
+
+    Returns:
+        Ruta al archivo JSON escrito.
+    """
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    exitosos = [r for r in resultados if r.get("status") == "success"]
+    fallidos = [r for r in resultados if r.get("status") == "failed"]
+
+    confluence_pages_created = [
+        r.get("confluence_url")
+        for r in exitosos
+        if r.get("confluence_url")
+    ]
+    jira_tickets_created = sorted({
+        key
+        for r in resultados
+        for key in (r.get("jira_keys") or [])
+    })
+    errors = [
+        {
+            "file": r.get("pdf_name"),
+            "error_message": r.get("error_message"),
+        }
+        for r in fallidos
+        if r.get("error_message")
+    ]
+
+    payload: dict[str, Any] = {
+        "execution_date": datetime.now(timezone.utc).isoformat(),
+        "total_pdfs_processed": len(resultados),
+        "successful": len(exitosos),
+        "failed": len(fallidos),
+        "confluence_pages_created": confluence_pages_created,
+        "jira_tickets_created": jira_tickets_created,
+        "errors": errors,
+        "pdfs": resultados,
+    }
+
+    output_path.write_text(
+        json.dumps(payload, indent=2, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    logger.info("Resumen de ingesta PDF escrito: %s", output_path)
+    return output_path

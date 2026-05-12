@@ -49,9 +49,9 @@ def _subelemento(padre: ET.Element, tag: str, texto: str | None = None, atributo
 def _parrafo_con_etiqueta(padre: ET.Element, etiqueta: str, valor: str) -> ET.Element:
     """Crea un <p> con un <strong>etiqueta:</strong> seguido del valor."""
     p = _subelemento(padre, "p")
-    strong = _subelemento(p, "strong", f"{etiqueta}:")
+    strong = _subelemento(p, "strong", _escapar_texto(f"{etiqueta}:"))
     # Añadir espacio y valor como tail del strong
-    strong.tail = f" {valor}"
+    strong.tail = f" {_escapar_texto(valor)}"
     return p
 
 
@@ -61,7 +61,7 @@ def _generar_tabla(filas: Iterable[FilaAuditoria]) -> ET.Element:
     thead = _subelemento(table, "thead")
     tr_head = _subelemento(thead, "tr")
     for header in ("ID", "Métrica/Atributo", "Criterio", "Resultado", "Observación"):
-        _subelemento(tr_head, "th", header)
+        _subelemento(tr_head, "th", _escapar_texto(header))
 
     tbody = _subelemento(table, "tbody")
     for fila in filas:
@@ -69,11 +69,11 @@ def _generar_tabla(filas: Iterable[FilaAuditoria]) -> ET.Element:
         # Destacar visualmente filas con defecto
         if fila.es_defecto:
             tr.set("style", "background-color: #ffcccc;")
-        _subelemento(tr, "td", fila.id)
-        _subelemento(tr, "td", fila.metrica)
-        _subelemento(tr, "td", fila.criterio)
-        _subelemento(tr, "td", fila.resultado)
-        _subelemento(tr, "td", fila.observacion)
+        _subelemento(tr, "td", _escapar_texto(fila.id))
+        _subelemento(tr, "td", _escapar_texto(fila.metrica))
+        _subelemento(tr, "td", _escapar_texto(fila.criterio))
+        _subelemento(tr, "td", _escapar_texto(fila.resultado))
+        _subelemento(tr, "td", _escapar_texto(fila.observacion))
     return table
 
 
@@ -84,7 +84,10 @@ def _generar_lista_defectos(filas: Iterable[FilaAuditoria]) -> ET.Element | None
         return None
     ul = _elemento("ul")
     for fila in defectos:
-        texto = f"[{fila.id}] {fila.metrica}: {fila.resultado} - {fila.observacion}"
+        texto = (
+            f"[{_escapar_texto(fila.id)}] {_escapar_texto(fila.metrica)}: "
+            f"{_escapar_texto(fila.resultado)} - {_escapar_texto(fila.observacion)}"
+        )
         _subelemento(ul, "li", texto)
     return ul
 
@@ -114,6 +117,7 @@ class RenderizadorXhtmlConfluence:
         documento: DocumentoAuditoria,
         metadata: MetadataPagina | None = None,
         tickets: dict[str, str] | None = None,
+        jira_server: str | None = None,
     ) -> str:
         """Renderiza el documento como string XHTML.
 
@@ -121,6 +125,7 @@ class RenderizadorXhtmlConfluence:
             documento: Estructura extraída del PDF de auditoría.
             metadata: Metadatos opcionales para encabezados.
             tickets: Mapa ``{fila_id: issue_key}`` para enlazar defectos con Jira.
+            jira_server: URL base de Jira para generar enlaces (ej. https://jira.acme.com).
 
         Returns:
             String XHTML válido (self-closing tags, namespace implícito).
@@ -131,7 +136,7 @@ class RenderizadorXhtmlConfluence:
         root = _elemento("div")
 
         # Título principal
-        _subelemento(root, "h1", f"Auditoría: {documento.nombre}")
+        _subelemento(root, "h1", _escapar_texto(f"Auditoría: {documento.nombre}"))
 
         # Metadatos
         if metadata.nombre_artefacto:
@@ -147,46 +152,62 @@ class RenderizadorXhtmlConfluence:
         _subelemento(
             root,
             "p",
-            f"Total de ítems auditados: {total} | Defectos detectados: {defectos}",
+            _escapar_texto(
+                f"Total de ítems auditados: {total} | Defectos detectados: {defectos}"
+            ),
         )
 
         # Sección de defectos
         if defectos:
-            _subelemento(root, "h2", "Defectos Detectados")
+            _subelemento(root, "h2", _escapar_texto("Defectos Detectados"))
             lista_defectos = _generar_lista_defectos(documento.filas)
             if lista_defectos is not None:
                 root.append(lista_defectos)
             # Enlaces a tickets de Jira si existen
             if tickets:
-                _subelemento(root, "h2", "Tickets de Seguimiento (Jira)")
+                _subelemento(
+                    root, "h2", _escapar_texto("Tickets de Seguimiento (Jira)")
+                )
                 ul_tickets = _subelemento(root, "ul")
+                jira_base = (jira_server or "https://jira.example.com").rstrip("/")
                 for fila in documento.filas_con_defecto():
                     key = tickets.get(fila.id)
                     if key:
                         li = _subelemento(ul_tickets, "li")
-                        li.text = f"[{fila.id}] "
-                        a = _subelemento(
+                        li.text = _escapar_texto(f"[{fila.id}] ")
+                        _subelemento(
                             li,
                             "a",
-                            key,
-                            {"href": f"https://jira.example.com/browse/{key}"},
+                            _escapar_texto(key),
+                            {"href": f"{jira_base}/browse/{key}"},
                         )
         else:
-            _subelemento(root, "p", "✅ No se detectaron defectos en esta auditoría.")
+            _subelemento(
+                root,
+                "p",
+                _escapar_texto("✅ No se detectaron defectos en esta auditoría."),
+            )
 
         # Tabla completa
-        _subelemento(root, "h2", "Tabla de Auditoría Completa")
+        _subelemento(root, "h2", _escapar_texto("Tabla de Auditoría Completa"))
         tabla = _generar_tabla(documento.filas)
         root.append(tabla)
 
         # Convertir a string XML
         ET.register_namespace("", _NS_CONFLUENCE)
         xhtml_str = ET.tostring(root, encoding="unicode", method="xml")
-        # Asegurar que el texto escapado no se vuelva a escapar por ElementTree
-        # (ET ya escapa textos, pero los <strong> inyectados manualmente en texto
-        #  deben ser reemplazados por tags reales si se quiere formato rico).
-        xhtml_str = self._restaurar_tags_html_simples(xhtml_str)
+        # Corregir dobles escapes producidos por ET.tostring sobre texto ya escapado
+        xhtml_str = self._desdoblar_escapes(xhtml_str)
         return xhtml_str
+
+    @staticmethod
+    def _desdoblar_escapes(xhtml: str) -> str:
+        """Corrige dobles escapes producidos por ET.tostring sobre texto ya escapado."""
+        xhtml = xhtml.replace("&amp;lt;", "&lt;")
+        xhtml = xhtml.replace("&amp;gt;", "&gt;")
+        xhtml = xhtml.replace("&amp;amp;", "&amp;")
+        xhtml = xhtml.replace("&amp;quot;", "&quot;")
+        return xhtml
 
     @staticmethod
     def _restaurar_tags_html_simples(xhtml: str) -> str:

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import logging
 import time
+from pathlib import Path
 from typing import Any, Callable, TypeVar
 
 import requests
@@ -215,6 +216,35 @@ class ConfluenceClient:
         }
         resp = self._request("PUT", f"/content/{page_id}", json=payload)
         return resp.json()
+
+    def upload_attachment(
+        self,
+        pdf_path: str | Path,
+        page_id: str,
+    ) -> dict[str, Any]:
+        """Sube un archivo PDF como adjunto de una página de Confluence.
+
+        Args:
+            pdf_path: Ruta al archivo PDF.
+            page_id: ID de la página de Confluence destino.
+
+        Returns:
+            Respuesta JSON de la API de Confluence.
+        """
+        path = Path(pdf_path)
+        url = f"{self.base_url}/rest/api/content/{page_id}/child/attachment"
+        headers = {"X-Atlassian-Token": "no-check"}
+
+        def _call() -> requests.Response:
+            with path.open("rb") as f:
+                files = {"file": (path.name, f, "application/pdf")}
+                resp = requests.post(
+                    url, auth=self.auth, headers=headers, files=files
+                )
+                resp.raise_for_status()
+                return resp
+
+        return _retry(_call).json()
 
 
 class GeminiClient:

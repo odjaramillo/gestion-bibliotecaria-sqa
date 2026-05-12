@@ -80,6 +80,9 @@ class TestDetectarDefecto(unittest.TestCase):
     def test_bloqueado_es_defecto(self):
         self.assertTrue(_detectar_defecto("BLOQUEADO", "obs"))
 
+    def test_fail_es_defecto(self):
+        self.assertTrue(_detectar_defecto("FAIL", "obs"))
+
     def test_cumple_no_es_defecto(self):
         self.assertFalse(_detectar_defecto("CUMPLE", ""))
 

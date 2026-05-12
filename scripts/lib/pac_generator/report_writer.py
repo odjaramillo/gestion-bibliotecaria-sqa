@@ -50,7 +50,7 @@ class ReportWriter:
             "workflow": "wf_pac_generator",
             "fecha_ejecucion": now.isoformat(),
             "estado": status,
-            "archivo_pac": str(pac_path),
+            "archivo_pac": pac_path.as_posix(),
             "resumen": {
                 "total_secciones": sections_total,
                 "secciones_auto": sections_auto,

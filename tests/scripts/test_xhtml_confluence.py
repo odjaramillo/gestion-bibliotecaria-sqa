@@ -155,9 +155,29 @@ class TestRenderizadorXhtmlConfluence(unittest.TestCase):
             ],
         )
         tickets = {"R1": "SQA-101"}
-        xhtml = self.renderer.renderizar(doc, tickets=tickets)
+        xhtml = self.renderer.renderizar(
+            doc, tickets=tickets, jira_server="https://jira.acme.com"
+        )
         self.assertIn("SQA-101", xhtml)
-        self.assertIn("https://jira.example.com/browse/SQA-101", xhtml)
+        self.assertIn("https://jira.acme.com/browse/SQA-101", xhtml)
+        self.assertNotIn("jira.example.com", xhtml)
+
+    def test_escapa_caracteres_especiales_y_null_bytes(self):
+        doc = DocumentoAuditoria(
+            nombre="Test",
+            pdf_path="/fake.pdf",
+            filas=[
+                FilaAuditoria(
+                    "R1", "M1", "C < D", "A & B", "O > P\x00!", 1, True
+                ),
+            ],
+        )
+        xhtml = self.renderer.renderizar(doc)
+        self.assertIn("&lt;", xhtml)
+        self.assertIn("&gt;", xhtml)
+        self.assertIn("&amp;", xhtml)
+        self.assertNotIn("\x00", xhtml)
+        self.assertTrue(self.renderer.validar_xhtml(xhtml))
 
     def test_tabla_completa_presente(self):
         doc = DocumentoAuditoria(

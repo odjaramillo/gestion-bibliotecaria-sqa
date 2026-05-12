@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import sys
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
 from unittest.mock import MagicMock, patch
 
 # Mock missing third-party modules before importing SQA code
@@ -353,6 +355,26 @@ class TestConfluenceClient(unittest.TestCase):
         self.assertEqual(result["id"], "12345")
         args = mock_request.call_args
         self.assertEqual(args[0][0], "PUT")
+
+    @patch("scripts.sqa_core.clients.requests.post")
+    def test_upload_attachment_makes_post_with_file(self, mock_post):
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = {"id": "ATT-1", "title": "test.pdf"}
+        mock_post.return_value = mock_resp
+        config = self._make_config()
+        client = ConfluenceClient(config)
+
+        with TemporaryDirectory() as tmpdir:
+            pdf_path = Path(tmpdir) / "test.pdf"
+            pdf_path.write_text("dummy pdf content", encoding="utf-8")
+            result = client.upload_attachment(pdf_path, "PAGE-123")
+
+        self.assertEqual(result["id"], "ATT-1")
+        mock_post.assert_called_once()
+        args = mock_post.call_args
+        self.assertIn("PAGE-123", args[0][0])
+        self.assertIn("file", args[1]["files"])
 
 
 class TestGeminiClient(unittest.TestCase):

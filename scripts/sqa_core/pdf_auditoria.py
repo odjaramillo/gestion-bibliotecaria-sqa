@@ -15,7 +15,7 @@ from scripts.sqa_core.pdf_text import extract_page_texts_from_pdf
 logger = logging.getLogger("sqa_core.pdf_auditoria")
 
 # Palabras clave que indican un resultado con defecto.
-_PALABRAS_DEFECTO = {"FALLA", "NO CUMPLE", "PARCIAL", "BLOQUEADO"}
+_PALABRAS_DEFECTO = {"FALLA", "NO CUMPLE", "PARCIAL", "BLOQUEADO", "FAIL"}
 
 # Mapeo de encabezados normalizados -> nombre canónico.
 _MAPA_HEADERS = {

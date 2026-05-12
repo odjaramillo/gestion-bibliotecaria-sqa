@@ -97,8 +97,8 @@ class TestLoadConfig(unittest.TestCase):
         with patch.dict(os.environ, env, clear=True):
             config = load_config()
             self.assertTrue(config.project_root.exists())
-            self.assertTrue(str(config.documentacion_dir).endswith("documentacion"))
-            self.assertTrue(str(config.reportes_dir).endswith("sqa/reportes"))
+            self.assertTrue(config.documentacion_dir.as_posix().endswith("documentacion"))
+            self.assertTrue(config.reportes_dir.as_posix().endswith("sqa/reportes"))
 
 
 if __name__ == "__main__":

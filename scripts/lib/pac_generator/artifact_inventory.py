@@ -31,7 +31,7 @@ def scan_documentation(doc_dir: Path) -> list[dict[str, str]]:
     pdfs = [
         {
             "filename": p.name,
-            "path": str(p.relative_to(doc_dir.parent)),
+            "path": p.relative_to(doc_dir.parent).as_posix(),
         }
         for p in doc_dir.iterdir()
         if p.is_file() and p.suffix.lower() == ".pdf"
