@@ -1,0 +1,41 @@
+name: WF6 — Auditor de PAC
+
+on:
+  workflow_dispatch:
+
+env:
+  DRY_RUN: false
+
+jobs:
+  wf6-auditor-pac:
+    name: Ejecutar WF6 Auditor de PAC
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Configurar PYTHONPATH
+        run: echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
+
+      - name: Ejecutar WF6 Auditor de PAC
+        env:
+          DRY_RUN: ${{ env.DRY_RUN }}
+          PYTHONPATH: ${{ github.workspace }}
+        run: python scripts/wf_pac_auditor.py --pac sqa/pac_generado.md --output sqa/reportes/wf_pac_audit.json
+
+      - name: Subir reporte de auditoría como artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: wf6-reporte-auditoria
+          path: sqa/reportes/wf_pac_audit.json
+          if-no-files-found: warn

@@ -19,15 +19,29 @@ class SQAConfig:
     gemini_api_key: str
     sonarqube_url: str
     sonarqube_token: str
-    dry_run: bool
+    modo: str
     project_root: Path
     documentacion_dir: Path
     reportes_dir: Path
 
+    @property
+    def dry_run(self) -> bool:
+        """Modos 'reporte' y 'propuesta' son equivalentes a dry_run=True."""
+        return self.modo in ("reporte", "propuesta")
 
-def load_config() -> SQAConfig:
-    """Load and validate SQA configuration from environment variables."""
-    required: dict[str, str | None] = {
+
+def load_config(required_services: list[str] | None = None) -> SQAConfig:
+    """Load and validate SQA configuration from environment variables.
+
+    Args:
+        required_services: Lista de servicios requeridos para este workflow.
+            Opciones: 'jira', 'confluence', 'gemini', 'sonarqube'.
+            Si es None, solo se requiere GEMINI_API_KEY.
+    """
+    if required_services is None:
+        required_services = ["gemini"]
+
+    all_vars: dict[str, str | None] = {
         "JIRA_SERVER": os.getenv("JIRA_SERVER"),
         "JIRA_EMAIL": os.getenv("JIRA_EMAIL"),
         "JIRA_API_TOKEN": os.getenv("JIRA_API_TOKEN"),
@@ -39,29 +53,46 @@ def load_config() -> SQAConfig:
         "SONARQUBE_TOKEN": os.getenv("SONARQUBE_TOKEN"),
     }
 
-    missing = [k for k, v in required.items() if not v]
+    # Mapeo de servicio a variables requeridas
+    service_vars: dict[str, list[str]] = {
+        "jira": ["JIRA_SERVER", "JIRA_EMAIL", "JIRA_API_TOKEN"],
+        "confluence": ["CONFLUENCE_URL", "CONFLUENCE_USER", "CONFLUENCE_TOKEN"],
+        "gemini": ["GEMINI_API_KEY"],
+        "sonarqube": ["SONARQUBE_URL", "SONARQUBE_TOKEN"],
+    }
+
+    missing: list[str] = []
+    for svc in required_services:
+        for var in service_vars.get(svc, []):
+            if not all_vars[var]:
+                missing.append(var)
+
     if missing:
         raise EnvironmentError(
-            f"Variables de entorno faltantes: {', '.join(missing)}"
+            f"Variables de entorno faltantes para {required_services}: {', '.join(sorted(set(missing)))}"
         )
 
-    dry_run = os.getenv("DRY_RUN", "true").lower() in ("1", "true", "yes", "on")
+    modo = os.getenv("MODO", "reporte").lower()
+    if modo not in ("reporte", "propuesta", "produccion"):
+        raise EnvironmentError(
+            f"MODO debe ser 'reporte', 'propuesta' o 'produccion', se obtuvo '{modo}'"
+        )
 
     project_root = Path(__file__).resolve().parent.parent.parent
     documentacion_dir = project_root / "documentacion"
     reportes_dir = project_root / "sqa" / "reportes"
 
     return SQAConfig(
-        jira_server=required["JIRA_SERVER"],
-        jira_email=required["JIRA_EMAIL"],
-        jira_api_token=required["JIRA_API_TOKEN"],
-        confluence_url=required["CONFLUENCE_URL"],
-        confluence_user=required["CONFLUENCE_USER"],
-        confluence_token=required["CONFLUENCE_TOKEN"],
-        gemini_api_key=required["GEMINI_API_KEY"],
-        sonarqube_url=required["SONARQUBE_URL"],
-        sonarqube_token=required["SONARQUBE_TOKEN"],
-        dry_run=dry_run,
+        jira_server=all_vars["JIRA_SERVER"] or "",
+        jira_email=all_vars["JIRA_EMAIL"] or "",
+        jira_api_token=all_vars["JIRA_API_TOKEN"] or "",
+        confluence_url=all_vars["CONFLUENCE_URL"] or "",
+        confluence_user=all_vars["CONFLUENCE_USER"] or "",
+        confluence_token=all_vars["CONFLUENCE_TOKEN"] or "",
+        gemini_api_key=all_vars["GEMINI_API_KEY"] or "",
+        sonarqube_url=all_vars["SONARQUBE_URL"] or "",
+        sonarqube_token=all_vars["SONARQUBE_TOKEN"] or "",
+        modo=modo,
         project_root=project_root,
         documentacion_dir=documentacion_dir,
         reportes_dir=reportes_dir,

@@ -1,7 +1,17 @@
-name: WF1 — Auditoría Estática de Requisitos
+name: WF1 — Auditoría Estática de Requisitos y Arquitectura Documental
 
 on:
   workflow_dispatch:
+    inputs:
+      modo:
+        description: 'Modo de ejecución'
+        required: true
+        default: 'reporte'
+        type: choice
+        options:
+          - reporte
+          - propuesta
+          - produccion
   push:
     paths:
       - 'documentacion/**'
@@ -11,7 +21,7 @@ on:
       - 'requirements.txt'
 
 env:
-  DRY_RUN: true
+  MODO: ${{ inputs.modo || 'reporte' }}
 
 jobs:
   wf1-auditoria-requisitos:
@@ -31,6 +41,9 @@ jobs:
       - name: Instalar dependencias
         run: pip install -r requirements.txt
 
+      - name: Configurar PYTHONPATH
+        run: echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
+
       - name: Ejecutar WF1 Auditoría de Requisitos
         env:
           JIRA_SERVER: ${{ secrets.JIRA_SERVER }}
@@ -42,7 +55,8 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           SONARQUBE_URL: ${{ secrets.SONARQUBE_URL }}
           SONARQUBE_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
-          DRY_RUN: ${{ env.DRY_RUN }}
+          MODO: ${{ env.MODO }}
+          PYTHONPATH: ${{ github.workspace }}
         run: python scripts/wf1_auditoria_requisitos.py
 
       - name: Subir reportes como artifacts

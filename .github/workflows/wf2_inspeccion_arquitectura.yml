@@ -2,6 +2,16 @@ name: WF2 — Inspeccion Arquitectonica y de Codigo
 
 on:
   workflow_dispatch:
+    inputs:
+      modo:
+        description: 'Modo de ejecución'
+        required: true
+        default: 'reporte'
+        type: choice
+        options:
+          - reporte
+          - propuesta
+          - produccion
   push:
     paths:
       - 'documentacion/**'
@@ -13,7 +23,7 @@ on:
       - 'requirements.txt'
 
 env:
-  DRY_RUN: true
+  MODO: ${{ inputs.modo || 'reporte' }}
 
 jobs:
   wf2-inspeccion-arquitectura:
@@ -33,6 +43,9 @@ jobs:
       - name: Instalar dependencias
         run: pip install -r requirements.txt
 
+      - name: Configurar PYTHONPATH
+        run: echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
+
       - name: Preparar directorio para imágenes extraídas
         run: mkdir -p sqa/extracted_images
 
@@ -47,7 +60,8 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           SONARQUBE_URL: ${{ secrets.SONARQUBE_URL }}
           SONARQUBE_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
-          DRY_RUN: ${{ env.DRY_RUN }}
+          MODO: ${{ env.MODO }}
+          PYTHONPATH: ${{ github.workspace }}
         run: python scripts/wf2_inspeccion_arquitectura.py
 
       - name: Subir reportes como artifacts

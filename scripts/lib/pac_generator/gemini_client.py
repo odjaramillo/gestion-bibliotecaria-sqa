@@ -22,12 +22,15 @@ class GeminiClient:
             import google.generativeai as genai
 
             genai.configure(api_key=api_key)
-            self._model = genai.GenerativeModel("gemini-pro")
+            self._model = genai.GenerativeModel("gemini-3.1-flash-lite")
 
     @staticmethod
     def is_available() -> bool:
         """Retorna True si google-generativeai está instalado."""
-        return importlib.util.find_spec("google.generativeai") is not None
+        try:
+            return importlib.util.find_spec("google.generativeai") is not None
+        except ModuleNotFoundError:
+            return False
 
     def format_section(self, section_name: str, directives: dict) -> str:
         """Formatea una sección del PAC usando Gemini como editor.
@@ -59,8 +62,9 @@ class GeminiClient:
         try:
             response = self._model.generate_content(prompt)
             result = response.text
-        except Exception:
-            result = f"[FORMATEO GEMINI NO DISPONIBLE: {section_name}]"
+        except Exception as exc:
+            print(f"[ERROR] Gemini format_section failed: {exc}")
+            result = f"[FORMATEO GEMINI FALLÓ ({type(exc).__name__}): {section_name}]"
 
         self._cache[cache_key] = result
         return result

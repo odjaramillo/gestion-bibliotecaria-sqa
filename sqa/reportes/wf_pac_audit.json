@@ -1,0 +1,26 @@
+{
+  "workflow": "wf_pac_auditor",
+  "fecha_ejecucion": "2026-05-10T23:55:34.804725+00:00",
+  "estado": "APROBADO",
+  "archivo_pac": "sqa/pac_generado.md",
+  "total_items": 15,
+  "items_aprobados": 15,
+  "items_pendientes": 0,
+  "cobertura": "100.0%",
+  "hallazgos": [],
+  "secciones_completadas": [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "11",
+    "12"
+  ],
+  "secciones_pendientes": []
+}
