@@ -34,6 +34,9 @@ jobs:
       - name: Instalar dependencias
         run: pip install -r requirements.txt
 
+      - name: Configurar PYTHONPATH
+        run: echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
+
       - name: Ejecutar WF7 Agente PDF→Confluence
         env:
           JIRA_SERVER: ${{ secrets.JIRA_SERVER }}
@@ -46,6 +49,7 @@ jobs:
           SONARQUBE_URL: ${{ secrets.SONARQUBE_URL }}
           SONARQUBE_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
           DRY_RUN: ${{ env.DRY_RUN }}
+          PYTHONPATH: ${{ github.workspace }}
         run: python scripts/wf7_agente_pdf_confluence.py
 
       - name: Subir resumen como artifact
