@@ -1,0 +1,5 @@
+Caracteristica base: Fiabilidad
+    Subcaracteristica 1: Madurez
+        Atributo: 
+    Subcaracteristica 2: Tolerancia a Fallos
+    Metrica:
