@@ -34,11 +34,14 @@ jobs:
       (github.event.action == 'opened' || github.event.action == 'reopened')
     steps:
       - name: Add to project
+        # Se saltea si no existe PROJECT_TOKEN (p. ej. si se usa el Auto-add
+        # nativo de Projects v2). Así el job no falla sin el secret configurado.
+        if: ${{ env.PROJECT_TOKEN != '' }}
+        env:
+          PROJECT_TOKEN: ${{ secrets.PROJECT_TOKEN }}
         uses: actions/add-to-project@v2.0.0
         with:
-          # REEMPLAZAR con la URL real del Projects v2 del equipo
-          # Ejemplo: https://github.com/users/odjaramillo/projects/N
-          project-url: https://github.com/users/odjaramillo/projects/REEMPLAZAR_N
+          project-url: https://github.com/users/odjaramillo/projects/4
           github-token: ${{ secrets.PROJECT_TOKEN }}
 
   # ───────────────────────────────────────────────────────────
