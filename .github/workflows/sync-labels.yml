@@ -22,8 +22,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # `gh label` no tiene subcomando `sync`; se usa una acción dedicada que
+      # toma .github/labels.yml como fuente de verdad (crea/actualiza etiquetas).
       - name: Sync labels
-        run: gh label sync -f .github/labels.yml
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_REPO: ${{ github.repository }}
+        uses: crazy-max/ghaction-github-labeler@v6.0.0
+        with:
+          yaml-file: .github/labels.yml
+          skip-delete: true   # no borra etiquetas ausentes del archivo
+          github-token: ${{ secrets.GITHUB_TOKEN }}
