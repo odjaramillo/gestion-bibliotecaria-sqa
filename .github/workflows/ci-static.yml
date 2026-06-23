@@ -76,8 +76,8 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.projectKey=REEMPLAZAR_ORG_REEMPLAZAR_REPO
-            -Dsonar.organization=REEMPLAZAR_ORG
+            -Dsonar.projectKey=odjaramillo_gestion-bibliotecaria-sqa
+            -Dsonar.organization=odjaramillo
             -Dsonar.java.binaries=target/classes
             -Dsonar.sources=src/main/java
             -Dsonar.exclusions=**/test/**
