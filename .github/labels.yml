@@ -1,0 +1,164 @@
+# ─────────────────────────────────────────────────────────────
+# Taxonomía canónica de etiquetas — Ecosistema SQA Equipo 58-1
+# Fuente única de verdad. Sincronizar con:
+#   gh label sync -f .github/labels.yml
+# ─────────────────────────────────────────────────────────────
+
+# ─────────────────────────────────────────────────────────────
+# tipo:*  — naturaleza del ítem registrado
+# ─────────────────────────────────────────────────────────────
+- name: tipo:hallazgo
+  color: 'e4e669'
+  description: 'Hallazgo de técnica estática (inspección, walkthrough)'
+
+- name: tipo:defecto
+  color: 'd93f0b'
+  description: 'Defecto encontrado mediante técnica dinámica (prueba)'
+
+- name: tipo:no-conformidad
+  color: 'b60205'
+  description: 'No conformidad identificada en auditoría formal'
+
+- name: tipo:tarea
+  color: '0075ca'
+  description: 'Tarea interna del proceso SQA (planificación, coordinación)'
+
+- name: tipo:walkthrough
+  color: 'cfd3d7'
+  description: 'Ítem derivado de una sesión de walkthrough formal'
+
+# ─────────────────────────────────────────────────────────────
+# area:*  — artefacto o capa del sistema afectada
+# ─────────────────────────────────────────────────────────────
+- name: area:requisitos
+  color: '0e8a86'
+  description: 'ERS — Especificación de Requisitos de Software'
+
+- name: area:arquitectura
+  color: '0e8a86'
+  description: 'DAS — Documento de Arquitectura de Software'
+
+- name: area:codigo
+  color: '0e8a86'
+  description: 'Código fuente (backend Java / frontend Vue)'
+
+- name: area:pruebas
+  color: '0e8a86'
+  description: 'Plan de pruebas, casos de prueba, resultados'
+
+- name: area:proceso
+  color: '0e8a86'
+  description: 'Proceso SQA, PACS, métricas, gestión del equipo'
+
+# ─────────────────────────────────────────────────────────────
+# severidad:*  — impacto del hallazgo o defecto
+# ─────────────────────────────────────────────────────────────
+- name: severidad:critica
+  color: 'b60205'
+  description: 'Crítica — compromete la integridad del sistema o proceso'
+
+- name: severidad:mayor
+  color: 'd93f0b'
+  description: 'Mayor — afecta funcionalidad o calidad de manera significativa'
+
+- name: severidad:menor
+  color: 'fbca04'
+  description: 'Menor — afecta calidad de forma parcial, con solución alternativa'
+
+- name: severidad:observacion
+  color: 'c2e0c6'
+  description: 'Observación — mejora recomendada sin impacto directo'
+
+# ─────────────────────────────────────────────────────────────
+# estado:*  — ciclo de vida del ítem
+# ─────────────────────────────────────────────────────────────
+- name: estado:abierto
+  color: 'fef2c0'
+  description: 'Registrado, pendiente de análisis'
+
+- name: estado:en-analisis
+  color: 'fbca04'
+  description: 'En revisión o análisis por el equipo'
+
+- name: estado:confirmado
+  color: 'e4e669'
+  description: 'Confirmado como hallazgo o defecto válido'
+
+- name: estado:cerrado
+  color: '0e8a86'
+  description: 'Resuelto, documentado y aceptado'
+
+- name: estado:falso-positivo
+  color: 'cfd3d7'
+  description: 'Descartado tras análisis — no es un defecto real'
+
+# ─────────────────────────────────────────────────────────────
+# rol:*  — responsable o quien registró el ítem
+# ─────────────────────────────────────────────────────────────
+- name: rol:lider-gral
+  color: '5319e7'
+  description: 'Líder General — coordinación y plan de aseguramiento'
+
+- name: rol:lider-tec
+  color: '5319e7'
+  description: 'Líder Tecnológico / DevOp — ecosistema tecnológico e integración'
+
+- name: rol:tester
+  color: '5319e7'
+  description: 'Analista de Pruebas / Tester — diseño y ejecución de pruebas'
+
+- name: rol:metricas
+  color: '5319e7'
+  description: 'Líder de Métricas — KPIs, dashboards y control estadístico'
+
+- name: rol:escriba
+  color: '5319e7'
+  description: 'Escriba — documentación, auditoría y trazabilidad documental'
+
+# ─────────────────────────────────────────────────────────────
+# fase:*  — fase del proyecto en que se originó el ítem
+# ─────────────────────────────────────────────────────────────
+- name: fase:fase-1
+  color: '1d76db'
+  description: 'Fase 1 — Técnicas estáticas (inspección, walkthrough, auditoría)'
+
+- name: fase:fase-2
+  color: '0052cc'
+  description: 'Fase 2 — Técnicas dinámicas (pruebas unitarias, integración, sistema, aceptación)'
+
+# ─────────────────────────────────────────────────────────────
+# iso:*  — característica ISO/IEC 25010 afectada
+#          Elegir 1-2 características como foco del equipo.
+#          Tener todas disponibles facilita el filtrado al Líder de Métricas.
+# ─────────────────────────────────────────────────────────────
+- name: iso:funcionalidad
+  color: 'bfd4f2'
+  description: 'ISO 25010 — Adecuación funcional'
+
+- name: iso:confiabilidad
+  color: 'bfd4f2'
+  description: 'ISO 25010 — Fiabilidad / Confiabilidad'
+
+- name: iso:usabilidad
+  color: 'bfd4f2'
+  description: 'ISO 25010 — Usabilidad'
+
+- name: iso:eficiencia
+  color: 'bfd4f2'
+  description: 'ISO 25010 — Eficiencia de desempeño'
+
+- name: iso:mantenibilidad
+  color: 'bfd4f2'
+  description: 'ISO 25010 — Mantenibilidad'
+
+- name: iso:seguridad
+  color: 'bfd4f2'
+  description: 'ISO 25010 — Seguridad'
+
+- name: iso:compatibilidad
+  color: 'bfd4f2'
+  description: 'ISO 25010 — Compatibilidad'
+
+- name: iso:portabilidad
+  color: 'bfd4f2'
+  description: 'ISO 25010 — Portabilidad'

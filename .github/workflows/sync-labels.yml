@@ -1,0 +1,29 @@
+name: Sync Labels
+
+# Sincroniza .github/labels.yml -> etiquetas reales del repositorio.
+# La taxonomía de etiquetas es la fuente única de verdad de la trazabilidad SQA.
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - '.github/labels.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  sync:
+    name: Sync labels to GitHub
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Sync labels
+        run: gh label sync -f .github/labels.yml
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}

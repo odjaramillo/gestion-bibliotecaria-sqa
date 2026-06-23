@@ -1,0 +1,229 @@
+name: PR — Project Board + Auto-label + Sync Estado
+
+# Cablea tres comportamientos automáticos sobre cada PR:
+#   1. auto-add-to-project  — agrega el PR al tablero GitHub Projects v2.
+#   2. auto-label-from-body — aplica etiquetas según checkboxes del PR body.
+#   3. sync-estado          — mueve el PR a estado:en-analisis al abrir
+#                             y a estado:cerrado al mergear.
+
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - synchronize
+      - reopened
+      - ready_for_review
+      - converted_to_draft
+      - closed
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  # ───────────────────────────────────────────────────────────
+  # Job 1: Agregar al tablero Projects v2
+  # ───────────────────────────────────────────────────────────
+  auto-add-to-project:
+    name: Agregar PR al tablero SQA
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'pull_request' &&
+      (github.event.action == 'opened' || github.event.action == 'reopened')
+    steps:
+      - name: Add to project
+        uses: actions/add-to-project@v2.0.0
+        with:
+          # REEMPLAZAR con la URL real del Projects v2 del equipo
+          # Ejemplo: https://github.com/users/odjaramillo/projects/N
+          project-url: https://github.com/users/odjaramillo/projects/REEMPLAZAR_N
+          github-token: ${{ secrets.PROJECT_TOKEN }}
+
+  # ───────────────────────────────────────────────────────────
+  # Job 2: Auto-label desde checkboxes del PR body
+  # ───────────────────────────────────────────────────────────
+  auto-label-from-body:
+    name: Aplicar etiquetas desde PR body
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Apply labels from checkboxes
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr = context.payload.pull_request;
+            const body = (pr && pr.body) || '';
+
+            // Mapa: texto del checkbox en el PR template → nombre real de la etiqueta
+            const LABELS = {
+              // Tipo de entrega
+              'informe-inspeccion': 'tipo:hallazgo',
+              'plan-pruebas':       'tipo:tarea',
+              'lista-chequeo':      'tipo:tarea',
+              'pacs':               'tipo:tarea',
+              'informe-auditoria':  'tipo:no-conformidad',
+              'evidencia-pruebas':  'tipo:defecto',
+              'metricas-dashboard': 'tipo:tarea',
+              // Fase
+              'fase:fase-1': 'fase:fase-1',
+              'fase:fase-2': 'fase:fase-2',
+              // Rol
+              'rol:lider-gral':   'rol:lider-gral',
+              'rol:lider-tec':    'rol:lider-tec',
+              'rol:tester':       'rol:tester',
+              'rol:metricas':     'rol:metricas',
+              'rol:escriba':      'rol:escriba',
+            };
+
+            const CHECKBOX_RE = /^[\s]*-\s*\[([ xX])\]\s*`?([a-zA-Z0-9_:/-]+)`?/gm;
+            const labels = new Set();
+            let m;
+            while ((m = CHECKBOX_RE.exec(body)) !== null) {
+              if (m[1].toLowerCase() !== 'x') continue;
+              const key = m[2];
+              if (Object.prototype.hasOwnProperty.call(LABELS, key) && LABELS[key]) {
+                labels.add(LABELS[key]);
+              }
+            }
+
+            if (labels.size === 0) {
+              core.info('No se encontraron checkboxes marcados con etiquetas reconocidas.');
+              return;
+            }
+
+            // Verificar que las etiquetas existen en el repo antes de aplicarlas
+            let existing = new Set();
+            try {
+              const all = await github.paginate(
+                github.rest.issues.listLabelsForRepo,
+                { owner: context.repo.owner, repo: context.repo.repo, per_page: 100 }
+              );
+              existing = new Set(all.map(l => l.name));
+            } catch (e) {
+              core.warning(`No se pudo obtener la lista de etiquetas: ${e.message}`);
+            }
+
+            const toApply = Array.from(labels).filter(name => {
+              if (existing.has(name)) return true;
+              core.warning(`Etiqueta "${name}" no existe en el repo. Ejecutar sync-labels primero.`);
+              return false;
+            });
+
+            for (const label of toApply) {
+              try {
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: pr.number,
+                  labels: [label],
+                });
+                core.info(`✓ ${label}`);
+              } catch (e) {
+                if (e.status !== 404) throw e;
+              }
+            }
+
+  # ───────────────────────────────────────────────────────────
+  # Job 3: Sincronizar etiqueta de estado del PR
+  # ───────────────────────────────────────────────────────────
+  sync-estado:
+    name: Sincronizar estado del PR
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Sync estado label
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const STATUS_LABELS = ['estado:abierto', 'estado:en-analisis', 'estado:confirmado', 'estado:cerrado'];
+            const CLOSING_REGEX = /\b(closes|fixes|resolves)\s+#(\d+)\b/gi;
+
+            const pr = context.payload.pull_request;
+            const action = context.payload.action;
+            const body = (pr && pr.body) || '';
+            const prNumber = pr.number;
+            const isDraft = !!pr.draft;
+
+            const labelCache = new Map();
+            async function labelExists(name) {
+              if (labelCache.has(name)) return labelCache.get(name);
+              try {
+                await github.rest.issues.getLabel({
+                  owner: context.repo.owner, repo: context.repo.repo, name
+                });
+                labelCache.set(name, true);
+                return true;
+              } catch (e) {
+                if (e.status === 404) { labelCache.set(name, false); return false; }
+                throw e;
+              }
+            }
+
+            async function setStatusLabel(issueNumber, newLabel) {
+              const { data: issue } = await github.rest.issues.get({
+                owner: context.repo.owner, repo: context.repo.repo, issue_number: issueNumber
+              });
+              const toRemove = (issue.labels || [])
+                .map(l => (typeof l === 'string' ? l : l.name))
+                .filter(n => n && n.startsWith('estado:'));
+              for (const old of toRemove) {
+                if (old !== newLabel) {
+                  try {
+                    await github.rest.issues.removeLabel({
+                      owner: context.repo.owner, repo: context.repo.repo,
+                      issue_number: issueNumber, name: old
+                    });
+                  } catch (e) { if (e.status !== 404) throw e; }
+                }
+              }
+              if (newLabel) {
+                if (!await labelExists(newLabel)) {
+                  core.warning(`Etiqueta "${newLabel}" no existe. Ejecutar sync-labels.`);
+                  return;
+                }
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner, repo: context.repo.repo,
+                  issue_number: issueNumber, labels: [newLabel]
+                });
+              }
+            }
+
+            function parseClosing(body) {
+              const refs = []; const seen = new Set();
+              CLOSING_REGEX.lastIndex = 0;
+              let m;
+              while ((m = CLOSING_REGEX.exec(body)) !== null) {
+                const ref = `#${m[2]}`;
+                if (!seen.has(ref)) { seen.add(ref); refs.push(parseInt(m[2], 10)); }
+              }
+              return refs;
+            }
+
+            if (['opened', 'reopened', 'ready_for_review', 'edited', 'synchronize'].includes(action)) {
+              if (isDraft) {
+                await setStatusLabel(prNumber, null);
+                return;
+              }
+              await setStatusLabel(prNumber, 'estado:en-analisis');
+              for (const issueNum of parseClosing(body)) {
+                try { await setStatusLabel(issueNum, 'estado:en-analisis'); }
+                catch (e) { if (e.status !== 404) throw e; }
+              }
+              return;
+            }
+
+            if (action === 'converted_to_draft') {
+              await setStatusLabel(prNumber, null);
+              return;
+            }
+
+            if (action === 'closed') {
+              await setStatusLabel(prNumber, 'estado:cerrado');
+              return;
+            }
+
+            core.info(`Sin acción para el evento "${action}".`);
