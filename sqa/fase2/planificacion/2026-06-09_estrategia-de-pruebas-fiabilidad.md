@@ -222,16 +222,18 @@ La restricción del enunciado establece que el código de producción está cong
 
 **Automatización (29119-3 §A.2.3.a.iv):** las pruebas unitarias y de integración se ejecutan automáticamente en CI (GitHub Actions, `ci-fiabilidad.yml`) en cada push a `simulacion-desarrollo`; JaCoCo genera la cobertura de rama; SonarCloud recibe los resultados. Las pruebas de sistema (caja negra) y las de frontend se ejecutan de forma manual/asistida (Postman/RestAssured, Playwright).
 
-| Herramienta | Versión | Uso en esta estrategia | Consistencia con PACS-Fase2 |
+| Herramienta | Versión | Uso en esta estrategia | Trazabilidad con marco de referencia |
 |---|---|---|---|
-| **JUnit 5** (Jupiter) | 5.10+ | Framework base para pruebas unitarias e integración. `@Tag`, `@ExtendWith`, `@SpringBootTest`. | Declarado como herramienta de fiabilidad en PACS §3.1 |
-| **Mockito** | 5.x | Stubs y drivers: simula `PrestamoRepository`, `LibroRepository`, lanza excepciones controladas en el punto exacto. | Implícito en suites JUnit 5 del PACS |
-| **H2 Database** | 2.x | Base de datos in-memory para pruebas de integración. Perfil `test` con `spring.datasource.url=jdbc:h2:mem:testdb`. | Implícito en TestContainers / integración del PACS |
-| **JaCoCo** | 0.8.11+ | Cobertura de **decisión/rama** e instrucciones. Objetivo: ≥ 70% de decisión en clases bajo prueba (métrica primaria de Madurez). Reporte HTML en `target/site/jacoco/`. | Declarado explícitamente en PACS §3.1 y §7.1 |
-| **Maven Surefire** | 3.x | Ejecución de tests por tag, generación de reportes XML. Integrado con JaCoCo. | Maven declarado en PACS §7.1 |
-| **Postman / RestAssured** | — | Estímulo de endpoints REST en pruebas de sistema (caja negra) ante entradas inválidas. | Herramientas de prueba dinámica del PACS |
-| **GitHub Actions** | — | Workflow `ci-fiabilidad.yml` en rama `simulacion-desarrollo`. Ejecuta `mvn verify` por sprint. | Declarado como orquestador en PACS §3.2 |
-| **Spring Boot Test** | 3.4.5 | `@SpringBootTest`, `MockMvc`, `@MockBean` para pruebas de integración de capa web. | Stack del SUT (PACS §2.1) |
+| **JUnit 5** (Jupiter) | 5.10+ | Framework base para pruebas unitarias e integración. `@Tag`, `@ExtendWith`, `@SpringBootTest`. | Marco de métricas M-01..M-06 en `sqa/referencias/objetivos.txt`; estructura de especificación de casos en ISO/IEC/IEEE 29119-3 §7.3. |
+| **Mockito** | 5.x | Stubs y drivers: simula `PrestamoRepository`, `LibroRepository`, lanza excepciones controladas en el punto exacto. | Idem — base para aislar condiciones de prueba de Madurez (TCI-M*) y Tolerancia (TCI-T*). |
+| **H2 Database** | 2.x | Base de datos in-memory para pruebas de integración. Perfil `test` con `spring.datasource.url=jdbc:h2:mem:testdb`. | Suplente de MySQL en CI; cobertura de rama exigida por M-02 (`objetivos.txt`). |
+| **JaCoCo** | 0.8.11+ | Cobertura de **decisión/rama** e instrucciones. Objetivo: ≥ 70% de decisión en clases bajo prueba (métrica primaria de Madurez). Reporte HTML en `target/site/jacoco/`. | Métrica M-02 (Cobertura de decisión) en `objetivos.txt`. |
+| **Maven Surefire** | 3.x | Ejecución de tests por tag, generación de reportes XML. Integrado con JaCoCo. | Ejecución de suites `regresion` y `defecto-conocido` (EST-FIAB-001 §5). |
+| **Postman / RestAssured** | — | Estímulo de endpoints REST en pruebas de sistema (caja negra) ante entradas inválidas. | Métrica M-05 (Entradas inválidas controladas) en `objetivos.txt`. |
+| **GitHub Actions** | — | Workflow `ci-fiabilidad.yml` en rama `simulacion-desarrollo`. Ejecuta `mvn verify` por sprint. | Orquestación documentada en EST-FIAB-001 §7 (Automatización). |
+| **Spring Boot Test** | 3.4.5 | `@SpringBootTest`, `MockMvc`, `@MockBean` para pruebas de integración de capa web. | Stack del SUT; ver §2.1 de la PP-FIAB-001. |
+
+> **Nota sobre el PACS-Fase2-Herramientas.md:** la versión actual del PACS (§3.1, §7) declara sub-características de Fiabilidad (Tolerancia a fallos + Capacidad de recuperación) y métricas (Densidad de defectos, Cobertura de código, Deuda técnica) **anteriores** a la decisión del equipo de realinear Fase 2 a Madurez + Tolerancia a Fallos. Por eso esta estrategia y la PP-FIAB-001 trazan contra `sqa/referencias/objetivos.txt` y contra ISO/IEC/IEEE 29119-3, que son los marcos efectivamente aplicados. La regeneración del PACS para alinear sub-características y métricas es un entregable de seguimiento (issue a crear).
 
 ---
 
