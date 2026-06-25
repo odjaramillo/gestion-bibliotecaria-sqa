@@ -40,3 +40,10 @@ __pycache__/
 skills-lock.json
 # graphify knowledge graph (regenerable, not committed)
 graphify-out/
+
+# IEEE 730-2014 standard text (copyrighted, kept locally only — see
+# sqa/referencias/IEEE 730/REFERENCIA-PARA-PACS.md for structural reference)
+sqa/referencias/IEEE 730/730.md
+
+# KPI report JSON (derived artifact from sqa/metricas/calcular_kpi.py — regenerable)
+sqa/metricas/reporte_kpi.json
