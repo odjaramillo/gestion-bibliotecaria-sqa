@@ -11,7 +11,7 @@ Aseguramiento de la Calidad del Software — Prof. Ernesto Suárez — NRC: 2579
 
 | Rol | Nombre | Responsabilidad principal |
 |---|---|---|
-| Expositor / Autor (Equipo 58-1) | Br. Carlos Méndez | Exposición del código fuente y la lógica de las funcionalidades del SUT |
+| Expositor / Autor (Equipo 58-1) | Equipo 58-1 (autores del SUT) | Exposición del código fuente y la lógica de las funcionalidades del SUT |
 | Moderador (Equipo 11) | Alberto Rodriguez | Dirección de la sesión, validación de hallazgos y control del proceso |
 | Registrador / Escriba (Equipo 11) | Samuel Artiles | Documentación técnica de hallazgos y trazabilidad normativa |
 | Revisor (Métricas) (Equipo 11) | Edwin Li | Evaluación de reactivos y recolección de datos para DDF y FTR |
@@ -66,9 +66,9 @@ La realización de este walkthrough técnico se fundamenta en un marco normativo
 
 ## Método Empleado
 
-Para la correcta realización del walkthrough, el Líder General del Equipo 11 (Alberto Rodriguez) coordinó previamente con el autor del SUT (Br. Carlos Méndez, Equipo 58-1) la fecha y hora de la sesión. Se seleccionó como artefacto a exponer el **código fuente en ejecución** del backend Java/Spring Boot y los componentes Vue 3 del frontend, y el autor fue el encargado de conducir la presentación paso a paso.
+Para la correcta realización del walkthrough, el Líder General del Equipo 11 (Alberto Rodriguez) coordinó previamente con el equipo autor del SUT (Equipo 58-1) la fecha y hora de la sesión. Se seleccionó como artefacto a exponer el **código fuente en ejecución** del backend Java/Spring Boot y los componentes Vue 3 del frontend, y el equipo autor fue el encargado de conducir la presentación paso a paso.
 
-El autor expuso las funcionalidades principales del Sistema de Gestión Bibliotecaria, con énfasis específico en los flujos críticos para la fiabilidad: inicio de sesión, creación de préstamo, devolución de préstamo, renovación de préstamo y registro de reseñas. Se hizo especial énfasis en las sub-características de **Tolerancia a Fallos** y **Capacidad de Recuperación**, dejando explícitamente fuera del alcance la dimensión de Seguridad (cubierta por la auditoría previa) y la de Mantenibilidad (cubierta por la checklist COD-01 a COD-06).
+El equipo autor expuso las funcionalidades principales del Sistema de Gestión Bibliotecaria, con énfasis específico en los flujos críticos para la fiabilidad: inicio de sesión, creación de préstamo, devolución de préstamo, renovación de préstamo y registro de reseñas. Se hizo especial énfasis en las sub-características de **Tolerancia a Fallos** y **Capacidad de Recuperación**, dejando explícitamente fuera del alcance la dimensión de Seguridad (cubierta por la auditoría previa) y la de Mantenibilidad (cubierta por la checklist COD-01 a COD-06).
 
 Los **6 módulos críticos** seleccionados para la revisión fueron:
 

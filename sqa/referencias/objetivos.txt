@@ -1,5 +1,80 @@
-Caracteristica base: Fiabilidad
-    Subcaracteristica 1: Madurez
-        Atributo: 
-    Subcaracteristica 2: Tolerancia a Fallos
-    Metrica:
+================================================================================
+OBJETIVOS DE CALIDAD - MARCO DE MEDICION
+Proyecto: Sistema de Gestion Bibliotecaria
+Norma de modelo de calidad : ISO/IEC 25010
+Norma de medicion (metricas): ISO/IEC 25023
+================================================================================
+
+Caracteristica base: Fiabilidad (ISO/IEC 25010)
+
+Nota de alcance:
+    - El PLAN es exhaustivo (este marco completo) por exigencia del enunciado.
+    - Los OBJETIVOS (umbrales) son conservadores: se evalua "se lograron los
+      objetivos?", por lo que se fijan metas alcanzables.
+    - La EJECUCION cubre un subconjunto priorizado por riesgo; la brecha entre
+      lo planeado y lo ejecutado se documenta en el Informe de Resultados.
+    - Umbrales marcados [PROP] son propuestas conservadoras a confirmar por el
+      Lider de Metricas / Lider General.
+
+Elementos del SUT bajo medicion (capa Service - donde reside la logica critica):
+    - PrestamoService.crearPrestamo        (6 puntos de decision)
+    - PrestamoService.devolverPrestamo     (3 ramas + 1 condicional)
+    - PrestamoService.renovarPrestamo      (4 puntos de decision)
+    - AmonestacionService.eliminarAmonestacion (2 puntos de decision)
+
+--------------------------------------------------------------------------------
+Subcaracteristica 1: Madurez
+    (Grado en que el sistema satisface las necesidades de fiabilidad en
+     operacion normal.)
+
+    Atributo 1.1: Correccion de la logica de negocio critica
+        Metrica  : Cobertura de decision/rama sobre los metodos del SUT
+        Formula  : (ramas ejercitadas por las pruebas / ramas totales) * 100
+        Enfoque  : Caja blanca (pruebas unitarias JUnit + JaCoCo)
+        Umbral   : >= 70% [PROP]
+        Mapeo    : ISO/IEC 25023 - "Test coverage" (medida de Madurez)
+
+    Atributo 1.2: Ausencia de defectos
+        Metrica  : Densidad de defectos
+        Formula  : defectos detectados / KLOC (o por clase critica)
+        Enfoque  : Resultado de pruebas estaticas y dinamicas
+        Umbral   : registrar y reducir; sin umbral de aprobacion fijo [PROP]
+        Mapeo    : ISO/IEC 25023 - "Failure resolution / fault density"
+
+    Atributo 1.3: Madurez de la suite de pruebas
+        Metrica  : Tasa de pruebas que pasan
+        Formula  : (pruebas exitosas / pruebas ejecutadas) * 100
+        Enfoque  : Ejecucion automatizada en CI (ci-tests)
+        Umbral   : 100% en verde para integrar a main [PROP]
+        Mapeo    : ISO/IEC 25023 - "Test maturity"
+
+--------------------------------------------------------------------------------
+Subcaracteristica 2: Tolerancia a Fallos
+    (Grado en que el sistema opera segun lo previsto pese a fallos de hardware
+     o software, incluyendo entradas invalidas.)
+
+    Atributo 2.1: Manejo de entradas invalidas
+        Metrica  : Porcentaje de entradas invalidas controladas
+        Formula  : (casos invalidos manejados sin excepcion no controlada /
+                    casos invalidos probados) * 100
+        Enfoque  : Caja negra / caja gris (valores limite y datos malformados)
+        Umbral   : >= 80% [PROP]
+        Mapeo    : ISO/IEC 25023 - "Failure avoidance"
+        Defecto base detectado: crearPrestamo parsea la fecha sin guarda
+                                (LocalDate.parse) -> DateTimeParseException no
+                                controlada ante fecha malformada.
+
+    Atributo 2.2: Prevencion de estados inconsistentes
+        Metrica  : Porcentaje de operaciones con guarda de estado previa
+        Formula  : (operaciones criticas con validacion de precondicion /
+                    operaciones criticas totales) * 100
+        Enfoque  : Caja blanca / revision + pruebas
+        Umbral   : >= 80% [PROP]
+        Mapeo    : ISO/IEC 25023 - "Failure avoidance / fault tolerance"
+        Defecto base detectado: renovarPrestamo decrementa cantidad de libro
+                                sin verificar disponibilidad (>= 1); puede dejar
+                                inventario en negativo. crearPrestamo/devolver
+                                no son @Transactional -> escritura parcial puede
+                                dejar inventario inconsistente.
+
+================================================================================

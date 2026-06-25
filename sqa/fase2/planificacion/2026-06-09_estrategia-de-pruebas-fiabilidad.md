@@ -12,13 +12,22 @@ Aseguramiento de la Calidad del Software — Prof. Ernesto Suárez — NRC: 2579
 | Campo | Valor |
 |---|---|
 | Identificador | EST-FIAB-001 |
-| Versión | 1.0 |
-| Fecha | 2026-06-09 |
-| Equipo SQA | Equipo T 11 — Proyecto 16 (Turno Tarde) |
+| Versión | 2.0 |
+| Estado | Revisado |
+| Fecha | 2026-06-24 |
+| Organización emisora | Equipo SQA T 11 — Proyecto 16 (Turno Tarde) |
+| Autoridad de aprobación | Líder General (Alberto Rodriguez) |
+| Naturaleza (29119-3) | **Estrategia de prueba de proyecto** (tailoring específico del proyecto, no una *Organizational Test Strategy* A.2.3 válida para toda la organización). Provee los enunciados de estrategia que el Plan PP-FIAB-001 adapta en su §4. |
 | Característica evaluada | Reliability — ISO/IEC 25010:2023 |
-| Sub-características | Tolerancia a Fallos · Capacidad de Recuperación |
-| Base de prueba | Walkthrough técnico 2026-06-02 (hallazgos WT-01..WT-06) |
-| Autor del SUT | Br. Carlos Méndez (Equipo 58-1) |
+| Sub-características | Madurez · Tolerancia a Fallos |
+| Base de prueba | Walkthrough técnico 2026-06-02 (hallazgos WT-01..WT-04) + objetivos.txt |
+| Autor del SUT | Equipo 58-1 (autores del software) |
+
+### Historial de cambios
+| Versión | Fecha | Descripción del cambio | Razón | Autor |
+|---|---|---|---|---|
+| 1.0 | 2026-06-09 | Versión inicial (Tolerancia a Fallos · Capacidad de Recuperación; métricas IEEE 1061; ecosistema Jira/Confluence). | Planificación inicial Fase 2 | Equipo 11 |
+| 2.0 | 2026-06-24 | Segunda sub-característica realineada a **Madurez** (`objetivos.txt`); métricas remapeadas a ISO/IEC 25023; referencias migradas a GitHub-native; declaración de naturaleza y campos de control de documento (29119-3). | Realineación + conformidad 29119-3 | Equipo 11 |
 
 ---
 
@@ -29,9 +38,10 @@ Aseguramiento de la Calidad del Software — Prof. Ernesto Suárez — NRC: 2579
 - [3. Enfoque por Sub-característica](#3-enfoque-por-sub-característica)
 - [4. Niveles de Prueba](#4-niveles-de-prueba)
 - [5. Política de Suites y Etiquetas](#5-política-de-suites-y-etiquetas)
-- [6. Modelo de Autoría](#6-modelo-de-autoría)
-- [7. Herramientas](#7-herramientas)
+- [6. Modelo de Autoría y Grado de Independencia](#6-modelo-de-autoría-y-grado-de-independencia)
+- [7. Herramientas y Automatización](#7-herramientas-y-automatización)
 - [8. Métricas de Calidad](#8-métricas-de-calidad)
+- [9. Gestión de Configuración e Incidencias](#9-gestión-de-configuración-e-incidencias)
 
 ---
 
@@ -41,21 +51,21 @@ Esta Estrategia de Pruebas define el enfoque, los niveles, las técnicas y las r
 
 ### 1.1 Objetivos estratégicos
 
-1. Obtener evidencia objetiva y reproducible del comportamiento del sistema frente a condiciones de fallo, entradas malformadas y escenarios de recuperación, en cumplimiento de la característica *Reliability* de ISO/IEC 25010:2023.
-2. Proveer al equipo de desarrollo (Br. Carlos Méndez, Equipo 58-1) especificaciones precisas de casos de prueba que le permitan implementar las suites JUnit 5 requeridas por el evaluador.
+1. Obtener evidencia objetiva y reproducible del comportamiento del sistema en operación normal y frente a entradas malformadas, en cumplimiento de la característica *Reliability* de ISO/IEC 25010:2023, sub-características **Madurez** y **Tolerancia a Fallos**.
+2. Proveer al equipo de desarrollo (Equipo 58-1) especificaciones precisas de casos de prueba que le permitan implementar las suites JUnit 5 requeridas por el evaluador.
 3. Establecer criterios de clasificación de resultados (suite `regresion` vs. suite `defecto-conocido`) coherentes con la restricción de código congelado del enunciado.
 
 ### 1.2 Alcance funcional
 
 | Capa | Módulos en alcance |
 |---|---|
-| Backend — Servicios | `PrestamoService`, `LibroService`, `UsuarioService` |
+| Backend — Servicios | `PrestamoService`, `LibroService`, `UsuarioService`, `AmonestacionService` |
 | Backend — Controlador | `Controller.java` (métodos de préstamo, devolución, renovación, reseñas) |
-| Backend — Configuración | `application.properties` (HikariCP, datasource) |
 | Frontend — Componentes Vue | `PantallaLibro.vue`, `SolicitudVerificacionPago.vue`, `VerificarPago.vue`, `main.js` |
 
 ### 1.3 Fuera del alcance
 
+- **Capacidad de Recuperación** y **Disponibilidad** (otras sub-características de Reliability): no seleccionadas para esta práctica conforme a `objetivos.txt`. Los hallazgos de recuperación detectados en el walkthrough (atomicidad transaccional) se reinterpretan como **defectos de Madurez** (estado inconsistente en operación normal), no como casos de recuperación.
 - **Seguridad** (Confidencialidad, Integridad, Responsabilidad): cubierta por auditoría previa (Fase 1).
 - **Mantenibilidad** (Analizabilidad, Reusabilidad, Capacidad para ser probado): cubierta por checklist COD-01..COD-06.
 - **Adecuación Funcional**: tratada en suites E2E de Playwright separadas.
@@ -67,23 +77,23 @@ Esta Estrategia de Pruebas define el enfoque, los niveles, las técnicas y las r
 
 | Estándar | Versión | Aplicación en esta estrategia |
 |---|---|---|
-| ISO/IEC 25010 | 2023 | Modelo de calidad que define las sub-características *Fault Tolerance* y *Recoverability* como objeto de evaluación. Estructura la selección de técnicas y los criterios de clasificación de hallazgos. |
+| ISO/IEC 25010 | 2023 | Modelo de calidad que define las sub-características *Maturity* y *Fault Tolerance* como objeto de evaluación. Estructura la selección de técnicas y los criterios de clasificación de hallazgos. |
 | ISO/IEC/IEEE 29119-1 | 2022 | Conceptos y vocabulario de pruebas de software. Proporciona los términos base: ítem de prueba, base de prueba, nivel de prueba, técnica de diseño, criterio de entrada/salida. |
 | ISO/IEC/IEEE 29119-2 | 2021 | Proceso de pruebas. Define el proceso de planificación (del que esta estrategia es la política de nivel superior) y las actividades de diseño, implementación, ejecución y reporte. |
-| ISO/IEC/IEEE 29119-4 | 202x | Técnicas de diseño de pruebas. Justifica el uso de partición de equivalencia, análisis de valores límite e inyección de fallos como técnicas seleccionadas para esta estrategia. |
-| ISO/IEC 25023 | 2016 | Medidas de calidad de producto. Proporciona las fórmulas de medición para *Fault Tolerance* y *Recoverability* que complementan las métricas IEEE 1061 del walkthrough. |
-| IEEE 1061 | 1998 | Metodología de métricas de calidad. Base de las métricas M-01 (DDF), M-02 (CRC) y M-03 (FTR) heredadas del walkthrough y extendidas con métricas de ejecución. |
+| ISO/IEC/IEEE 29119-3 | 2021 | Documentación de pruebas. Define las plantillas de Test Plan, Test Design Specification, Test Case Specification y Test Completion Report que estructuran el Plan de Pruebas y las especificaciones de casos derivadas. |
+| ISO/IEC/IEEE 29119-4 | 2021 | Técnicas de diseño de pruebas. Justifica el uso de partición de equivalencia, análisis de valores límite, cobertura de decisión e inyección de fallos como técnicas seleccionadas para esta estrategia. |
+| ISO/IEC 25023 | 2016 | Medidas de calidad de producto. Proporciona las fórmulas de medición para *Maturity* (cobertura de pruebas, densidad de defectos) y *Fault Tolerance* (evitación de fallos) que sustentan las métricas de esta estrategia. |
 | ISO/IEC/IEEE 15289 | 2019 | Rige la estructura y el contenido del presente documento como artefacto de documentación de proceso de verificación. |
 
 ---
 
 ## 3. Enfoque por Sub-característica
 
-La fiabilidad no se mide directamente con aserciones sobre un valor booleano: se **infiere** observando el comportamiento del sistema ante condiciones adversas controladas. Las dos sub-características de la norma requieren enfoques distintos.
+La fiabilidad no se mide con una sola aserción booleana: se **infiere** observando el comportamiento del sistema en operación normal y ante condiciones adversas controladas. Las dos sub-características seleccionadas requieren enfoques distintos.
 
 ### 3.1 Tolerancia a Fallos
 
-**Definición (ISO/IEC 25010:2023):** Grado en que el sistema opera según lo previsto a pesar de la presencia de fallos de hardware o software.
+**Definición (ISO/IEC 25010:2023):** Grado en que el sistema opera según lo previsto a pesar de la presencia de fallos de hardware o software (incluyendo entradas inválidas).
 
 **Técnicas empleadas:**
 
@@ -97,19 +107,22 @@ La fiabilidad no se mide directamente con aserciones sobre un valor booleano: se
 
 **Principio general:** los casos de prueba de Tolerancia a Fallos son de **caja blanca en nivel unitario** (se conocen las rutas de código con problema) y de **caja negra en nivel de sistema** (se estimula la interfaz HTTP sin conocimiento interno).
 
-### 3.2 Capacidad de Recuperación
+### 3.2 Madurez
 
-**Definición (ISO/IEC 25010:2023):** Grado en que el sistema puede recuperar datos directamente afectados y restablecer el estado deseado del sistema después de una interrupción o un fallo.
+**Definición (ISO/IEC 25010:2023):** Grado en que el sistema satisface las necesidades de fiabilidad en condiciones de operación normal.
+
+A diferencia de Tolerancia a Fallos (que estimula condiciones adversas), Madurez se evidencia probando que la **lógica de negocio crítica se comporta correctamente en operación normal** y midiendo la **ausencia de defectos** sobre esa lógica. La unidad de evidencia es la cobertura de las decisiones del código y la densidad de defectos detectados.
 
 **Técnicas empleadas:**
 
-| Técnica | Descripción operacional | Hallazgos que cubre |
+| Técnica | Descripción operacional | Elementos que cubre |
 |---|---|---|
-| **Fallo a mitad de transacción** | En pruebas de integración con H2, lanzar una excepción artificial después del primer `save()` en métodos multi-entidad (`crearPrestamo`, `devolverPrestamo`). Sin `@Transactional`, la primera entidad queda persistida; con `@Transactional`, el rollback restaura el estado. | WT-04 |
-| **Verificación de atomicidad** | Tras el fallo forzado, consultar directamente el repositorio H2 para confirmar que ninguna entidad parcial quedó persistida. | WT-04 |
-| **Prueba de pool de conexiones** | Verificar que `application.properties` contenga las claves HikariCP mínimas. En una prueba de integración de Spring Boot, inyectar el `DataSource` y verificar que el `HikariConfig` tenga valores configurados (no defaults). | WT-05 |
-| **Carga sostenida con JMeter** | Ejecutar un plan de carga con 50 usuarios concurrentes durante 3 minutos sobre los endpoints críticos (`POST /api/prestamos`, `PUT /api/prestamos/{id}/devolver`). Medir tasa de error, tiempo de respuesta p95 y p99. | WT-05, WT-06 |
-| **Interceptor de axios ausente** | En prueba de sistema, interrumpir el backend y verificar el comportamiento del frontend. Sin interceptor, los errores 5xx no deben propagarse silenciosamente; el caso `defecto-conocido` documenta la ausencia de pantalla de fallback. | WT-06 |
+| **Cobertura de decisión/rama (caja blanca)** | Diseñar casos JUnit 5 que ejerciten cada rama de los métodos críticos: las 6 guardas de `crearPrestamo`, las 3 ramas de `devolverPrestamo`, las 4 de `renovarPrestamo`, las 2 de `eliminarAmonestacion`. Medir con JaCoCo la cobertura de ramas alcanzada (objetivo ≥ 70%). | `PrestamoService`, `AmonestacionService` |
+| **Pruebas de operación normal (flujo correcto)** | Verificar que, con datos válidos, cada operación produce el resultado y el estado esperados (préstamo registrado, stock decrementado, devolución finalizada, amonestación por mora generada). Constituyen la suite `regresion`. | Servicios backend |
+| **Análisis de densidad de defectos** | Contabilizar los defectos confirmados por ejecución sobre los módulos en alcance (defectos/KLOC o por clase). Los defectos de no-atomicidad (WT-04, mutaciones múltiples sin `@Transactional`) se reinterpretan aquí como **defectos de Madurez**: en operación normal con fallo parcial, el sistema deja estado inconsistente. | Servicios backend |
+| **Madurez de la suite de pruebas** | Medir la tasa de pruebas `regresion` que pasan como indicador de la madurez del conjunto de pruebas y del código bajo prueba. | Suite completa |
+
+**Principio general:** los casos de prueba de Madurez son predominantemente de **caja blanca en nivel unitario** (cobertura de decisiones sobre rutas de código conocidas) complementados con pruebas de **integración** (caja gris) que verifican la consistencia de estado entre capas.
 
 ---
 
@@ -117,26 +130,26 @@ La fiabilidad no se mide directamente con aserciones sobre un valor booleano: se
 
 | Nivel | Enfoque de caja | Sub-característica cubierta | Herramienta principal | Base de prueba |
 |---|---|---|---|---|
-| **Unitario** | Blanca | Tolerancia a Fallos | JUnit 5 + Mockito | WT-01, WT-02 (backend); WT-03 (frontend — jest/vitest) |
-| **Integración** | Gris | Tolerancia a Fallos + Capacidad de Recuperación | JUnit 5 + H2 + Spring Boot Test | WT-01, WT-04 (atomicidad transaccional) |
-| **Sistema** | Negra | Capacidad de Recuperación | JMeter + Spring Boot levantado con MySQL (perfil `test-system`) | WT-05 (pool), WT-06 (frontend degradación) |
-| **Aceptación** | Negra | Tolerancia a Fallos + Capacidad de Recuperación | Revisión manual contra ERS §NFR-FIAB-* | Todos WT-01..WT-06 |
+| **Unitario** | Blanca | Madurez + Tolerancia a Fallos | JUnit 5 + Mockito + JaCoCo | WT-01, WT-02 (tolerancia); cobertura de decisión de servicios (madurez) |
+| **Integración** | Gris | Madurez + Tolerancia a Fallos | JUnit 5 + H2 + Spring Boot Test | WT-01, WT-04 (consistencia de estado entre capas) |
+| **Sistema** | Negra | Tolerancia a Fallos | Spring Boot levantado + cliente HTTP (Postman/RestAssured) | WT-02 (respuesta HTTP ante entrada inválida), WT-03 (degradación frontend) |
+| **Aceptación** | Negra | Madurez + Tolerancia a Fallos | Revisión manual contra ERS §NFR-FIAB-* | Todos WT-01..WT-04 |
 
 ### 4.1 Pruebas unitarias (caja blanca)
 
-Se construyen en `src/test/java/com/biblioteca/service/` y `src/test/java/com/biblioteca/controller/`. Cada test establece el contexto mínimo con Mockito (`@ExtendWith(MockitoExtension.class)`), inyecta dependencias mockeadas y verifica el comportamiento de la unidad bajo prueba. El uso de caja blanca está justificado porque los hallazgos WT-01 y WT-04 identifican líneas de código específicas.
+Se construyen en `src/test/java/com/biblioteca/service/` y `src/test/java/com/biblioteca/controller/`. Cada test establece el contexto mínimo con Mockito (`@ExtendWith(MockitoExtension.class)`), inyecta dependencias mockeadas y verifica el comportamiento de la unidad bajo prueba. La cobertura de decisión sobre los métodos críticos es la evidencia primaria de Madurez; los casos de inyección de excepción cubren Tolerancia a Fallos.
 
 ### 4.2 Pruebas de integración (caja gris)
 
-Se construyen con `@SpringBootTest(webEnvironment = RANDOM_PORT)` y perfil `test` (H2 in-memory). Prueban la interacción entre capas (Controller → Service → Repository) incluyendo la transaccionalidad JPA. El fallo a mitad de transacción se implementa con un `@MockBean` parcial que lanza excepción después del primer `save()`.
+Se construyen con `@SpringBootTest(webEnvironment = RANDOM_PORT)` y perfil `test` (H2 in-memory). Prueban la interacción entre capas (Controller → Service → Repository), incluyendo la consistencia de estado tras operaciones multi-entidad. El fallo a mitad de operación se implementa con un `@MockBean` parcial que lanza excepción después del primer `save()`, evidenciando el defecto de no-atomicidad como defecto de Madurez.
 
 ### 4.3 Pruebas de sistema (caja negra)
 
-JMeter ejecuta planes de prueba (`sqa/fase2/jmeter/`) contra el sistema completo desplegado. MySQL real (perfil `system`). Los resultados se expresan como tasa de error (%) y tiempo de respuesta p95 (ms).
+Un cliente HTTP (Postman o RestAssured) estimula los endpoints REST del sistema desplegado y verifica el comportamiento ante entradas inválidas (códigos de estado y cuerpos de error), sin conocimiento de la implementación interna.
 
 ### 4.4 Pruebas de aceptación (caja negra)
 
-El equipo SQA revisa los resultados de los niveles anteriores contra los requisitos no funcionales de la ERS. Un hallazgo que falla consistentemente en `defecto-conocido` se documenta como incidencia abierta.
+El equipo SQA revisa los resultados de los niveles anteriores contra los requisitos no funcionales de la ERS. Un hallazgo que falla consistentemente en `defecto-conocido` se documenta como incidencia abierta (GitHub Issue).
 
 ---
 
@@ -146,7 +159,7 @@ El proyecto de pruebas JUnit 5 organiza todos los casos en dos suites exclusivas
 
 ### Suite `regresion`
 
-- **Propósito:** Pruebas que DEBEN pasar en el código actual tal como está. Constituyen el gate de CI.
+- **Propósito:** Pruebas que DEBEN pasar en el código actual tal como está. Constituyen el gate de CI y la evidencia de Madurez en operación normal.
 - **Contenido:** Verificaciones de comportamiento observable y correcto según la ERS (flujos felices, validaciones básicas, comportamientos que el SUT sí implementa correctamente).
 - **CI:** `mvn verify -Dgroups=regresion` — falla el pipeline si algún caso no pasa.
 - **Nota:** Incluye los tests de `crearPrestamo` con datos correctos que sí persisten, login correcto, etc.
@@ -154,7 +167,7 @@ El proyecto de pruebas JUnit 5 organiza todos los casos en dos suites exclusivas
 ### Suite `defecto-conocido`
 
 - **Propósito:** Pruebas que DOCUMENTAN un comportamiento defectuoso conocido. Se ejecutan en CI pero NO bloquean el pipeline.
-- **Contenido:** Todo caso de prueba que exponga un hallazgo WT-01..WT-06. Cada método de test lleva `@Tag("defecto-conocido")` y en su Javadoc la referencia a la incidencia: `@see INC-WT-01`, `@see INC-WT-04`, etc.
+- **Contenido:** Todo caso de prueba que exponga un hallazgo WT-01..WT-04. Cada método de test lleva `@Tag("defecto-conocido")` y en su Javadoc la referencia a la incidencia: `@see INC-WT-01`, `@see INC-WT-04`, etc.
 - **CI:** `mvn verify -Dgroups=defecto-conocido -DfailIfNoTests=false` — siempre verde en el pipeline; los fallos se reportan en el resumen de Surefire.
 - **Convención de Javadoc:**
   ```java
@@ -190,50 +203,67 @@ El proyecto de pruebas JUnit 5 organiza todos los casos en dos suites exclusivas
 
 ---
 
-## 6. Modelo de Autoría
+## 6. Modelo de Autoría y Grado de Independencia
+
+**Grado de independencia (29119-3 §A.2.3.b.iv):** la prueba la diseña un equipo (Equipo 11) **independiente** del equipo autor del SUT (Equipo 58-1). Es independencia organizativa plena: el equipo que asegura la calidad no es el que desarrolló el software, lo que maximiza la objetividad de los hallazgos.
 
 La restricción del enunciado establece que el código de producción está congelado y que el equipo SQA no escribe código de prueba directamente en el repositorio del Equipo 58-1. El modelo opera así:
 
 | Rol | Responsabilidad | Artefacto producido |
 |---|---|---|
 | **Equipo 11 — Analista de Pruebas** | Diseña y especifica los casos de prueba con nivel de detalle suficiente para que un desarrollador los implemente sin ambigüedad (datos de entrada, precondiciones, pasos, resultado esperado, etiqueta @Tag). | Especificaciones de casos de prueba (este doc + PP-FIAB-001) |
-| **Equipo 11 — Líder de Métricas (Edwin Li)** | Define umbrales de métricas, revisa resultados JaCoCo y JMeter, calcula DDF/CRC/FTR de ejecución. | Informe de métricas (post-ejecución) |
-| **Equipo 11 — Escriba (Samuel Artiles)** | Documenta hallazgos de ejecución como incidencias con referencia al hallazgo WT correspondiente. | Incidencias en Jira |
-| **Br. Carlos Méndez (Equipo 58-1)** | Implementa los métodos `@Test` conforme a las especificaciones del Equipo 11. Configura `pom.xml` con H2, JaCoCo y Surefire. Crea la rama `simulacion-desarrollo` y ejecuta los sprints simulados. | Código de prueba en rama `simulacion-desarrollo` |
+| **Equipo 11 — Líder de Métricas (Edwin Li)** | Define umbrales de métricas, revisa resultados JaCoCo, calcula densidad de defectos y cobertura de decisión de ejecución. | Informe de métricas (post-ejecución) |
+| **Equipo 11 — Escriba (Samuel Artiles)** | Documenta hallazgos de ejecución como incidencias (GitHub Issues) con referencia al hallazgo WT correspondiente. | Incidencias en GitHub Issues |
+| **Equipo 58-1 (autores del SUT)** | Implementa los métodos `@Test` conforme a las especificaciones del Equipo 11. Configura `pom.xml` con H2, JaCoCo y Surefire. Crea la rama `simulacion-desarrollo` y ejecuta los sprints simulados. | Código de prueba en rama `simulacion-desarrollo` |
 
 ---
 
-## 7. Herramientas
+## 7. Herramientas y Automatización
 
-| Herramienta | Versión | Uso en esta estrategia | Consistencia con PACS-Fase2 |
+**Automatización (29119-3 §A.2.3.a.iv):** las pruebas unitarias y de integración se ejecutan automáticamente en CI (GitHub Actions, `ci-fiabilidad.yml`) en cada push a `simulacion-desarrollo`; JaCoCo genera la cobertura de rama; SonarCloud recibe los resultados. Las pruebas de sistema (caja negra) y las de frontend se ejecutan de forma manual/asistida (Postman/RestAssured, Playwright).
+
+| Herramienta | Versión | Uso en esta estrategia | Trazabilidad con marco de referencia |
 |---|---|---|---|
-| **JUnit 5** (Jupiter) | 5.10+ | Framework base para pruebas unitarias e integración. `@Tag`, `@ExtendWith`, `@SpringBootTest`. | Declarado como herramienta de fiabilidad en PACS §3.1 |
-| **Mockito** | 5.x | Stubs y drivers: simula `PrestamoRepository`, `LibroRepository`, lanza excepciones controladas en el punto exacto. | Implícito en suites JUnit 5 del PACS |
-| **H2 Database** | 2.x | Base de datos in-memory para pruebas de integración. Perfil `test` con `spring.datasource.url=jdbc:h2:mem:testdb`. | Implícito en TestContainers / integración del PACS |
-| **JaCoCo** | 0.8.11+ | Cobertura de instrucciones y ramas. Objetivo: ≥ 60 % en clases bajo prueba. Reporte HTML en `target/site/jacoco/`. | Declarado explícitamente en PACS §3.1 y §7.1 |
-| **Maven Surefire** | 3.x | Ejecución de tests por tag, generación de reportes XML. Integrado con JaCoCo. | Maven declarado en PACS §7.1 |
-| **JMeter** | 5.6+ | Planes de carga para pruebas de sistema (Sprint 5). 50 usuarios concurrentes, rampa 30 s, duración 3 min. | Nota: PACS §5 lista JMeter como descartado para Completitud Funcional y propone k6; para Fiabilidad/carga, JMeter es la herramienta del enunciado y se usa aquí explícitamente. |
-| **GitHub Actions** | — | Workflow `ci-fiabilidad.yml` en rama `simulacion-desarrollo`. Ejecuta `mvn verify` por sprint. | Declarado como orquestador en PACS §3.2 |
-| **Spring Boot Test** | 3.4.5 | `@SpringBootTest`, `MockMvc`, `@MockBean` para pruebas de integración de capa web. | Stack del SUT (PACS §2.1) |
+| **JUnit 5** (Jupiter) | 5.10+ | Framework base para pruebas unitarias e integración. `@Tag`, `@ExtendWith`, `@SpringBootTest`. | Marco de métricas M-01..M-06 en `sqa/referencias/objetivos.txt`; estructura de especificación de casos en ISO/IEC/IEEE 29119-3 §7.3. |
+| **Mockito** | 5.x | Stubs y drivers: simula `PrestamoRepository`, `LibroRepository`, lanza excepciones controladas en el punto exacto. | Idem — base para aislar condiciones de prueba de Madurez (TCI-M*) y Tolerancia (TCI-T*). |
+| **H2 Database** | 2.x | Base de datos in-memory para pruebas de integración. Perfil `test` con `spring.datasource.url=jdbc:h2:mem:testdb`. | Suplente de MySQL en CI; cobertura de rama exigida por M-02 (`objetivos.txt`). |
+| **JaCoCo** | 0.8.11+ | Cobertura de **decisión/rama** e instrucciones. Objetivo: ≥ 70% de decisión en clases bajo prueba (métrica primaria de Madurez). Reporte HTML en `target/site/jacoco/`. | Métrica M-02 (Cobertura de decisión) en `objetivos.txt`. |
+| **Maven Surefire** | 3.x | Ejecución de tests por tag, generación de reportes XML. Integrado con JaCoCo. | Ejecución de suites `regresion` y `defecto-conocido` (EST-FIAB-001 §5). |
+| **Postman / RestAssured** | — | Estímulo de endpoints REST en pruebas de sistema (caja negra) ante entradas inválidas. | Métrica M-05 (Entradas inválidas controladas) en `objetivos.txt`. |
+| **GitHub Actions** | — | Workflow `ci-fiabilidad.yml` en rama `simulacion-desarrollo`. Ejecuta `mvn verify` por sprint. | Orquestación documentada en EST-FIAB-001 §7 (Automatización). |
+| **Spring Boot Test** | 3.4.5 | `@SpringBootTest`, `MockMvc`, `@MockBean` para pruebas de integración de capa web. | Stack del SUT; ver §2.1 de la PP-FIAB-001. |
+
+> **Nota sobre el PACS-Fase2-Herramientas.md:** la versión actual del PACS (§3.1, §7) declara sub-características de Fiabilidad (Tolerancia a fallos + Capacidad de recuperación) y métricas (Densidad de defectos, Cobertura de código, Deuda técnica) **anteriores** a la decisión del equipo de realinear Fase 2 a Madurez + Tolerancia a Fallos. Por eso esta estrategia y la PP-FIAB-001 trazan contra `sqa/referencias/objetivos.txt` y contra ISO/IEC/IEEE 29119-3, que son los marcos efectivamente aplicados. La regeneración del PACS para alinear sub-características y métricas es un entregable de seguimiento (issue a crear).
 
 ---
 
 ## 8. Métricas de Calidad
 
-Las métricas se calculan al cierre de cada sprint de integración simulada y al final de la Fase 2. Las tres métricas heredadas del walkthrough (IEEE 1061) se complementan con cuatro métricas de ejecución.
+Las métricas se calculan al cierre de cada sprint de integración simulada y al final de la Fase 2, y son coherentes con el marco de `referencias/objetivos.txt` (ISO/IEC 25010 → ISO/IEC 25023). Los umbrales marcados [PROP] son propuestas conservadoras a confirmar por el Líder de Métricas / Líder General.
 
-| ID | Nombre | Atributo ISO 25010 | Fórmula | Rangos de calificación | Fuente de datos |
+| ID | Nombre | Sub-característica / Atributo | Fórmula | Rangos de calificación | Fuente de datos |
 |---|---|---|---|---|---|
-| M-01 | Densidad de Defectos de Fiabilidad (DDF) | Reliability | Hallazgos confirmados por ejecución / Módulos bajo prueba | Bueno: 0 – 1.0 · Regular: 1.1 – 2.0 · Malo: > 2.0 | Surefire (defecto-conocido) |
-| M-02 | Cobertura de Revisión de Código (CRC) | Exhaustividad | (Módulos con al menos 1 caso de prueba / Total de módulos en alcance) × 100 | Bueno: 100 % · Regular: 80–99 % · Malo: < 80 % | JaCoCo class coverage |
-| M-03 | First Time Right (FTR) de Fiabilidad | Reliability | (Módulos sin casos `defecto-conocido` fallando / Total módulos) × 100 | Bueno: > 70 % · Regular: 50–70 % · Malo: < 50 % | Surefire XML |
-| M-04 | Cobertura de instrucciones JaCoCo | Capacidad para ser probado | (Instrucciones cubiertas / Total instrucciones) × 100 | Bueno: ≥ 60 % · Regular: 40–59 % · Malo: < 40 % | JaCoCo report |
-| M-05 | Porcentaje de casos de tolerancia superados | Tolerancia a Fallos | (Casos `regresion` de tolerancia que pasan / Total casos `regresion` de tolerancia) × 100 | Bueno: ≥ 80 % · Regular: 60–79 % · Malo: < 60 % | Surefire (regresion) |
-| M-06 | Tiempo de recuperación (MTTR de transacción) | Capacidad de Recuperación | Tiempo promedio desde fallo forzado hasta estado consistente verificado (ms) | Bueno: < 500 ms · Regular: 500–2000 ms · Malo: > 2000 ms | Logs JUnit (cronometrado en test) |
-| M-07 | Tasa de error bajo carga | Capacidad de Recuperación | (Solicitudes con error / Total de solicitudes JMeter) × 100 | Bueno: < 2 % · Regular: 2–5 % · Malo: > 5 % | JMeter aggregate report |
+| M-01 | Densidad de Defectos de Fiabilidad (DDF) | Madurez — Ausencia de defectos | Defectos confirmados por ejecución / Módulos (o KLOC) bajo prueba | Bueno: 0 – 1.0 · Regular: 1.1 – 2.0 · Malo: > 2.0 | Surefire (defecto-conocido) |
+| M-02 | Cobertura de Decisión/Rama | Madurez — Corrección de lógica crítica | (Ramas ejercitadas / Ramas totales en métodos críticos) × 100 | Bueno: ≥ 70% [PROP] · Regular: 50–69% · Malo: < 50% | JaCoCo branch coverage |
+| M-03 | Tasa de Pruebas que Pasan | Madurez — Madurez de la suite | (Pruebas `regresion` exitosas / Pruebas `regresion` ejecutadas) × 100 | Bueno: 100% [PROP] · Regular: 90–99% · Malo: < 90% | Surefire XML |
+| M-04 | Cobertura de Instrucciones JaCoCo | Madurez — soporte | (Instrucciones cubiertas / Total instrucciones) × 100 | Bueno: ≥ 60% · Regular: 40–59% · Malo: < 40% | JaCoCo report |
+| M-05 | Entradas Inválidas Controladas | Tolerancia a Fallos — Manejo de entradas inválidas | (Casos inválidos manejados sin excepción no controlada / Casos inválidos probados) × 100 | Bueno: ≥ 80% [PROP] · Regular: 60–79% · Malo: < 60% | Surefire (regresion + defecto-conocido) |
+| M-06 | Operaciones con Guarda de Estado | Tolerancia a Fallos — Prevención de estados inconsistentes | (Operaciones críticas con validación de precondición / Operaciones críticas totales) × 100 | Bueno: ≥ 80% [PROP] · Regular: 60–79% · Malo: < 60% | Revisión + Surefire |
 
-> **Coherencia con walkthrough:** Los valores base de M-01, M-02 y M-03 obtenidos en el walkthrough (1.0 def/módulo, 100 %, 0 %) son el punto de partida. Las métricas de ejecución (M-04..M-07) complementan la evaluación con datos dinámicos que el walkthrough no podía proveer.
+> **Coherencia con walkthrough:** los valores base de densidad de defectos y cobertura obtenidos en el walkthrough del 2026-06-02 son el punto de partida. Las métricas de ejecución (M-02..M-06) complementan la evaluación con datos dinámicos que el walkthrough no podía proveer.
+>
+> **Métricas retiradas en v2.0:** M-06 (MTTR de transacción) y M-07 (tasa de error bajo carga JMeter) de la versión 1.0 medían *Capacidad de Recuperación* y quedan fuera del alcance al sustituirse esa sub-característica por Madurez.
 
 ---
 
-*Documento generado el 9 de junio de 2026 por el Equipo SQA 11 como parte de la Fase 2 del proceso de aseguramiento bajo ISO/IEC/IEEE 29119-2 y la característica Reliability de ISO/IEC 25010:2023.*
+## 9. Gestión de Configuración e Incidencias
+
+### 9.1 Gestión de configuración de los productos de trabajo de prueba (29119-3 §A.2.3.a.v)
+Todos los artefactos de prueba (Plan, Estrategia, Especificación de casos, código `@Test`) se versionan en **Git**, en el repositorio público del proyecto. El código de prueba se integra en la rama `simulacion-desarrollo`; los documentos de planificación viven en `sqa/fase2/planificacion/`. Cada documento lleva identificador, versión, estado e historial de cambios (este encabezado). Las revisiones por pares se evidencian mediante Pull Requests (IEEE 730).
+
+### 9.2 Gestión de incidencias (29119-3 §A.2.3.a.vi)
+Las incidencias se registran como **GitHub Issues** (plantilla "Defecto F2"), con etiquetas canónicas `tipo:defecto`, `severidad:*`, `fase:fase-2`, `iso:*`. Cada incidencia traza al hallazgo WT de origen, al caso `defecto-conocido` que la ejercita y al comportamiento esperado según la ERS. El flujo de estado se gestiona en el tablero GitHub Projects #4 (Backlog → En Ejecución → En Revisión → Cerrado). El detalle operativo está en el Plan PP-FIAB-001 §7.
+
+---
+
+*Documento generado el 9 de junio de 2026, revisado el 24 de junio de 2026 por el Equipo SQA 11 como parte de la Fase 2 del proceso de aseguramiento bajo ISO/IEC/IEEE 29119-2/-3 y la característica Reliability (Madurez · Tolerancia a Fallos) de ISO/IEC 25010:2023.*
