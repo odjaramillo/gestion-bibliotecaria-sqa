@@ -1,0 +1,69 @@
+name: Pages — Dashboard de métricas SQA
+
+# Publica el dashboard de métricas del proceso SQA en GitHub Pages.
+# Cadena: exportar issues (gh) -> calcular KPIs -> generar HTML -> desplegar a Pages.
+#
+# Triggers deliberados (no corre en cada cambio de issue para no generar ruido):
+#   - workflow_dispatch : ejecución manual on-demand desde la pestaña Actions.
+#   - schedule          : refresco semanal (lunes 06:00 UTC).
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"
+
+# Permisos mínimos: leer issues para el export, escribir el despliegue de Pages.
+permissions:
+  contents: read
+  issues: read
+  pages: write
+  id-token: write
+
+# Una sola publicación a la vez; no cancelar un deploy en curso.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Construir dashboard
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Exportar issues a JSON
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue list --state all --limit 500 \
+            --json number,title,state,labels,createdAt,closedAt,assignees \
+            > sqa/metricas/issues_export.json
+
+      - name: Calcular KPIs
+        run: python sqa/metricas/calcular_kpi.py
+
+      - name: Generar dashboard HTML
+        run: python sqa/metricas/generar_dashboard.py
+
+      - name: Subir artefacto de Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    name: Desplegar a Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Desplegar
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -47,3 +47,9 @@ sqa/referencias/IEEE 730/730.md
 
 # KPI report JSON (derived artifact from sqa/metricas/calcular_kpi.py — regenerable)
 sqa/metricas/reporte_kpi.json
+
+# GitHub issues export (derived input for calcular_kpi.py — regenerable via gh)
+sqa/metricas/issues_export.json
+
+# Generated dashboard site (built + deployed to Pages by CI — regenerable)
+site/
