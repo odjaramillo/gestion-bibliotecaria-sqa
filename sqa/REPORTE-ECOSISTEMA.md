@@ -79,7 +79,7 @@ qué debe **producir el equipo** (⬜) para cada criterio.
 *Evalúa: completitud, coherencia metodológica, estándares y trazabilidad.*
 - ✅ Plantillas que fuerzan trazabilidad ERS↔hallazgo↔defecto↔prueba (ISO 12207).
 - ✅ PR como evidencia de revisión por pares (IEEE 730).
-- ⬜ **PACS consolidado** que integre Fase 1 (con correcciones para reconsideración de nota).
+- ✅ **PACS consolidado** que integre Fase 1 (con correcciones para reconsideración de nota) — `sqa/PACS.md` v1.0, ver PR de la rama `docs/pacs-formal-consolidado-f1-f2` (issue #6).
 - ⬜ **Plan de Calidad, Estrategia de Pruebas y Plan de Pruebas** (ya iniciados en `sqa/fase2/planificacion/`).
 - ⬜ **Informe de revisión de requisitos** (de la primera entrega) incorporado como anexo.
 - ⬜ **Informe de Resultados de Pruebas** (lo redacta el Analista de Pruebas).

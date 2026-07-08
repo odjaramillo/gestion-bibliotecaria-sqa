@@ -91,8 +91,10 @@ El repositorio ya es **público**, así que el plan gratuito de SonarCloud aplic
 ## 6. Entregables que NO produce este ecosistema (recordatorio de rúbrica)
 
 El ecosistema técnico cubre la trazabilidad, automatización y métricas, pero la rúbrica
-exige además dos artefactos de documentación que el equipo debe elaborar aparte:
+exige además el contenedor PACS y dos artefactos de documentación que el equipo debe elaborar aparte:
 
+- [x] **PACS consolidado F1+F2** — `sqa/PACS.md` v1.0 emitido, ver PR de la rama
+  `docs/pacs-formal-consolidado-f1-f2` (issue #6). Contenedor formal IEEE 730-2014 §Clause 5.
 - [ ] **Infograma del Ecosistema Tecnológico** — diagrama visual de herramientas e integración
   (GitHub Issues/Projects ↔ Actions ↔ SonarCloud ↔ métricas ↔ IA). Apéndice del PACS.
 - [ ] **Reflexión crítica sobre el ecosistema** — ventajas, limitaciones, oportunidades de mejora,
