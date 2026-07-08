@@ -47,8 +47,9 @@ Estado vivo de la migración Jira/Confluence → GitHub-native. Complementa
      presentable para el docente (sin perder la trazabilidad del repo).
 
 3. **Entregables de documentación** (los hace el equipo, no el ecosistema):
-   - Infograma del Ecosistema Tecnológico (apéndice del PACS).
-   - Reflexión crítica sobre el ecosistema (apéndice del PACS).
+   - ✅ **PACS consolidado F1+F2** — `sqa/PACS.md` v1.0 emitido, ver PR de la rama `docs/pacs-formal-consolidado-f1-f2` (issue #6). Cierra este hueco como contenedor formal.
+   - Infograma del Ecosistema Tecnológico (apéndice del PACS) — pendiente.
+   - Reflexión crítica sobre el ecosistema (apéndice del PACS) — pendiente.
 
 4. **Milestones de Fase 1 / Fase 2** — crear vía `gh api .../milestones`
    (recordatorio: `gh milestone` no existe). Ver checklist §3.
