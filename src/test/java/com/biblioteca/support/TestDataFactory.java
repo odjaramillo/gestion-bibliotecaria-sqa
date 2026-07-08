@@ -10,8 +10,9 @@ import java.time.LocalDateTime;
 
 /**
  * Builders reutilizables para pruebas dinámicas de Fiabilidad (issue #15, D6).
- * No persiste datos: construye instancias de dominio con valores por defecto
- * sensatos, sobrescribibles vía parámetros explícitos en cada método.
+ * Los builders originales fijan {@code id=1} para pruebas unitarias con Mockito
+ * (Fase 2, sin persistencia real); los {@code *ParaPersistir} (Fase 3) omiten el
+ * {@code id} para que JPA lo genere vía {@code IDENTITY} al persistir de verdad.
  */
 public final class TestDataFactory {
 
@@ -34,6 +35,11 @@ public final class TestDataFactory {
         return usuario(1, CORREO_USUARIO_DEFAULT, rol);
     }
 
+    /** Sin {@code id}: {@code usuarioRepository.save(...)} hace {@code persist} real, no {@code merge}. */
+    public static Usuario usuarioConRolParaPersistir(String rol) {
+        return new Usuario("Usuario Test", CORREO_USUARIO_DEFAULT, "clave-hash", rol);
+    }
+
     public static Libro libro(Integer id, Long isbn, int cantidad) {
         Libro libro = new Libro("Titulo Test", "Autor Test", "Editorial Test", "Genero Test", isbn, 2024, cantidad,
                 "Sinopsis de prueba", null);
@@ -43,6 +49,12 @@ public final class TestDataFactory {
 
     public static Libro libroConCantidad(int cantidad) {
         return libro(1, ISBN_DEFAULT, cantidad);
+    }
+
+    /** Sin {@code id}: {@code libroRepository.save(...)} hace {@code persist} real, no {@code merge}. */
+    public static Libro libroConCantidadParaPersistir(int cantidad) {
+        return new Libro("Titulo Test", "Autor Test", "Editorial Test", "Genero Test", ISBN_DEFAULT, 2024, cantidad,
+                "Sinopsis de prueba", null);
     }
 
     public static Prestamo prestamoActivo(Usuario usuario, Libro libro, LocalDate fechaPrestamo) {
