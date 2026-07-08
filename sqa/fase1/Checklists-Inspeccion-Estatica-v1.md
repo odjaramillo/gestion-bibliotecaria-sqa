@@ -252,7 +252,7 @@ Este BRIEF contiene información clave en formato de imágenes (tablas, diagrama
 |---|---|---|---|---|
 | PAC-07 | ¿El PAC lista los artefactos a auditar (ERS, DAS, Código)? | [ ] Cumple [ ] No Cumple | | Inventario documental |
 | PAC-08 | ¿Se especifica qué estándar se aplica a cada artefacto? | [ ] Cumple [ ] No Cumple | | Ej: 29148 para ERS, 42010 para DAS, 25010 para Código |
-| PAC-09 | ¿Se declaran las herramientas tecnológicas para cada fase? | [ ] Cumple [ ] No Cumple | | Ver `sqa/PACS-Fase2-Herramientas.md` |
+| PAC-09 | ¿Se declaran las herramientas tecnológicas para cada fase? | [ ] Cumple [ ] No Cumple | | Ver `sqa/anexos/herramientas-fase2.md` |
 
 ### 5.4 Métricas y Control Estadístico
 

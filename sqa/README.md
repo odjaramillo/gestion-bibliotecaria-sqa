@@ -25,6 +25,6 @@ Las siguientes rutas están referenciadas por los workflows de CI (WF1–WF7) y 
 | `templates/pac_config.yaml` | `wf_pac_generator.py` (config por defecto), `wf5_generador_pac.yml` |
 | `pac_config.yaml` | `wf5_generador_pac.yml` (argumento CLI) |
 | `pac_generado.md` | `wf5_generador_pac.yml` (salida), `wf6_auditor_pac.yml` (entrada), tests |
-| `PACS-Fase2-Herramientas.md` | `pac_assembler.py:321` (lectura directa) |
+| `anexos/herramientas-fase2.md` | `pac_assembler.py:321` (lectura directa) |
 | `pdfs/` | Trigger de `wf7_agente_pdf_confluence.yml` |
 | `extracted_images/` | Salida de `wf2_inspeccion_arquitectura.py` |

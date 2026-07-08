@@ -233,7 +233,7 @@ La restricción del enunciado establece que el código de producción está cong
 | **GitHub Actions** | — | Workflow `ci-fiabilidad.yml` en rama `simulacion-desarrollo`. Ejecuta `mvn verify` por sprint. | Orquestación documentada en EST-FIAB-001 §7 (Automatización). |
 | **Spring Boot Test** | 3.4.5 | `@SpringBootTest`, `MockMvc`, `@MockBean` para pruebas de integración de capa web. | Stack del SUT; ver §2.1 de la PP-FIAB-001. |
 
-> **Nota sobre el PACS-Fase2-Herramientas.md:** la versión actual del PACS (§3.1, §7) declara sub-características de Fiabilidad (Tolerancia a fallos + Capacidad de recuperación) y métricas (Densidad de defectos, Cobertura de código, Deuda técnica) **anteriores** a la decisión del equipo de realinear Fase 2 a Madurez + Tolerancia a Fallos. Por eso esta estrategia y la PP-FIAB-001 trazan contra `sqa/referencias/objetivos.txt` y contra ISO/IEC/IEEE 29119-3, que son los marcos efectivamente aplicados. La regeneración del PACS para alinear sub-características y métricas es un entregable de seguimiento (issue a crear).
+> **Nota sobre `sqa/anexos/herramientas-fase2.md`:** el sub-doc absorbido en el PACS formal consolidado (issue #6, `sqa/PACS.md` §4.3) se regenera a v2.0 en un PR de seguimiento (issue #5) para alinear sub-características (Madurez + Tolerancia a Fallos) y métricas (M-01..M-06) con `sqa/referencias/objetivos.txt`. Mientras tanto, esta estrategia y la PP-FIAB-001 trazan contra `sqa/referencias/objetivos.txt` y contra ISO/IEC/IEEE 29119-3, que son los marcos efectivamente aplicados.
 
 ---
 
