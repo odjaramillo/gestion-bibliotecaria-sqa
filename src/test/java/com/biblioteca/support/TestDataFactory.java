@@ -19,6 +19,7 @@ public final class TestDataFactory {
     public static final String ROL_BIBLIOTECARIO = "BIBLIOTECARIO";
     public static final String CORREO_USUARIO_DEFAULT = "usuario@biblioteca.test";
     public static final Long ISBN_DEFAULT = 9780000000001L;
+    public static final LocalDateTime FECHA_AMONESTACION_DEFAULT = LocalDateTime.of(2026, 6, 24, 10, 0);
 
     private TestDataFactory() {
     }
@@ -50,7 +51,13 @@ public final class TestDataFactory {
         return prestamo;
     }
 
+    public static Amonestacion amonestacion(Usuario usuario, Prestamo prestamo, boolean pagada, boolean verificada,
+            LocalDateTime fecha) {
+        return new Amonestacion(usuario, prestamo, 100.0, pagada, null, null, verificada, fecha);
+    }
+
+    /** Convenience overload: usa {@link #FECHA_AMONESTACION_DEFAULT} en lugar de la hora actual del reloj. */
     public static Amonestacion amonestacion(Usuario usuario, Prestamo prestamo, boolean pagada, boolean verificada) {
-        return new Amonestacion(usuario, prestamo, 100.0, pagada, null, null, verificada, LocalDateTime.now());
+        return amonestacion(usuario, prestamo, pagada, verificada, FECHA_AMONESTACION_DEFAULT);
     }
 }

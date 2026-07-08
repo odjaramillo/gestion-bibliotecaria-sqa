@@ -26,7 +26,10 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 /**
- * TC-FIAB-004 — Cobertura de las guardas de {@code crearPrestamo} (TCI-M1.1..M1.7).
+ * TC-FIAB-004 — Cobertura de las guardas de {@code crearPrestamo} (TCI-M1.1..M1.7),
+ * más el complemento de frontera TCI-M1.6b (cantidad=1) sobre la guarda
+ * {@code cantidad < 1} para cerrar el valor límite entre TCI-M1.6 (rechaza) y
+ * TCI-M1.7 (acepta).
  *
  * @see com.biblioteca.service.PrestamoService#crearPrestamo(String, Long, String)
  */
@@ -122,6 +125,20 @@ class PrestamoServiceCrearPrestamoTest {
         String resultado = prestamoService.crearPrestamo(usuario.getCorreo(), TestDataFactory.ISBN_DEFAULT, FECHA_VALIDA);
 
         assertEquals("Libro no disponible para préstamo.", resultado);
+    }
+
+    @Test
+    @DisplayName("TCI-M1.6b — libro con cantidad exactamente 1 (frontera) permite el préstamo")
+    void libroConCantidadUno_permiteFronteraYDecrementaAZero() {
+        Usuario usuario = stubUsuarioSinBloqueos();
+        Libro libro = TestDataFactory.libroConCantidad(1);
+        when(libroRepository.findByIsbn(TestDataFactory.ISBN_DEFAULT)).thenReturn(Optional.of(libro));
+
+        String resultado = prestamoService.crearPrestamo(usuario.getCorreo(), TestDataFactory.ISBN_DEFAULT, FECHA_VALIDA);
+
+        assertEquals("Préstamo registrado con éxito.", resultado);
+        assertEquals(0, libro.getCantidad());
+        verify(libroRepository).save(libro);
     }
 
     @Test
