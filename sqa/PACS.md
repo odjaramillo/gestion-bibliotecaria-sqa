@@ -15,29 +15,29 @@
 
 ## Tabla de contenido
 
-- [§1. Propósito y alcance](#§1-propósito-y-alcance)
-- [§2. Definiciones y acrónimos](#§2-definiciones-y-acrónimos)
-- [§3. Documentos de referencia](#§3-documentos-de-referencia)
-- [§4. Visión general del plan SQA](#§4-visión-general-del-plan-sqa)
-  - [§4.1 Organización e independencia](#§41-organización-e-independencia)
-  - [§4.2 Riesgos de producto y de proyecto](#§42-riesgos-de-producto-y-de-proyecto)
-  - [§4.3 Herramientas](#§43-herramientas)
-  - [§4.4 Estándares, prácticas y convenciones](#§44-estándares-prácticas-y-convenciones)
-  - [§4.5 Esfuerzo, recursos y cronograma](#§45-esfuerzo-recursos-y-cronograma)
-- [§5. Actividades, resultados y tareas](#§5-actividades-resultados-y-tareas)
-  - [§5.1 Aseguramiento de producto](#§51-aseguramiento-de-producto)
-  - [§5.2 Aseguramiento de proceso](#§52-aseguramiento-de-proceso)
-- [§6. Consideraciones adicionales](#§6-consideraciones-adicionales)
-  - [§6.1 Revisión de contrato](#§61-revisión-de-contrato)
-  - [§6.2 Medición de calidad](#§62-medición-de-calidad)
-  - [§6.3 Dispensas y desviaciones](#§63-dispensas-y-desviaciones)
-  - [§6.4 Repetición de tareas](#§64-repetición-de-tareas)
-  - [§6.5 Riesgo de realizar el SQA](#§65-riesgo-de-realizar-el-sqa)
-  - [§6.6 Estrategia de comunicaciones](#§66-estrategia-de-comunicaciones)
-  - [§6.7 Proceso de no conformidades](#§67-proceso-de-no-conformidades)
-- [§7. Registros SQA](#§7-registros-sqa)
-  - [§7.1 Analizar, identificar, recopilar, archivar, mantener y disponer](#§71-analizar-identificar-recopilar-archivar-mantener-y-disponer)
-  - [§7.2 Disponibilidad de los registros](#§72-disponibilidad-de-los-registros)
+- [§1. Propósito y alcance](#1-propósito-y-alcance)
+- [§2. Definiciones y acrónimos](#2-definiciones-y-acrónimos)
+- [§3. Documentos de referencia](#3-documentos-de-referencia)
+- [§4. Visión general del plan SQA](#4-visión-general-del-plan-sqa)
+  - [§4.1 Organización e independencia](#41-organización-e-independencia)
+  - [§4.2 Riesgos de producto y de proyecto](#42-riesgos-de-producto-y-de-proyecto)
+  - [§4.3 Herramientas](#43-herramientas)
+  - [§4.4 Estándares, prácticas y convenciones](#44-estándares-prácticas-y-convenciones)
+  - [§4.5 Esfuerzo, recursos y cronograma](#45-esfuerzo-recursos-y-cronograma)
+- [§5. Actividades, resultados y tareas](#5-actividades-resultados-y-tareas)
+  - [§5.1 Aseguramiento de producto](#51-aseguramiento-de-producto)
+  - [§5.2 Aseguramiento de proceso](#52-aseguramiento-de-proceso)
+- [§6. Consideraciones adicionales](#6-consideraciones-adicionales)
+  - [§6.1 Revisión de contrato](#61-revisión-de-contrato)
+  - [§6.2 Medición de calidad](#62-medición-de-calidad)
+  - [§6.3 Dispensas y desviaciones](#63-dispensas-y-desviaciones)
+  - [§6.4 Repetición de tareas](#64-repetición-de-tareas)
+  - [§6.5 Riesgo de realizar el SQA](#65-riesgo-de-realizar-el-sqa)
+  - [§6.6 Estrategia de comunicaciones](#66-estrategia-de-comunicaciones)
+  - [§6.7 Proceso de no conformidades](#67-proceso-de-no-conformidades)
+- [§7. Registros SQA](#7-registros-sqa)
+  - [§7.1 Analizar, identificar, recopilar, archivar, mantener y disponer](#71-analizar-identificar-recopilar-archivar-mantener-y-disponer)
+  - [§7.2 Disponibilidad de los registros](#72-disponibilidad-de-los-registros)
 - [Control de versiones](#control-de-versiones)
 
 ---
@@ -87,8 +87,8 @@ El marco vigente de métricas M-01..M-06 referidas en este glosario está defini
 
 | Estándar / Documento | Versión | Ubicación |
 |---|---|---|
-| ERS — Especificación de Requisitos del Software (Equipo 58-1) | v1.2 | `documentacion/ERS Equipo 58 1 v.1.2.pdf` |
-| DAS — Documento de Arquitectura de Software (Equipo 58-1) | v1.5 | `documentacion/DAS Equipo 58-1 v1.5.pdf` |
+| ERS — Especificación de Requisitos del Software (Equipo 58-1) | v1.2 | [`documentacion/ERS Equipo 58 1 v.1.2.pdf`](../documentacion/ERS%20Equipo%2058%201%20v.1.2.pdf) |
+| DAS — Documento de Arquitectura de Software (Equipo 58-1) | v1.5 | [`documentacion/DAS Equipo 58-1 v1.5.pdf`](../documentacion/DAS%20Equipo%2058-1%20v1.5.pdf) |
 | IEEE Std 730 | 2014 | [`referencias/IEEE 730/REFERENCIA-PARA-PACS.md`](referencias/IEEE%20730/REFERENCIA-PARA-PACS.md) (mapeo estructural, sin texto del estándar por licencia) |
 | ISO/IEC 25010 | 2023 | Citado en [`referencias/objetivos.txt`](referencias/objetivos.txt) y en los documentos de Fase 2 |
 | ISO/IEC/IEEE 29119-3 | 2021 | [`fase2/planificacion/2026-06-09_plan-de-pruebas-fiabilidad.md`](fase2/planificacion/2026-06-09_plan-de-pruebas-fiabilidad.md) |
