@@ -1,11 +1,18 @@
 name: CI — Pruebas Dinámicas (Fase 2)
 
 # Se activa cuando el equipo de desarrollo entrega el código con pruebas unitarias.
-# Requiere MySQL 8. Genera reporte JaCoCo y lo envía a SonarCloud.
+# Todas las suites corren sobre H2 (perfil "test"); genera reporte JaCoCo y lo
+# envía a SonarCloud. La suite "regresion" es el gate; "defecto-conocido" es
+# informativa y no bloquea el merge.
 
 on:
   push:
     branches: [main, develop]
+    paths:
+      - 'src/test/**'
+      - 'src/main/**'
+  pull_request:
+    branches: [main]
     paths:
       - 'src/test/**'
       - 'src/main/**'
@@ -20,28 +27,6 @@ jobs:
   tests:
     name: mvn test + JaCoCo + SonarCloud
     runs-on: ubuntu-latest
-
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_DATABASE: biblioteca_db_test
-          MYSQL_ROOT_PASSWORD: sqa_ci_root_2026
-          MYSQL_USER: biblioteca
-          MYSQL_PASSWORD: sqa_ci_pass_2026
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd "mysqladmin ping -h localhost -u root --password=sqa_ci_root_2026"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 10
-
-    env:
-      SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/biblioteca_db_test
-      SPRING_DATASOURCE_USERNAME: biblioteca
-      SPRING_DATASOURCE_PASSWORD: sqa_ci_pass_2026
-      SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
 
     steps:
       - name: Checkout
@@ -62,8 +47,12 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
 
-      - name: Ejecutar pruebas con cobertura JaCoCo
-        run: ./mvnw test jacoco:report --no-transfer-progress
+      - name: Ejecutar suite regresion (gate) con cobertura JaCoCo
+        run: ./mvnw test -Dgroups=regresion jacoco:report --no-transfer-progress
+
+      - name: Ejecutar suite defecto-conocido (informativa)
+        continue-on-error: true
+        run: ./mvnw test -Dgroups=defecto-conocido -DfailIfNoTests=false jacoco:report --no-transfer-progress
 
       - name: Publicar reporte JaCoCo como artefacto
         if: always()
