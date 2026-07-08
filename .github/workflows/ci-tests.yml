@@ -9,14 +9,8 @@ name: CI — Pruebas Dinámicas (Fase 2)
 on:
   push:
     branches: [main, develop]
-    paths:
-      - 'src/test/**'
-      - 'src/main/**'
   pull_request:
     branches: [main]
-    paths:
-      - 'src/test/**'
-      - 'src/main/**'
   workflow_dispatch:
 
 permissions:
