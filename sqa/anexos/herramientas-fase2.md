@@ -1,27 +1,35 @@
-# Matriz de Herramientas Tecnológicas — Plan de Aseguramiento de Calidad
+# Matriz de Herramientas Tecnológicas — Anexo Técnico del PACS (Fase 2)
 ## Sistema de Gestión Bibliotecaria — Auditoría del Equipo 58-1
-**Equipo SQA:** Equipo 11  
-**SUT (Sistema Under Test):** Código del Equipo 58-1 (Java 21 + Spring Boot 3.4.5 / Vue 3)  
-**Documento:** Declaración de herramientas tecnológicas para las Fases 1 y 2 del PAC  
-**Restricción:** Código fuente y documentación PDF en `/documentacion` son INTACTOS. Solo se auditan.
+
+| Campo | Valor |
+|---|---|
+| Documento | Anexo técnico de herramientas — sub-doc de `sqa/PACS.md` §4.3 |
+| Equipo SQA | Equipo 11 |
+| SUT (Sistema Under Test) | Código del Equipo 58-1 (Java 21 + Spring Boot 3.4.5 / Vue 3) |
+| Versión | 2.0 |
+| Fecha | 2026-07-08 |
+| Issue | #5 (regeneración v2.0, absorbido en PACS §4.3 — issue #6) |
+| Restricción | Código fuente y documentación PDF en `/documentacion` son INTACTOS. Solo se auditan. |
+
+> **Relación con el PACS**: este documento es el anexo técnico referenciado por [`sqa/PACS.md`](../PACS.md) §4.3. No es el PACS formal — es la matriz operativa de herramientas que el PACS absorbe por referencia.
 
 **¿Qué es esto?**
-Este documento declara todas las herramientas tecnológicas que el Equipo 11 utilizará para demostrar el cumplimiento de los objetivos de calidad del Plan de Aseguramiento de Calidad (PAC). Incluye:
-- **Fase 1 (Actual):** Inspección estática, auditoría con IA, análisis de documentos
-- **Fase 2 (Futura):** Pruebas dinámicas (E2E, API, seguridad, carga)
+Este documento declara las herramientas tecnológicas que el Equipo 11 utiliza para demostrar el cumplimiento de los objetivos de calidad definidos en el PAC. Incluye:
+- **Fase 1 (Completa):** Inspección estática, auditoría con IA, análisis de documentos.
+- **Fase 2 (En ejecución):** Pruebas dinámicas de Fiabilidad — unitarias, integración y sistema — sobre los 11 casos de `TCS-FIAB-001`, en una cadena de 5 PRs (`stacked-to-main`, issue #15).
 
 ---
 
 ## 1. Resumen Ejecutivo
 
-Este documento declara las herramientas tecnológicas que el Equipo SQA utilizará para demostrar el cumplimiento de los objetivos de calidad definidos en el PAC. Las selecciones se basan en:
+Este documento declara las herramientas tecnológicas que el Equipo SQA utiliza para demostrar el cumplimiento de los objetivos de calidad definidos en el PAC. Las selecciones se basan en:
 
-- Alineación estricta con los **atributos y sub-características ISO 25010** definidos en el PAC.
-- Compatibilidad con el **stack tecnológico existente** del SUT (Java 21, Spring Boot, Vue 3, MySQL).
-- Integrabilidad con el **ecosistema CI/CD** (GitHub Actions) y las plataformas de reporte (Jira, Confluence).
+- Alineación estricta con las **sub-características de Fiabilidad de ISO/IEC 25010:2023** vigentes en [`referencias/objetivos.txt`](../referencias/objetivos.txt): **Madurez** y **Tolerancia a Fallos**.
+- Compatibilidad con el **stack tecnológico existente** del SUT (Java 21, Spring Boot 3.4.5, Vue 3, MySQL en producción / H2 en CI).
+- Integrabilidad con el **ecosistema 100% nativo de GitHub** (GitHub Actions, SonarCloud, GitHub Pages) — sin dependencias en plataformas externas de gestión documental o de incidencias.
 - Criterio de preferencia por herramientas **"shift-left friendly"** (ejecutables en pipeline) sobre herramientas manuales o GUI-dependientes.
 
-> **Nota metodológica:** Las herramientas declaradas en esta matriz serán ejecutadas en la Fase 2. En la Entrega 1 (Fase 1) solo se presenta esta planificación y la infraestructura base (pipelines, contenedores, configuración de herramientas).
+> **Nota metodológica:** la Fase 2 se ejecuta actualmente mediante una cadena de 5 Pull Requests encadenados (`stacked-to-main`, issue #15). El primero (configuración de JaCoCo y CI sobre H2) está abierto en PR #16; las suites de prueba correspondientes a los 11 casos de `TCS-FIAB-001` se incorporan en los PRs subsiguientes de la cadena.
 
 ---
 
@@ -29,12 +37,12 @@ Este documento declara las herramientas tecnológicas que el Equipo SQA utilizar
 
 Los siguientes atributos y sub-características fueron definidos como objetivos de calidad en el PAC y son los ÚNICOS que esta matriz cubre:
 
-### Calidad del Producto (ISO/IEC 25010)
+### Calidad del Producto (ISO/IEC 25010:2023)
 1. **Adecuación Funcional**
    - Completitud funcional
 2. **Fiabilidad**
-   - Tolerancia a fallos
-   - Capacidad de recuperación
+   - **Madurez** — grado en que el sistema satisface las necesidades de fiabilidad en operación normal (corrección de lógica crítica, ausencia de defectos, madurez de la suite de pruebas)
+   - **Tolerancia a Fallos** — grado en que el sistema opera según lo previsto pese a fallos de software, incluyendo entradas inválidas
 3. **Mantenibilidad**
    - Capacidad para ser probado
    - Reusabilidad
@@ -43,6 +51,8 @@ Los siguientes atributos y sub-características fueron definidos como objetivos 
    - Confidencialidad
    - Integridad
    - Responsabilidad (trazabilidad)
+
+> Las sub-características de Fiabilidad vigentes son **Madurez + Tolerancia a Fallos** (fuente: [`referencias/objetivos.txt`](../referencias/objetivos.txt)). La versión 1.0 de este anexo declaraba *Tolerancia a fallos + Capacidad de recuperación*; ese par fue reemplazado tras la revisión de `EST-FIAB-001` v2.0, que descarta *Capacidad de Recuperación* del alcance actual (ver §5 y §8).
 
 ### Calidad del Proceso (IEEE 730 / ISO/IEC 12207)
 - Conformidad y Aseguramiento de los Procesos
@@ -58,61 +68,71 @@ Los siguientes atributos y sub-características fueron definidos como objetivos 
 
 | Atributo ISO 25010 | Sub-característica | Técnica de Prueba | Herramienta Declarada | Versión / Stack | Objetivo de Validación (SUT) | Justificación Técnica |
 |---|---|---|---|---|---|---|
-| **Adecuación Funcional** | Completitud funcional | Pruebas E2E / Sistema (UI) | **Playwright** | Node.js 20+, Chromium/Firefox/WebKit | Verificar que todos los flujos de usuario especificados existan y sean navegables: login, búsqueda de libros, préstamo, devolución, reserva, renovación. Evidencia con screenshots, videos y traces. | Vue 3 utiliza reactivity asíncrona. Selenium requiere sleeps explícitos y es propenso a flakiness. Playwright ofrece auto-wait, interceptación de red, y generación nativa de traces/videos en CI, esenciales para reportes en Confluence. |
+| **Adecuación Funcional** | Completitud funcional | Pruebas E2E / Sistema (UI) | **Playwright** | Node.js 20+, Chromium/Firefox/WebKit | Verificar que todos los flujos de usuario especificados existan y sean navegables: login, búsqueda de libros, préstamo, devolución, reserva, renovación. Evidencia con screenshots, videos y traces. | Vue 3 utiliza reactivity asíncrona. Selenium requiere sleeps explícitos y es propenso a flakiness. Playwright ofrece auto-wait, interceptación de red, y generación nativa de traces/videos publicables como artefactos de GitHub Actions. |
 | **Adecuación Funcional** | Completitud funcional | Pruebas de Integración / API | **RestAssured** + **TestContainers** | Java 21, JUnit 5, Maven | Validar que TODOS los endpoints REST del backend respondan correctamente (crear lector, buscar libro, registrar préstamo, etc.). Validación de JSON schemas y códigos de estado HTTP. | RestAssured es código Java versionable en el repo, integrado con JUnit 5 y Maven Surefire (`mvn test`). TestContainers levanta un MySQL real en Docker durante los tests, eliminando mocks que generen falsos positivos. Postman no es adecuado para CI/CD automatizado. |
-| **Fiabilidad** | Tolerancia a fallos | Pruebas de caos / Robustez | **Chaos Monkey for Spring Boot** (o tests de excepciones JUnit 5) | Spring Boot 3.4.5, Java 21 | Simular fallos de infraestructura (caída de conexión a MySQL, timeout de servicios). Verificar que el sistema loguee errores apropiadamente y no exponga stack traces o datos sensibles al usuario final. | Chaos Monkey es el estándar de facto para pruebas de caos en ecosistemas Spring Boot. Si la complejidad lo requiere, se complementará con tests JUnit 5 que inyecten `DataAccessException` y validen el comportamiento de los controllers. |
-| **Fiabilidad** | Capacidad de recuperación | Pruebas de recuperación de datos | **JUnit 5** + **TestContainers** + script de verificación de consistencia | Java 21, MySQL 8.0 | Insertar un préstamo → forzar interrupción del contenedor MySQL → restablecer servicio → verificar que los datos afectados se recuperen o que el sistema detecte y reporte la inconsistencia. | TestContainers permite crear escenarios de "matar y revivir" la base de datos en segundos. Se valida tanto la persistencia de datos como la capacidad del sistema de reanudar operaciones sin corrupción. |
-| **Mantenibilidad** | Capacidad para ser probado | Análisis ESTÁTICO + Cobertura de código | **JaCoCo** (cobertura) + **SonarQube** (análisis estático) | Java 21, Maven | Medir el porcentaje de cobertura de pruebas sobre el código heredado. Un porcentaje bajo (< 40%) indica baja capacidad de prueba y alto riesgo de regresión. | JaCoCo genera reportes XML/HTML integrables con GitHub Actions y SonarQube. SonarQube calcula métricas de "testability" y "reliability". La cobertura es un proxy directo de "capacidad para ser probado". |
-| **Mantenibilidad** | Reusabilidad | Análisis ESTÁTICO de arquitectura | **SonarQube** (duplicación de código, acoplamiento) + **JDepend** (métricas de paquetes) | Java 21 | Detectar lógica duplicada entre módulos (ej. préstamos vs. reservas). Medir acoplamiento aferente (Ca) y eferente (Ce) entre paquetes. Identificar componentes candidatos a extracción y reutilización. | SonarQube detecta duplicación a nivel de línea y bloque. JDepend analiza la estructura de dependencias entre paquetes. Un alto acoplamiento eferente y bajo acoplamiento aferente indican baja reusabilidad. |
-| **Mantenibilidad** | Analizabilidad | Análisis ESTÁTICO de complejidad | **SonarQube** (complejidad ciclomática, cognitive complexity) + **Checkstyle** | Java 21 | Medir qué tan fácil es comprender y diagnosticar un componente. Complejidad ciclomática > 15 o cognitive complexity > 10 indican código difícil de analizar y modificar. | La complejidad ciclomática de McCabe es un indicador estándar de analizabilidad. Cognitive complexity (SonarQube) mejora la precisión para estructuras modernas de Java. Checkstyle valida convenciones de nomenclatura y estructura. |
+| **Fiabilidad** | Madurez — Corrección de lógica crítica y ausencia de defectos (M-01, M-02, M-03) | Pruebas unitarias (caja blanca) | **JUnit 5** + **Mockito** | JUnit Jupiter 5.10+, Mockito 5.x | Ejercitar los puntos de decisión de `PrestamoService.crearPrestamo/devolverPrestamo/renovarPrestamo` y `AmonestacionService.eliminarAmonestacion` (11 casos de `TCS-FIAB-001`, suites `regresion`/`defecto-conocido`). | JUnit 5 + Mockito son el estándar para aislar la capa de servicios; Mockito simula `PrestamoRepository`/`LibroRepository` para forzar condiciones de excepción controlada sin depender de una base de datos real. |
+| **Fiabilidad** | Madurez — Cobertura de decisión/rama e instrucciones (M-02, M-04) | Cobertura de código + ejecución automatizada | **JaCoCo** + **Maven Surefire** | JaCoCo 0.8.12, Surefire 3.x | Medir cobertura de rama e instrucciones sobre `PrestamoService`/`AmonestacionService` (regla informativa `BRANCH ≥ 0.70`, `haltOnFailure=false`) y ejecutar las suites por `@Tag` en cada push. | JaCoCo genera el reporte XML/HTML consumido por `metricas/calcular_kpi.py`. Surefire ejecuta las suites `regresion` (gate) y `defecto-conocido` (informativa) e integra con `ci-tests.yml`. |
+| **Fiabilidad** | Tolerancia a Fallos — Manejo de entradas inválidas (M-05) | Pruebas de integración (caja gris) | **Spring Boot Test** + **H2 Database** | Spring Boot Test 3.4.5, H2 2.x | Verificar que los endpoints rechacen entradas malformadas (fechas inválidas, cantidades negativas) sin excepción no controlada, ejercitando `@RestControllerAdvice` cuando exista. | `@SpringBootTest` + H2 in-memory (perfil `test`, `MODE=MySQL`) reproducen el stack real sin depender de un servicio MySQL en el runner de CI; ejecutan sobre la rama `simulacion-desarrollo`. |
+| **Fiabilidad** | Tolerancia a Fallos — Prevención de estados inconsistentes (M-06) | Pruebas de sistema (caja negra) | **RestAssured** / **Postman** | RestAssured 5.x | Estimular endpoints ante operaciones críticas sin guarda de estado previa (inventario negativo, escritura parcial sin `@Transactional`). | RestAssured es código Java versionable, integrado a Maven/JUnit 5; complementa la verificación de precondiciones ya cubierta por las pruebas unitarias de Madurez. |
+| **Mantenibilidad** | Capacidad para ser probado | Análisis ESTÁTICO + Cobertura de código | **JaCoCo** (cobertura) + **SonarCloud** (análisis estático) | Java 21, Maven | Medir el porcentaje de cobertura de pruebas sobre el código heredado. Un porcentaje bajo (< 40%) indica baja capacidad de prueba y alto riesgo de regresión. | JaCoCo genera reportes XML/HTML integrables con GitHub Actions y SonarCloud. SonarCloud calcula métricas de "testability" y "reliability". La cobertura es un proxy directo de "capacidad para ser probado". |
+| **Mantenibilidad** | Reusabilidad | Análisis ESTÁTICO de arquitectura | **SonarCloud** (duplicación de código, acoplamiento) | Java 21 | Detectar lógica duplicada entre módulos (ej. préstamos vs. reservas). Medir acoplamiento entre paquetes. Identificar componentes candidatos a extracción y reutilización. | SonarCloud detecta duplicación a nivel de línea y bloque, e integra el reporte directamente en el PR vía `ci-static.yml`, sin requerir infraestructura propia. |
+| **Mantenibilidad** | Analizabilidad | Análisis ESTÁTICO de complejidad | **SonarCloud** (complejidad ciclomática, cognitive complexity) + **Checkstyle** | Java 21 | Medir qué tan fácil es comprender y diagnosticar un componente. Complejidad ciclomática > 15 o cognitive complexity > 10 indican código difícil de analizar y modificar. | La complejidad ciclomática de McCabe es un indicador estándar de analizabilidad. Cognitive complexity (SonarCloud) mejora la precisión para estructuras modernas de Java. Checkstyle valida convenciones de nomenclatura y estructura. |
 | **Seguridad** | Confidencialidad | Pruebas de penetración dinámica (DAST) + Pruebas de autorización | **OWASP ZAP** (DAST) + **Spring Security Test** | Java 21, Spring Security 6 | Intentar acceder a endpoints protegidos (`/api/prestamos`, `/api/admin/**`) sin token JWT o con token de rol incorrecto. Verificar que el sistema rechace accesos no autorizados (HTTP 401/403). | OWASP ZAP es el estándar open-source para DAST. Opera en modo daemon (`zap-baseline.py`) integrable en GitHub Actions. Spring Security Test permite validar la capa de autorización a nivel de pruebas unitarias de controllers con `@WithMockUser`. |
 | **Seguridad** | Integridad | Pruebas de inyección + Validación de input | **OWASP ZAP** (SQL Injection, XSS) + **JUnit 5** (validaciones de bean) | Java 21, Spring Boot Validation | Inyectar payloads maliciosos (`' OR 1=1 --`, `<script>alert(1)</script>`) en campos de búsqueda y formularios. Verificar que Spring Data JPA utilice parámetros preparados y que Hibernate Validator rechace inputs inválidos. | ZAP automatiza la detección de SQLi y XSS en endpoints reales. JUnit 5 con `@Valid` y `MockMvc` valida que los DTOs rechacen datos corruptos antes de llegar a la capa de persistencia. |
 | **Seguridad** | Responsabilidad (Trazabilidad) | Auditoría de logs + Validación de registros | **JUnit 5** + script Python de verificación de tabla de auditoría | Java 21, Python 3.10 | Verificar que cada acción crítica (préstamo, devolución, modificación de usuario) genere un registro inmutable en la tabla `auditoria` con timestamp, usuario, IP y acción realizada. | El backend debe persistir trazas. Los tests JUnit 5 validan que los servicios invoquen el logger de auditoría. Un script Python complementario verificará la consistencia de la tabla `auditoria` contra los logs de aplicación. |
+
+Las filas de **Adecuación Funcional**, **Mantenibilidad** y **Seguridad** describen alcance planificado fuera del ciclo actual de Fiabilidad (issue #15); se mantienen como roadmap tecnológico del PAC, no como matriz activa de esta iteración.
 
 ### 3.2 Calidad del Proceso (IEEE 730 / ISO 12207)
 
 | Proceso de Calidad | Actividad SQA | Herramienta / Tecnología | Objetivo | Justificación |
 |---|---|---|---|---|
 | **Gestión de Configuración** | Control de versiones y líneas base | **Git** + **GitHub** | Versionar código de pruebas, scripts SQA, configuraciones de pipeline y resultados de métricas. Tags para cada release del SUT. | Git es el estándar de facto. GitHub proporciona protección de ramas, PR reviews obligatorios, y releases documentadas. |
-| **Gestión de Entornos e Infraestructura** | Reproducibilidad de entornos de prueba | **Docker** + **Docker Compose** + **GitHub Actions Runners** | Levantar instancias idénticas del SUT (backend + frontend + MySQL) en cada ejecución de pipeline. | Docker garantiza que las pruebas corran en el mismo entorno en local y en CI. TestContainers (sobre Docker) gestiona el ciclo de vida de las dependencias. |
-| **Medición y Mejora Continua** | Extracción y reporte de métricas | **SonarQube API** + **JaCoCo** + **Scripts Python** (Jira/Confluence API) | Extraer métricas de calidad (cobertura, deuda técnica, defectos) y publicar dashboards automáticos en Confluence. Crear tickets de mejora en Jira. | SonarQube expone métricas vía REST API. Scripts Python orquestan la recolección y transforman los datos a formatos Markdown/HTML para Confluence. Jira API crea tickets de tech-debt automatizados. |
-| **Conformidad y Aseguramiento** | Ejecución automatizada de pipelines | **GitHub Actions** (`.github/workflows/`) | Orquestar la ejecución secuencial de análisis estático, pruebas unitarias, pruebas de integración, E2E, y análisis de seguridad en cada push o PR. | GitHub Actions es nativo del repositorio. Permite definir workflows YAML versionables, reutilizables, y con integración directa a GitHub Issues/PRs. |
+| **Gestión de Entornos e Infraestructura** | Reproducibilidad de entornos de prueba | **H2 Database** (in-memory, CI) + **Docker** (entornos locales) + **GitHub Actions Runners** | Levantar instancias reproducibles del SUT (backend + base de datos) en cada ejecución de pipeline, sin depender de un servicio MySQL externo en el runner. | H2 con perfil `test` (`MODE=MySQL`) elimina la fragilidad observada al combinar variables de entorno de un servicio MySQL con el perfil de pruebas (ver `ci-tests.yml`, issue #15 PR1). Docker sigue disponible para reproducción local con MySQL real. |
+| **Medición y Mejora Continua** | Extracción y reporte de métricas | **SonarCloud API** + **JaCoCo** + `metricas/calcular_kpi.py` | Extraer métricas de calidad (cobertura, densidad de defectos, M-01..M-06) y publicar el dashboard automáticamente en GitHub Pages; registrar hallazgos de mejora como GitHub Issues (`tipo:hallazgo`/`tipo:defecto`). | SonarCloud expone métricas vía API REST integrada a `ci-static.yml`. `calcular_kpi.py` consolida los reportes de JaCoCo y Surefire en `reporte_kpi.json`, publicado por el workflow `pages-dashboard.yml`. GitHub Issues sustituye la gestión de tickets en plataformas externas. |
+| **Conformidad y Aseguramiento** | Ejecución automatizada de pipelines | **GitHub Actions** (`.github/workflows/`) | Orquestar la ejecución secuencial de análisis estático, pruebas unitarias, pruebas de integración y análisis de seguridad en cada push o PR. | GitHub Actions es nativo del repositorio. Permite definir workflows YAML versionables, reutilizables, y con integración directa a GitHub Issues/PRs. |
 
 ---
 
-## 4. Diagrama de Integración del Ecosistema (Mapeo para el Infograma)
+## 4. Diagrama de Integración del Ecosistema
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                           GITHUB ACTIONS (CI/CD)                            │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐   │
-│  │   Build SUT  │→ │ SonarQube    │→ │ Unit Tests   │→ │ RestAssured  │   │
-│  │   (Maven)    │  │ (SAST)       │  │ (JUnit 5)    │  │ + TestCont.  │   │
+│  │   Build SUT  │→ │ SonarCloud   │→ │ JUnit 5 +    │→ │ Spring Boot  │   │
+│  │   (Maven)    │  │  (SAST)      │  │ Mockito      │  │ Test + H2    │   │
+│  │              │  │              │  │ (unitarias)  │  │ (integración)│   │
 │  └──────────────┘  └──────────────┘  └──────────────┘  └──────────────┘   │
 │         ↓                 ↓                 ↓                 ↓            │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐   │
-│  │  Playwright  │  │ OWASP ZAP    │  │   JaCoCo     │  │   k6 (opt)   │   │
-│  │   (E2E)      │  │   (DAST)     │  │ (Cobertura)  │  │  (Carga)*    │   │
+│  │ RestAssured/ │  │   JaCoCo     │  │  Playwright  │  │   k6 (opt)   │   │
+│  │  Postman     │  │ (BRANCH      │  │   (E2E)*     │  │  (Carga)*    │   │
+│  │  (sistema)   │  │  ≥ 0.70)     │  │              │  │              │   │
 │  └──────────────┘  └──────────────┘  └──────────────┘  └──────────────┘   │
 │         ↓                 ↓                 ↓                 ↓            │
 │                    ┌─────────────────────────────────────┐                  │
 │                    │      SCRIPTS PYTHON (SQA Agent)     │                  │
-│                    │  • Parsear resultados (JSON/XML)    │                  │
-│                    │  • Calcular métricas (Densidad      │                  │
-│                    │    de Defectos, Cobertura)          │                  │
-│                    │  • Generar Markdown/HTML            │                  │
+│                    │  • Parsear resultados (JaCoCo XML,  │                  │
+│                    │    Surefire XML)                     │                  │
+│                    │  • Calcular métricas M-01..M-06       │                  │
+│                    │    (`metricas/calcular_kpi.py`)       │                  │
+│                    │  • Generar `reporte_kpi.json`         │                  │
 │                    └─────────────────────────────────────┘                  │
 │                               ↓                    ↓                        │
 │                    ┌──────────────┐       ┌──────────────┐                  │
-│                    │  CONFLUENCE  │       │    JIRA      │                  │
-│                    │  (Reportes)  │       │ (Bugs/Tech   │                  │
-│                    │              │       │    Debt)     │                  │
+│                    │ GITHUB PAGES │       │ GITHUB ISSUES│                  │
+│                    │  (Dashboard) │       │ (tipo:defecto│                  │
+│                    │  de métricas)│       │  / hallazgo) │                  │
 │                    └──────────────┘       └──────────────┘                  │
 └─────────────────────────────────────────────────────────────────────────────┘
 
-* k6 es herramienta propuesta para iteraciones futuras de Eficiencia de Desempeño.
-  No está en el PAC actual pero se declara como roadmap tecnológico.
+* Playwright (E2E) y k6 (carga) son herramientas propuestas para iteraciones
+  futuras fuera del alcance actual de Fiabilidad (issue #15); se declaran como
+  roadmap tecnológico, no como parte de la matriz activa de esta iteración.
 ```
+
+Todo el ecosistema es nativo de GitHub (Actions, SonarCloud, Pages, Issues); no depende de plataformas externas de gestión documental o de incidencias.
 
 ---
 
@@ -121,9 +141,11 @@ Los siguientes atributos y sub-características fueron definidos como objetivos 
 | Herramienta (sugerida genéricamente) | Razón de Descarte | Reemplazo Elegido |
 |---|---|---|
 | **Selenium** | Requiere sleeps explícitos, propenso a flakiness con Vue 3, sin generación nativa de traces/videos en CI. | **Playwright** |
-| **Postman / Newman** | No es código versionable en el repo. Difícil de integrar con Maven/JUnit 5. Reportes limitados para CI. | **RestAssured** |
-| **JMeter** | GUI pesada, no es "CI-friendly". Reportes difíciles de parsear automáticamente. | **k6** (para futuras iteraciones de carga) |
-| **Pruebas Unitarias como medida de Mantenibilidad** | Las pruebas unitarias validan funcionalidad, no atributos de mantenibilidad (complejidad, acoplamiento, reusabilidad). | **SonarQube + JaCoCo** (análisis estático + cobertura) |
+| **Postman / Newman** (como única herramienta de sistema) | No es código versionable en el repo. Difícil de integrar con Maven/JUnit 5. Reportes limitados para CI. | **RestAssured** (con Postman como complemento manual exploratorio) |
+| **JMeter** | GUI pesada, no es "CI-friendly". Reportes difíciles de parsear automáticamente. | **k6** (para futuras iteraciones de carga, fuera del alcance actual) |
+| **Chaos Monkey for Spring Boot** | Sub-característica *Capacidad de Recuperación* descartada del alcance vigente en favor de Madurez (ver `EST-FIAB-001` v2.0 §8, nota de métricas retiradas). | Cobertura de decisión/rama (JaCoCo) + pruebas de excepción controlada (JUnit 5/Mockito) |
+| **TestContainers para pruebas de integración de Fiabilidad** | El runner de CI no soporta un servicio MySQL estable junto al perfil `test` de Spring (conflicto de variables de entorno, ver issue #15 PR1). | **H2 Database** in-memory (`MODE=MySQL`); TestContainers se mantiene para pruebas de Adecuación Funcional (API) donde el conflicto no aplica. |
+| **Pruebas Unitarias como medida de Mantenibilidad** | Las pruebas unitarias validan funcionalidad, no atributos de mantenibilidad (complejidad, acoplamiento, reusabilidad). | **SonarCloud + JaCoCo** (análisis estático + cobertura) |
 
 ---
 
@@ -131,46 +153,51 @@ Los siguientes atributos y sub-características fueron definidos como objetivos 
 
 ### Fase 1 — Infraestructura SQA (IMPLEMENTADA)
 
-La Fase 1 está completa y lista para aprobación. Todas las herramientas declaradas a continuación fueron desarrolladas, testeadas y documentadas por el Equipo 11.
+La Fase 1 está completa y aprobada. Todas las herramientas declaradas a continuación fueron desarrolladas, testeadas y documentadas por el Equipo 11.
 
 | Actividad | Herramientas | Estado | Tests |
 |---|---|---|---|
 | Checklists de inspección estática | JSON + Python | Implementado | 71 ítems verificables |
 | Auditoría de requisitos con IA (WF1) | Gemini multimodal | dry_run | 32 tests |
-| Inspección arquitectónica (WF2) | Gemini + SonarQube + Análisis visual | dry_run | 99 tests |
+| Inspección arquitectónica (WF2) | Gemini + SonarCloud + Análisis visual | dry_run | 99 tests |
 | Generación de plan de pruebas (WF3) | Gemini | dry_run | Cubierto |
 | Orquestador de Quality Gates (WF4) | Python + GitHub Actions | dry_run | Cubierto |
 | Extracción de imágenes de PDFs | PyMuPDF + Pillow | Implementado | Tests de extracción y conversión PNG |
 | Análisis visual de diagramas | Gemini multimodal (C4/UML) | Integrado en WF2 | Tests de clasificación y análisis |
-| Idempotencia en Jira | JQL + Labels | Implementado | Tests de upsert |
 | Few-shot prompts | Constantes Python | Implementado | Tests de contenido de prompt |
 
 **Total tests automatizados: 99 (100% pasando)**
 
-### Fase 2 — Pruebas Dinámicas (PLANIFICADA)
+### Fase 2 — Pruebas Dinámicas de Fiabilidad (EN EJECUCIÓN)
 
-La Fase 2 se ejecutará después de que el Líder General apruebe la Fase 1.
+La Fase 2 está en ejecución mediante una cadena de 5 Pull Requests encadenados (`stacked-to-main`, issue #15). Estado actual:
 
-| Orden | Actividad | Herramientas | Entregable en Confluence |
-|---|---|---|---|
-| 1 | Configurar análisis estático y cobertura | SonarQube + JaCoCo | Dashboard de Mantenibilidad |
-| 2 | Implementar pruebas de API | RestAssured + TestContainers | Reporte de Completitud Funcional (API) |
-| 3 | Implementar pruebas E2E | Playwright | Reporte de Completitud Funcional (UI) |
-| 4 | Ejecutar pruebas de seguridad | OWASP ZAP + Spring Security Test | Informe de Vulnerabilidades |
-| 5 | Ejecutar pruebas de fiabilidad | Chaos Monkey / TestContainers | Informe de Tolerancia a Fallos |
-| 6 | Consolidar métricas | Scripts Python | Informe de Pruebas (IP) |
+| Orden | Actividad | Herramientas | Estado | Evidencia |
+|---|---|---|---|---|
+| PR 1/5 | Configuración de JaCoCo + migración de CI a H2 | `pom.xml` (JaCoCo check informativo, regla `BRANCH ≥ 0.70` en `PrestamoService`/`AmonestacionService`) + `ci-tests.yml` (sin servicio MySQL) | 🟢 En implementación (issue #15, PR #16) | PR #16 |
+| — | Especificación de 11 casos de prueba | `TCS-FIAB-001` (JUnit 5 + Mockito, mapeados a M-01..M-06) | 🟢 Especificados | [`2026-06-24_especificacion-casos-prueba-fiabilidad.md`](../fase2/planificacion/2026-06-24_especificacion-casos-prueba-fiabilidad.md) — 11 filas `TC-FIAB-*` |
+| PR 2-3/5 | Implementar pruebas unitarias e integración (Madurez + Tolerancia a Fallos) | JUnit 5, Mockito, Spring Boot Test, H2 | 🟡 Pendiente | Sprints 1-3 (`PP-FIAB-001` §5.2) |
+| PR 4/5 | Implementar pruebas de sistema | RestAssured / Postman | 🟡 Pendiente | Sprint 3-4 |
+| PR 5/5 | Consolidar métricas M-01..M-06 y publicar dashboard | `metricas/calcular_kpi.py` → `reporte_kpi.json` + GitHub Pages | 🟡 Pendiente | Cierre de Fase 2 (milestone #2, `due_on` 2026-07-19) |
 
 ---
 
-## 7. Glosario de Métricas a Calcular
+## 7. Glosario de Métricas M-01..M-06
 
-| Métrica | Fórmula | Herramienta Fuente | Propósito |
-|---|---|---|---|
-| **Densidad de Defectos** | Defectos Encontrados / Tamaño del SUT (KLOC o puntos de función) | SonarQube (LOC) + Jira (defectos) | Medir la calidad intrínseca del código heredado. |
-| **Cobertura de Revisiones** | Artefactos Revisados / Artefactos Totales | GitHub (PRs) + Scripts SQA | Medir qué porcentaje del SUT ha sido auditado. |
-| **Cobertura de Código** | Líneas Ejecutadas en Tests / Líneas Totales | JaCoCo | Medir la capacidad de prueba del código. |
-| **Deuda Técnica** | Días estimados para remediar code smells | SonarQube | Medir el esfuerzo futuro requerido para mantener el SUT. |
-| **Índice de Vulnerabilidades** | Vulnerabilidades Críticas + Altas / Total de dependencias | OWASP Dependency-Check + SonarQube | Medir el riesgo de seguridad del ecosistema. |
+Marco vigente de sub-características **Madurez + Tolerancia a Fallos** (ISO/IEC 25010:2023, medición ISO/IEC 25023:2016). Fuente primaria: [`referencias/objetivos.txt`](../referencias/objetivos.txt); la métrica M-04 (cobertura de instrucciones) extiende ese marco per `EST-FIAB-001` v2.0 §8, ya adoptada por los 11 casos de `TCS-FIAB-001`.
+
+| ID | Métrica | Sub-característica | Fórmula | Umbral | Fuente |
+|---|---|---|---|---|---|
+| M-01 | Densidad de Defectos de Fiabilidad | Madurez — Ausencia de defectos | Defectos confirmados por ejecución / Módulos (o KLOC) bajo prueba | Bueno: 0–1.0 · Regular: 1.1–2.0 · Malo: > 2.0 [PROP] | `objetivos.txt` atributo 1.2 + `EST-FIAB-001` §8 |
+| M-02 | Cobertura de Decisión/Rama | Madurez — Corrección de lógica crítica | (Ramas ejercitadas / Ramas totales en métodos críticos) × 100 | ≥ 70% [PROP] | `objetivos.txt` atributo 1.1 |
+| M-03 | Tasa de Pruebas que Pasan | Madurez — Madurez de la suite | (Pruebas `regresion` exitosas / Pruebas `regresion` ejecutadas) × 100 | 100% en verde para integrar a `main` [PROP] | `objetivos.txt` atributo 1.3 |
+| M-04 | Cobertura de Instrucciones JaCoCo | Madurez — soporte | (Instrucciones cubiertas / Total de instrucciones) × 100 | ≥ 60% [PROP] | `EST-FIAB-001` §8 (extiende `objetivos.txt`) |
+| M-05 | Entradas Inválidas Controladas | Tolerancia a Fallos — Manejo de entradas inválidas | (Casos inválidos manejados sin excepción no controlada / Casos inválidos probados) × 100 | ≥ 80% [PROP] | `objetivos.txt` atributo 2.1 |
+| M-06 | Operaciones con Guarda de Estado | Tolerancia a Fallos — Prevención de estados inconsistentes | (Operaciones críticas con validación de precondición / Operaciones críticas totales) × 100 | ≥ 80% [PROP] | `objetivos.txt` atributo 2.2 |
+
+Fuente de datos por métrica: JaCoCo (M-02, M-04), Maven Surefire (M-01, M-03, M-05, M-06 vía suites `regresion`/`defecto-conocido`), revisión manual complementaria para M-06. Los umbrales marcados `[PROP]` son propuestas conservadoras a confirmar por el Líder de Métricas / Líder General.
+
+> **Nota de consistencia**: esta numeración M-01..M-06 replica exactamente la de `EST-FIAB-001` v2.0 §8 y `PP-FIAB-001`, ya en uso por los 11 casos de `TCS-FIAB-001`. La tabla de `sqa/PACS.md` §5.2 usa una numeración distinta para las mismas seis métricas (asigna M-01 a Cobertura de Decisión y M-06 a Cobertura de Instrucciones); esa discrepancia es preexistente al alcance de esta regeneración — B-02 (issue #5) solo autoriza editar `PACS.md` §4.3 — y queda documentada como pendiente de corrección en una iteración posterior (ver apply-progress de `pacs-formal-consolidado-f1-f2`).
 
 ---
 
@@ -178,7 +205,8 @@ La Fase 2 se ejecutará después de que el Líder General apruebe la Fase 1.
 
 | Versión | Fecha | Autor | Cambios |
 |---|---|---|---|
-| 1.0 | 2026-05-06 | Equipo SQA | Declaración inicial de herramientas. Incluye Fase 1 (implementada) y Fase 2 (planificada). Documenta 99 tests pasando.
+| 1.0 | 2026-05-06 | Equipo SQA | Declaración inicial de herramientas. Incluye Fase 1 (implementada) y Fase 2 (planificada, sub-características Tolerancia a fallos + Capacidad de recuperación). Documenta 99 tests pasando. Referencia plataformas externas de reporte (reemplazadas en v2.0). |
+| 2.0 | 2026-07-08 | Equipo SQA | Regeneración (issue #5): sub-características Fiabilidad actualizadas a **Madurez + Tolerancia a Fallos** (ISO/IEC 25010:2023, alineado a `objetivos.txt`/`EST-FIAB-001`); matriz de herramientas de Fiabilidad reescrita (JUnit 5, Mockito, H2, JaCoCo, Maven Surefire, RestAssured/Postman, Spring Boot Test, GitHub Actions); diagrama de integración 100% nativo de GitHub; Fase 2 actualizada a **EN EJECUCIÓN** (issue #15, PR #16 abierto); glosario de métricas reemplazado por M-01..M-06 con fórmulas, umbrales `[PROP]` y fuentes; eliminadas todas las referencias a plataformas externas de reporte de incidencias y documentación. |
 
 ---
 
