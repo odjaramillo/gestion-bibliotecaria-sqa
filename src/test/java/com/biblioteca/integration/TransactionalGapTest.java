@@ -15,9 +15,9 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.List;
 import java.util.Optional;
@@ -32,7 +32,7 @@ import static org.mockito.Mockito.when;
  * TC-FIAB-022 — Ausencia de frontera transaccional [defecto-conocido] (TCI-T5.1):
  * sin {@code @Transactional}, un fallo entre {@code prestamoRepository.save} (L58) y
  * {@code libroRepository.save} (L61) deja un {@code Prestamo} huérfano sin rollback.
- * Fallo forzado con {@code @MockBean LibroRepository}; la fila real de {@code libros}
+ * Fallo forzado con {@code @MockitoBean LibroRepository}; la fila real de {@code libros}
  * se siembra por JDBC directo (fuera del mock) para que el {@code Prestamo} real
  * satisfaga su FK {@code libro_id}.
  *
@@ -51,7 +51,7 @@ class TransactionalGapTest {
     @Autowired private AmonestacionRepository amonestacionRepository;
     @Autowired private JdbcTemplate jdbcTemplate;
 
-    @MockBean
+    @MockitoBean
     private LibroRepository libroRepository;
 
     private Usuario usuario;

@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -36,8 +37,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Tag("regresion")
 class PrestamoEstadoInventarioTest {
 
-    /** Fecha fija en el futuro: garantiza fechaLimite posterior a "hoy" en cualquier ejecución (hasta 2030). */
-    private static final String FECHA_PRESTAMO_A_TIEMPO = "2030-01-01";
+    // Relativa a hoy (no fija): el SUT compara contra LocalDate.now() en devolverPrestamo,
+    // así que debe permanecer "en el futuro" sin importar cuándo se ejecute la suite.
+    private static final String FECHA_PRESTAMO_A_TIEMPO = LocalDate.now().plusYears(1).toString();
 
     @Autowired private PrestamoService prestamoService;
     @Autowired private UsuarioRepository usuarioRepository;

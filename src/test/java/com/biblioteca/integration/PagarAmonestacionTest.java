@@ -34,8 +34,10 @@ import static org.mockito.Mockito.when;
 /**
  * TC-FIAB-025 — Pago de amonestación sin validación [defecto-conocido] (TCI-M6.1..M6.3):
  * {@code Controller.pagarAmonestacion} persiste {@code metodoPago}/{@code comprobantePago}
- * sin validar formato ni contenido (comportamiento ACTUAL, no el ERS). Se invoca el
- * método directamente (sin MockMvc); el gating de seguridad se cubre aparte en TC-FIAB-011.
+ * sin validar formato ni contenido (comportamiento ACTUAL, no el ERS). Se invoca el método
+ * directamente (sin MockMvc) con un {@code Authentication} mockeado que ya representa al
+ * dueño de la amonestación; las ramas 401 (sin usuario) y 403 (no-dueño, {@code Controller.java:372-380})
+ * NO están cubiertas por esta suite y quedan diferidas a la Fase 4 (tarea 4.1, security gating).
  *
  * @see com.biblioteca.controller.Controller#pagarAmonestacion(Authentication, Map)
  */
@@ -94,5 +96,6 @@ class PagarAmonestacionTest {
         Amonestacion actualizada = amonestacionRepository.findById(amonestacion.getId()).orElseThrow();
         assertTrue(actualizada.isPagada());
         assertEquals(metodoPago, actualizada.getMetodoPago());
+        assertEquals(comprobantePago, actualizada.getComprobantePago());
     }
 }
