@@ -103,6 +103,34 @@
 						<phase>test</phase>
 						<goals><goal>report</goal></goals>
 					</execution>
+					<!-- Chequeo informativo (no rompe el build): umbral de referencia
+					     BRANCH >= 0.70 sobre los servicios de negocio priorizados.
+					     Los umbrales oficiales M-01..M-06 son [PROP] no ratificados;
+					     este check es solo una señal visible en el log de CI. -->
+					<execution>
+						<id>check</id>
+						<phase>test</phase>
+						<goals><goal>check</goal></goals>
+						<configuration>
+							<haltOnFailure>false</haltOnFailure>
+							<rules>
+								<rule>
+									<element>CLASS</element>
+									<includes>
+										<include>com.biblioteca.service.PrestamoService</include>
+										<include>com.biblioteca.service.AmonestacionService</include>
+									</includes>
+									<limits>
+										<limit>
+											<counter>BRANCH</counter>
+											<value>COVEREDRATIO</value>
+											<minimum>0.70</minimum>
+										</limit>
+									</limits>
+								</rule>
+							</rules>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 
