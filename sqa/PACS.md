@@ -151,7 +151,7 @@ El Equipo 11 opera un ecosistema de aseguramiento 100% nativo de GitHub, resulta
 
 Ningún componente del ecosistema depende de plataformas externas de gestión documental o de incidencias fuera de GitHub; el reemplazo del ecosistema previo se documenta históricamente en `REPORTE-ECOSISTEMA.md` §1.
 
-La matriz completa de herramientas declaradas por sub-característica de calidad (Madurez, Tolerancia a Fallos) vive como anexo técnico en [`anexos/herramientas-fase2.md`](anexos/herramientas-fase2.md) (issue #5). **Nota de secuenciación**: al momento de esta versión (v1.0) del PACS, la regeneración a v2.0 del contenido de ese anexo se absorbe en un PR de seguimiento a este; las sub-características vigentes (Madurez + Tolerancia a Fallos) y las métricas M-01..M-06 ya están consolidadas y vigentes vía [`referencias/objetivos.txt`](referencias/objetivos.txt), independientemente del estado de regeneración del anexo.
+La matriz completa de herramientas declaradas por sub-característica de calidad (Madurez, Tolerancia a Fallos) vive como anexo técnico en [`anexos/herramientas-fase2.md`](anexos/herramientas-fase2.md) v2.0 (PR #B, issue #5).
 
 ### §4.4 Estándares, prácticas y convenciones
 
