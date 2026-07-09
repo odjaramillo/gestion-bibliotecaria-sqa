@@ -53,6 +53,13 @@
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
+		<!-- @WithMockUser / @AutoConfigureMockMvc para pruebas de gating de seguridad (Fase 4, issue #15) -->
+		<dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
