@@ -1,4 +1,27 @@
+# ANEXO A — CASOS DE PRUEBA DIFERIDOS (FIABILIDAD)
+
+```
+Facultad de Ingeniería — Escuela de Ingeniería Informática
+Aseguramiento de la Calidad del Software — Prof. Ernesto Suárez — NRC: 25790
+```
+
+## Información del anexo
+
+| Campo | Valor |
+|---|---|
+| Identificador | ANX-FIAB-001 (Anexo A de TCS-FIAB-001) |
+| Estado | Diferido — documentado |
+| Fecha | 2026-07-09 |
+| Origen | `casos-de-prueba-adicionales(revisar).md` (renombrado; consolidación issue #21) |
+
+**Propósito.** Este anexo conserva la **especificación completa** de los 13 casos TC-FIAB **diferidos** en la consolidación del issue #21. Son casos válidos y bien especificados cuyas sub-características (Disponibilidad, Capacidad de Recuperación, Capacidad/concurrencia) quedan **fuera del alcance** declarado en TCS-FIAB-001 §2.1 (Madurez + Tolerancia a Fallos). No se implementan `@Test` en esta iteración, pero permanecen documentados con justificación y trazabilidad para que una iteración futura pueda replayearlos sin re-especificar. La disposición autoritativa está en **TCS-FIAB-001 §6.2**.
+
+> **Casos absorbidos (no están en este anexo).** Los IDs fuente 013, 025, 026, 027, 033, 034, 035, 036 fueron re-especificados y anclados al código en **TCS-FIAB-001 §5** (mapeo en §6.2). Este anexo contiene únicamente los diferidos.
+
+---
+
 [TC-FIAB-023] - Ejecución de Préstamos bajo Carga Operativa Estándar
+Disposición: DIFERIDO — dimensión de carga = Capacidad (fuera de alcance §2.1). La ruta funcional feliz ya está cubierta por TC-FIAB-020/019. Ref: TCS-FIAB-001 §6.2.
 Hallazgo / Tipo: WT-01 | regresion
 Subcaracterística (25010): Madurez
 Técnica (29119): Partición de equivalencia
@@ -6,34 +29,15 @@ Descripción y Resultado Esperado: 1. Iniciar sesión con rol "BIBLIOTECARIO" (�
 Datos de Prueba y Métricas (IEEE 1061): IDs de libros válidos [101, 102, 103]. Métrica: Tasa de Fallas (Rata de fallas), esperando 0 fallas observadas por hora de ejecución de la prueba.
 
 [TC-FIAB-024] - Peticiones Concurrentes al Límite de la Configuración del Servidor
+Disposición: DIFERIDO — concurrencia = Capacidad (fuera de alcance §2.1). Ref: TCS-FIAB-001 §6.2.
 Hallazgo / Tipo: — (concurrencia) | regresion
 Subcaracterística (25010): Madurez
 Técnica (29119): Análisis de valores límite
 Descripción y Resultado Esperado: 1. Configurar Spring Boot con un límite de hilos concurrentes estándar de Tomcat (ej. 200). 2. Enviar 199, 200 y 201 peticiones simultáneas de listado de libros a `/api/libros` desde el cliente. El sistema debe procesar hasta 200 y encolar o rechazar elegantemente la petición 201 sin que el servicio colapse.
 Datos de Prueba y Métricas (IEEE 1061): 201 peticiones HTTP GET simultáneas a `/api/libros`. Métrica: Densidad de Defectos por módulo (evaluando fugas de memoria o interbloqueos en el controlador REST).
 
-[TC-FIAB-025] - Procesamiento de Pagos Simulados de Amonestaciones
-Hallazgo / Tipo: — (validación ausente) | defecto-conocido
-Subcaracterística (25010): Madurez
-Técnica (29119): Tablas de decisión
-Descripción y Resultado Esperado: 1. Generar pagos simulados con combinaciones: (A) `metodoPago` válido + `comprobantePago` no vacío, (B) `metodoPago` vacío + `comprobantePago` provisto, (C) Entradas con caracteres especiales en el comprobante, (D) `amonestacionId` inexistente. El endpoint `PUT /api/amonestaciones-usuario/pagar` (`Controller.java:366-387`) NO valida `metodoPago` ni `comprobantePago` antes de persistir: acepta cualquier valor (incluido `null`, vacío o con caracteres de intento de inyección SQL), y siempre marca `pagada=true` siempre que el `amonestacionId` pertenezca al usuario autenticado. Comportamiento esperado por la ERS: rechazar inserciones incompletas; comportamiento actual documentado como defecto: persistir datos basura sin validación.
-Datos de Prueba y Métricas (IEEE 1061): `metodoPago`: "Transferencia", `comprobantePago`: "REF-12345". Métrica: Exactitud computacional (porcentaje de transacciones simuladas procesadas según las reglas de negocio establecidas).
-
-[TC-FIAB-026] - Ciclo de Vida de Préstamo y Reducción de Inventario
-Hallazgo / Tipo: WT-01 | regresion
-Subcaracterística (25010): Madurez
-Técnica (29119): Pruebas de transición de estado
-Descripción y Resultado Esperado: 1. Crear un registro de `Prestamo` para un libro específico mediante `/api/prestar` con `isbn` válido de 13 dígitos. 2. Cambiar el estado del préstamo siguiendo el flujo real implementado en `PrestamoService`: `"activo"` (al crear, `setEstado("activo")`, línea 56) -> `"finalizado"` (al devolver, `setEstado("finalizado")`, línea 78). 3. Validar que la variable `cantidad` del `Libro` disminuya al prestar (`libro.setCantidad(libro.getCantidad() - 1)`) y aumente al devolver (`libro.setCantidad(libro.getCantidad() + 1)`). La creación de `Amonestacion` al devolver tarde se evalúa como un caso independiente (no es un estado del préstamo, es una entidad separada generada condicionalmente). El sistema debe mantener la sincronía entre el estado del préstamo y el inventario real del libro.
-Datos de Prueba y Métricas (IEEE 1061): ISBN: 978XXXXXXXXXX (13 dígitos, Cantidad inicial: 5). Transiciones de estado `"activo" -> "finalizado"` del préstamo en MySQL. Métrica: Cobertura de Transición de Estados (100% de transiciones válidas que afectan el stock verificadas sin fallas de concurrencia).
-
-[TC-FIAB-027] - Carga de Reseñas con Interrupciones de Red
-Hallazgo / Tipo: WT-03 | defecto-conocido
-Subcaracterística (25010): Madurez
-Técnica (29119): Grafos de causa-efecto
-Descripción y Resultado Esperado: 1. Redactar reseña en el cliente Vue. 2. Enviar solicitud asíncrona a `/api/resenas` y simular interrupción de red (Causa 1) o lentitud extrema en el servidor (Causa 2). Documentar como `defecto-conocido` (relacionado con WT-03 / INC-WT-03) que el frontend Vue no cuenta con interceptor axios global ni `app.config.errorHandler` configurado, por lo que el rechazo de la promesa se propaga sin manejo uniforme, sin prevenir guardado duplicado y sin mostrar un mensaje de timeout controlado al usuario.
-Datos de Prueba y Métricas (IEEE 1061): String de reseña de 500 caracteres, Latencia inducida en Axios de 30000ms. Métrica: Tolerancia al tiempo de respuesta (porcentaje de peticiones manejadas correctamente bajo estrés asíncrono sin generar un defecto visual).
-
 [TC-FIAB-028] - Respuesta del Sistema ante Pérdida de Conexión a Base de Datos
+Disposición: DIFERIDO — Decisión issue #21 opción (b): sub-característica Disponibilidad fuera de alcance §2.1. Diferido con justificación registrada, sin implementar `@Test`. Ref: TCS-FIAB-001 §6.2.
 Hallazgo / Tipo: WT-02 | defecto-conocido
 Subcaracterística (25010): Disponibilidad
 Técnica (29119): Partición de equivalencia
@@ -41,6 +45,7 @@ Descripción y Resultado Esperado: 1. Realizar peticiones a `/api/libros`. 2. De
 Datos de Prueba y Métricas (IEEE 1061): Petición GET normal vs Petición GET con daemon MySQL detenido (`sudo systemctl stop mysql`). Métrica: Índice de Disponibilidad Parcial (Manejo correcto de excepciones de infraestructura).
 
 [TC-FIAB-029] - Comportamiento de Interfaz al Límite de la Sesión (JSESSIONID)
+Disposición: DIFERIDO — sub-característica Disponibilidad fuera de alcance §2.1. Ref: TCS-FIAB-001 §6.2.
 Hallazgo / Tipo: — (sesión) | regresion
 Subcaracterística (25010): Disponibilidad
 Técnica (29119): Análisis de valores límite
@@ -48,6 +53,7 @@ Descripción y Resultado Esperado: 1. Iniciar sesión y obtener la cookie `JSESS
 Datos de Prueba y Métricas (IEEE 1061): `server.servlet.session.timeout=15m`. Tiempos de inactividad: 899s, 900s, 901s. Métrica: Tasa de errores de interfaz (número de fallos de redirección / total de sesiones expiradas).
 
 [TC-FIAB-030] - Saturación del Pool de Conexiones a MySQL
+Disposición: DIFERIDO — sub-característica Disponibilidad/Capacidad fuera de alcance §2.1. Ref: TCS-FIAB-001 §6.2.
 Hallazgo / Tipo: WT-05 | defecto-conocido
 Subcaracterística (25010): Disponibilidad
 Técnica (29119): Tablas de decisión
@@ -55,6 +61,7 @@ Descripción y Resultado Esperado: 1. Documentar como `defecto-conocido` (relaci
 Datos de Prueba y Métricas (IEEE 1061): 15 peticiones pesadas simultáneas contra el pool por defecto de HikariCP (sin overrides en `application.properties`). Métrica: Tiempo de inactividad del servicio por agotamiento de recursos bajo defaults inseguros.
 
 [TC-FIAB-031] - Carga Masiva de Préstamos sin Paginación (defecto-conocido)
+Disposición: DIFERIDO — sub-característica Disponibilidad/Capacidad fuera de alcance §2.1. Ref: TCS-FIAB-001 §6.2.
 Hallazgo / Tipo: — (paginación ausente) | defecto-conocido
 Subcaracterística (25010): Disponibilidad
 Técnica (29119): Partición de equivalencia
@@ -62,41 +69,15 @@ Descripción y Resultado Esperado: 1. Documentar como `defecto-conocido` que el 
 Datos de Prueba y Métricas (IEEE 1061): Tabla `prestamos` con 10,000 rows. Request a `GET /api/prestamos` (sin parámetros de paginación — los parámetros `?page=` y `?size=` son ignorados). Métrica: Degradación del rendimiento de concurrencia y consumo de memoria heap bajo volumen alto de BD, comparando p50/p95/p99 contra el baseline de 100 registros.
 
 [TC-FIAB-032] - Carga y Renderizado Asíncrono de Imágenes de Libros
+Disposición: DIFERIDO — sub-característica Disponibilidad fuera de alcance §2.1. Ref: TCS-FIAB-001 §6.2.
 Hallazgo / Tipo: — (LONGBLOB) | defecto-conocido
 Subcaracterística (25010): Disponibilidad
 Técnica (29119): Grafos de causa-efecto
 Descripción y Resultado Esperado: 1. Acceder al catálogo de libros en Vue (`GET /api/libros`). 2. Algunos libros tienen el campo `imagen` (columna real, definida como `LONGBLOB` en `Libro.java:39-40` y `schema.sql:25`) con valor `null` o con bytes corruptos no decodificables (Causa). La cadena base64 NO es una columna: la expone el método transitorio `getImagenBase64()` (`Libro.java:88-94`) que ante `imagen` nulo retorna `null`. 3. El frontend Vue debe interceptar el fallo de renderizado del origen de la imagen y aplicar una imagen por defecto/fallback (Efecto), manteniendo la cuadrícula del catálogo totalmente disponible y sin desbordamientos CSS. Documentar el comportamiento observado (¿hay fallback? ¿se rompe la grilla?).
 Datos de Prueba y Métricas (IEEE 1061): Libro con `imagen = null` (no `imagen_base64`), Libro con `imagen` = array de bytes no decodificables (no JPEG/PNG). Métrica: Tasa de Fallas visuales (Imágenes rotas renderizadas vs resueltas por fallback).
 
-[TC-FIAB-033] - Entradas Malformadas en Endpoints Rest
-Hallazgo / Tipo: WT-02 | defecto-conocido
-Subcaracterística (25010): Tolerancia a Fallos
-Técnica (29119): Partición de equivalencia
-Descripción y Resultado Esperado: 1. Enviar un payload JSON a `/api/prestar` con tipos de datos incorrectos. El DTO real es `PrestamoRequest` (`PrestamoRequest.java:4-6`) con campos `correoUsuario` (String), `isbn` (Long de 13 dígitos) y `fechaPrestamo` (String ISO 8601 parseado por `LocalDate.parse` en `PrestamoService:47`). 2. Spring Boot no captura la `HttpMessageNotReadableException` porque no existe `@ControllerAdvice`/`@RestControllerAdvice` (mismo defecto WT-02 / INC-WT-02 que TC-FIAB-028): responde con HTTP 500 y stacktrace. Adicionalmente, `LocalDate.parse("99/99/9999")` propaga `DateTimeParseException` no envuelta (defecto WT-01 / INC-WT-01). Comportamiento esperado: HTTP 400 con mensaje amigable; comportamiento actual: HTTP 500 con stacktrace.
-Datos de Prueba y Métricas (IEEE 1061): `{"isbn": "no-es-isbn", "fechaPrestamo": "99/99/9999", "correoUsuario": "x"}` (alineado al DTO `PrestamoRequest` real; el campo `idLibro` no existe en el DTO). Métrica: Densidad de Defectos de manejo de excepciones (Fallos capturados vs. Stacktraces propagados al cliente).
-
-[TC-FIAB-034] - Carga de Imágenes Excesivas en Libros (multipart/form-data)
-Hallazgo / Tipo: — (multipart sin tuning) | defecto-conocido
-Subcaracterística (25010): Tolerancia a Fallos
-Técnica (29119): Análisis de valores límite
-Descripción y Resultado Esperado: 1. En el módulo de administración (`POST /api/libros`), el endpoint real (`Controller.java:66-73`) recibe `multipart/form-data` con un `Libro` como `@RequestPart("libro")` y la imagen como `@RequestPart(value = "imagen", required = false) MultipartFile imagen`. NO se envían cadenas base64: el binario va en la parte `imagen`. 2. Probar con archivos de imagen de 0.9MB, 1.0MB y 1.1MB. Spring Boot 3.x aplica el default `spring.servlet.multipart.max-file-size=1MB` (no hay overrides en `application.properties`), por lo que la carga de 1.1MB debe rechazarse con HTTP 500 (sin `@RestControllerAdvice` mapea `MaxUploadSizeExceededException` a HTTP 413). Comportamiento esperado: HTTP 413 Payload Too Large; comportamiento actual: HTTP 500 con stacktrace. Documentar el límite de 1MB como default y proponer, como trabajo futuro, configurar `spring.servlet.multipart.max-file-size` y `max-request-size` en un test profile.
-Datos de Prueba y Métricas (IEEE 1061): Archivos binarios (`MultipartFile`) de 900KB, 1.0MB y 1.1MB enviados como parte `imagen` en `multipart/form-data` (no como string base64). Métrica: Tasa de fallas de Validación (Errores de desbordamiento de buffer o heap por request bajo el default de 1MB de Spring Boot 3.x).
-
-[TC-FIAB-035] - Ausencia de Frontera Transaccional en `crearPrestamo` (defecto-conocido)
-Hallazgo / Tipo: WT-04 | defecto-conocido
-Subcaracterística (25010): Tolerancia a Fallos
-Técnica (29119): Tablas de decisión
-Descripción y Resultado Esperado: 1. Documentar como `defecto-conocido` (relacionado con WT-04 / INC-WT-04, en línea con TC-FIAB-013) que `PrestamoService` NO tiene ninguna anotación `@Transactional` (única presencia en el proyecto: `UsuarioService:92` y, aun allí, con el import incorrecto `jakarta.transaction.Transactional` documentado como INC-WT-04b). 2. Ejecutar el flujo `crearPrestamo(correoUsuario, isbn, fechaPrestamoStr)` y forzar una `RuntimeException` entre el `prestamoRepository.save(prestamo)` (línea 58) y el `libroRepository.save(libro)` (línea 61). 3. Observación esperada por la ejecución real: NO hay rollback automático; el `Prestamo` queda persistido como registro huérfano (cantidad del `Libro` no decrementada, estado inconsistente). Comportamiento esperado por la ERS: atomicidad transaccional; comportamiento actual: registros huérfanos. El defecto se documenta como riesgo conocido hasta que se agregue `@Transactional` de Spring.
-Datos de Prueba y Métricas (IEEE 1061): Simulación de `RuntimeException` inyectada en el servicio entre los dos `save()`. Métrica: Índice de Corrupción de Datos (Número de registros huérfanos / Total de transacciones abortadas). Esperado por la ERS: 0; observado: 1 por cada aborto.
-
-[TC-FIAB-036] - Interrupciones Asíncronas en Promesas del Cliente
-Hallazgo / Tipo: WT-03 | defecto-conocido
-Subcaracterística (25010): Tolerancia a Fallos
-Técnica (29119): Pruebas de transición de estado
-Descripción y Resultado Esperado: 1. En Vue, iniciar petición Axios asíncrona hacia el servidor. 2. Cambiar estado de red del navegador a "Offline" durante la promesa (Pendiente -> Rechazado). Documentar como `defecto-conocido` (relacionado con WT-03 / INC-WT-03) que las funciones asíncronas del frontend no cuentan con un manejo uniforme de rechazos: 9 funciones `async` fueron identificadas sin `.catch`/try-catch y `main.js` no configura `app.config.errorHandler`. Por lo tanto, el rechazo de la promesa puede propagarse como `Uncaught (in promise)`, los spinners de los botones pueden no restaurarse y el usuario no recibe un mensaje de fallo local controlado.
-Datos de Prueba y Métricas (IEEE 1061): Latencia de red 5000ms. Estado: Offline forzado en DevTools. Métrica: Tasa de Excepciones No Controladas (Uncaught Promise Rejections en la consola de JS).
-
 [TC-FIAB-037] - Caída del Backend durante Flujos Multi-paso
+Disposición: DIFERIDO — recuperación de infraestructura (rollback nativo de MySQL) = Capacidad de Recuperación (fuera de alcance §2.1). Ref: TCS-FIAB-001 §6.2.
 Hallazgo / Tipo: — (MySQL recovery) | regresion
 Subcaracterística (25010): Tolerancia a Fallos
 Técnica (29119): Grafos de causa-efecto
@@ -104,6 +85,7 @@ Descripción y Resultado Esperado: 1. El administrador emite un alta de múltipl
 Datos de Prueba y Métricas (IEEE 1061): `kill -9 <PID_JAVA>` durante transacción activa. Métrica: Cobertura de tolerancia a fallos a nivel de motor de base de datos.
 
 [TC-FIAB-038] - Restauración ante Corrupción de Base de Datos
+Disposición: DIFERIDO — sub-característica Capacidad de Recuperación fuera de alcance §2.1. Ref: TCS-FIAB-001 §6.2.
 Hallazgo / Tipo: — (ddl-auto vs schema.sql) | regresion
 Subcaracterística (25010): Capacidad de Recuperación
 Técnica (29119): Partición de equivalencia
@@ -111,6 +93,7 @@ Descripción y Resultado Esperado: 1. Corromper la base de datos eliminando tabl
 Datos de Prueba y Métricas (IEEE 1061): Script `DROP TABLE usuarios;` (en el orden correcto de FKs: primero `amonestaciones`, `comentario_resena`, `resenas`, `prestamos`, `libros`, `usuarios`) seguido de reinicio con perfil de test `ddl-auto=create-drop`. Métrica: Tiempo Medio de Recuperación (MTTR), calculando el tiempo exacto en segundos desde el fallo hasta la disponibilidad de tablas.
 
 [TC-FIAB-039] - Recuperación ante Exceso de Memoria Heap por Consultas Pesadas
+Disposición: DIFERIDO — sub-característica Capacidad de Recuperación/Capacidad fuera de alcance §2.1. Ref: TCS-FIAB-001 §6.2.
 Hallazgo / Tipo: — (heap OOM) | regresion
 Subcaracterística (25010): Capacidad de Recuperación
 Técnica (29119): Análisis de valores límite
@@ -118,6 +101,7 @@ Descripción y Resultado Esperado: 1. Arrancar la aplicación Java limitando del
 Datos de Prueba y Métricas (IEEE 1061): Peticiones en bucle continuo a `GET /api/libros` con payload de ~5MB. Argumento `-Xmx128m`. Métrica: Tasa de Recuperación Automática (Eventos de Garbage Collection exitosos vs caídas OOM).
 
 [TC-FIAB-040] - Recuperación por Inicialización Fallida del Esquema
+Disposición: DIFERIDO — sub-característica Capacidad de Recuperación fuera de alcance §2.1. Ref: TCS-FIAB-001 §6.2.
 Hallazgo / Tipo: — (arranque) | regresion
 Subcaracterística (25010): Capacidad de Recuperación
 Técnica (29119): Tablas de decisión
@@ -125,6 +109,7 @@ Descripción y Resultado Esperado: 1. Modificar los parámetros `spring.datasour
 Datos de Prueba y Métricas (IEEE 1061): Configuración `spring.datasource.password=wrong_pass`. Métrica: Tiempo de diagnóstico del fallo de arranque.
 
 [TC-FIAB-041] - Recuperación ante 404 de Assets Estáticos del Frontend (hard refresh)
+Disposición: DIFERIDO — sub-característica Capacidad de Recuperación fuera de alcance §2.1. Ref: TCS-FIAB-001 §6.2.
 Hallazgo / Tipo: WT-03 | defecto-conocido
 Subcaracterística (25010): Capacidad de Recuperación
 Técnica (29119): Grafos de causa-efecto
@@ -132,6 +117,7 @@ Descripción y Resultado Esperado: 1. Sustituir el escenario original basado en 
 Datos de Prueba y Métricas (IEEE 1061): Eliminación/renombre de un asset estático crítico en `dist/` antes del hard refresh; observar respuesta HTTP 404 en Network y comportamiento de la SPA. Métrica: Tasa de recursos huérfanos del cliente recuperados exitosamente (esperado por la ERS: 100% con recuperación; observado: 0% por ausencia de service worker / fallback).
 
 [TC-FIAB-042] - Persistencia de Estado Post-Caída de Servidor
+Disposición: DIFERIDO — sub-característica Capacidad de Recuperación fuera de alcance §2.1. Ref: TCS-FIAB-001 §6.2.
 Hallazgo / Tipo: — (sesión volátil) | regresion
 Subcaracterística (25010): Capacidad de Recuperación
 Técnica (29119): Pruebas de transición de estado
