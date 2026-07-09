@@ -37,7 +37,12 @@ public final class TestDataFactory {
 
     /** Sin {@code id}: {@code usuarioRepository.save(...)} hace {@code persist} real, no {@code merge}. */
     public static Usuario usuarioConRolParaPersistir(String rol) {
-        return new Usuario("Usuario Test", CORREO_USUARIO_DEFAULT, "clave-hash", rol);
+        return usuarioConRolParaPersistir(rol, CORREO_USUARIO_DEFAULT);
+    }
+
+    /** Variante con correo explícito, para escenarios que necesitan dos usuarios distintos persistidos. */
+    public static Usuario usuarioConRolParaPersistir(String rol, String correo) {
+        return new Usuario("Usuario Test", correo, "clave-hash", rol);
     }
 
     public static Libro libro(Integer id, Long isbn, int cantidad) {
