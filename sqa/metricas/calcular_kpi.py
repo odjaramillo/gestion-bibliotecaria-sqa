@@ -10,12 +10,180 @@ Uso:
     #    python sqa/metricas/calcular_kpi.py
 
 Genera sqa/metricas/reporte_kpi.json con métricas GQM/PSM agrupadas por
-taxonomía de etiquetas (tipo, area, severidad, fase, iso, rol).
+taxonomía de etiquetas (tipo, area, severidad, fase, iso, rol) y, de forma
+aditiva, un bloque "fiabilidad" (ISO/IEC 25010) con las métricas M-01..M-06.
+
+Las métricas automáticas M-02/M-03/M-04 se derivan de los artefactos de la
+suite de regresión (JaCoCo + Surefire). Las métricas declaradas M-01/M-05/M-06
+se leen de metricas_fiabilidad.json. El estado de cumplimiento SIEMPRE lo
+calcula evaluar_estado (nunca se declara a mano).
 """
 
 import json
 from collections import Counter
 from pathlib import Path
+
+import parser_jacoco
+import parser_surefire
+
+# Rutas canónicas de los artefactos de la suite de regresión (Decision 4).
+JACOCO_XML = "target/site/jacoco/jacoco.xml"
+SUREFIRE_DIR = "target/surefire-reports"
+DECLARADO_JSON = "sqa/metricas/metricas_fiabilidad.json"
+
+FIABILIDAD_SCHEMA_VERSION = 1
+
+# Metadatos de las métricas automáticas (no viven en el registro declarado).
+AUTO_META = {
+    "M-02": {
+        "nombre": "Cobertura de Decisión/Rama (servicios)",
+        "unidad": "%",
+        "umbral": {"valor": 70, "comparador": ">=", "ratificado": False},
+    },
+    "M-03": {
+        "nombre": "Tasa de Pruebas que Pasan",
+        "unidad": "%",
+        "umbral": {"valor": 100, "comparador": ">=", "ratificado": False},
+    },
+    "M-04": {
+        "nombre": "Cobertura de Instrucciones",
+        "unidad": "%",
+        "umbral": {"valor": 60, "comparador": ">=", "ratificado": False},
+    },
+}
+
+# Metadatos de respaldo para las métricas declaradas: garantizan que las
+# tarjetas M-01/M-05/M-06 rendericen (en N/D) aunque falte o falle el registro.
+DECLARADO_META = {
+    "M-01": {
+        "nombre": "Densidad de Defectos de Fiabilidad",
+        "unidad": "defectos/modulo",
+        "umbral": {"valor": 1.0, "comparador": "<=", "ratificado": False},
+    },
+    "M-05": {
+        "nombre": "Entradas Inválidas Controladas",
+        "unidad": "%",
+        "umbral": {"valor": 80, "comparador": ">=", "ratificado": False},
+    },
+    "M-06": {
+        "nombre": "Operaciones con Guarda de Estado",
+        "unidad": "%",
+        "umbral": {"valor": 80, "comparador": ">=", "ratificado": False},
+    },
+}
+
+# Orden de render fijo M-01..M-06 (declarado / auto / auto / auto / declarado / declarado).
+ORDEN_FIABILIDAD = ["M-01", "M-02", "M-03", "M-04", "M-05", "M-06"]
+IDS_DECLARADOS = ("M-01", "M-05", "M-06")
+SENTINEL_ND = "N/D"
+
+
+def _es_numero(valor) -> bool:
+    return isinstance(valor, (int, float)) and not isinstance(valor, bool)
+
+
+def evaluar_estado(valor, umbral) -> str:
+    """Devuelve el estado de cumplimiento: ``cumple`` | ``no_cumple`` | ``nd``.
+
+    Se aplica por igual a métricas automáticas y declaradas (Decision 3). La
+    comparación en el umbral es inclusiva (REQ-MDR-04): para ``>=`` un valor
+    igual al umbral cumple; para ``<=`` (menor-es-mejor, p.ej. M-01) un valor
+    igual a la cota verde cumple. La banda "en riesgo" no está ratificada
+    (spec A2), por lo que solo se reporta cumple/no_cumple/nd.
+    """
+    if not _es_numero(valor) or not isinstance(umbral, dict):
+        return "nd"
+    comparador = umbral.get("comparador")
+    referencia = umbral.get("valor")
+    if comparador not in (">=", "<=") or not _es_numero(referencia):
+        return "nd"
+    if comparador == ">=":
+        return "cumple" if valor >= referencia else "no_cumple"
+    return "cumple" if valor <= referencia else "no_cumple"
+
+
+def _entrada(metric_id, nombre, valor, unidad, umbral, fuente,
+             detalle=None, justificacion=None, responsable=None) -> dict:
+    valor_normalizado = valor if _es_numero(valor) else SENTINEL_ND
+    return {
+        "id": metric_id,
+        "nombre": nombre,
+        "valor": valor_normalizado,
+        "unidad": unidad,
+        "umbral": umbral,
+        "estado": evaluar_estado(valor, umbral),
+        "fuente": fuente,
+        "detalle": detalle,
+        "justificacion": justificacion,
+        "responsable": responsable,
+    }
+
+
+def _cargar_declaradas(declarado_path: str) -> dict:
+    """Lee el registro declarado y devuelve {id: entry} para M-01/M-05/M-06.
+
+    Registro ausente o inválido -> dict vacío (las tres métricas caerán a N/D
+    vía los metadatos de respaldo). Se ignoran claves M-02/M-03/M-04 aunque
+    aparezcan en el registro (REQ-DMR-02: auto manda para métricas auto).
+    """
+    try:
+        data = json.loads(Path(declarado_path).read_text(encoding="utf-8"))
+        entradas = data.get("metricas", [])
+    except (FileNotFoundError, OSError, json.JSONDecodeError, AttributeError):
+        return {}
+    resultado = {}
+    if isinstance(entradas, list):
+        for entry in entradas:
+            if isinstance(entry, dict) and entry.get("id") in IDS_DECLARADOS:
+                resultado[entry["id"]] = entry
+    return resultado
+
+
+def _metrica_auto(metric_id: str) -> dict:
+    meta = AUTO_META[metric_id]
+    if metric_id == "M-02":
+        valor = parser_jacoco.branch_coverage(JACOCO_XML)
+        detalle = parser_jacoco.branch_coverage_detalle(JACOCO_XML)
+    elif metric_id == "M-03":
+        valor = parser_surefire.pass_rate(SUREFIRE_DIR)
+        detalle = parser_surefire.pass_rate_detalle(SUREFIRE_DIR)
+    else:  # M-04
+        valor = parser_jacoco.instruction_coverage(JACOCO_XML)
+        detalle = None
+    return _entrada(
+        metric_id, meta["nombre"], valor, meta["unidad"], meta["umbral"],
+        fuente="auto", detalle=detalle,
+    )
+
+
+def _metrica_declarada(metric_id: str, registro: dict) -> dict:
+    meta = DECLARADO_META[metric_id]
+    entry = registro.get(metric_id, {})
+    return _entrada(
+        metric_id,
+        entry.get("nombre", meta["nombre"]),
+        entry.get("valor", SENTINEL_ND),
+        entry.get("unidad", meta["unidad"]),
+        entry.get("umbral", meta["umbral"]),
+        fuente="declarado",
+        detalle=None,
+        justificacion=entry.get("justificacion"),
+        responsable=entry.get("responsable"),
+    )
+
+
+def construir_fiabilidad(
+    declarado_path: str = DECLARADO_JSON,
+) -> dict:
+    """Compone el bloque ``fiabilidad`` con las seis métricas en orden fijo."""
+    registro = _cargar_declaradas(declarado_path)
+    metricas = []
+    for metric_id in ORDEN_FIABILIDAD:
+        if metric_id in AUTO_META:
+            metricas.append(_metrica_auto(metric_id))
+        else:
+            metricas.append(_metrica_declarada(metric_id, registro))
+    return {"schema_version": FIABILIDAD_SCHEMA_VERSION, "metricas": metricas}
 
 
 def generar_reporte_metricas(issues_path: str = "sqa/metricas/issues_export.json") -> dict:
@@ -34,6 +202,8 @@ def generar_reporte_metricas(issues_path: str = "sqa/metricas/issues_export.json
         "por_fase":      Counter(l for l in all_labels if l.startswith("fase:")),
         "por_iso":       Counter(l for l in all_labels if l.startswith("iso:")),
         "por_rol":       Counter(l for l in all_labels if l.startswith("rol:")),
+        # Bloque aditivo de métricas de producto (ISO/IEC 25010).
+        "fiabilidad":    construir_fiabilidad(),
     }
 
     output_path = Path("sqa/metricas/reporte_kpi.json")
