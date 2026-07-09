@@ -18,9 +18,11 @@ Aseguramiento de la Calidad del Software — Prof. Ernesto Suárez — NRC: 2579
 | Campo | Valor |
 |---|---|
 | Identificador | TCS-FIAB-001 |
-| Versión | 1.0 |
-| Estado | Borrador para revisión |
+| Versión | 1.1 |
+| Estado | Aprobado |
 | Fecha de emisión | 2026-06-24 |
+| Fecha de aprobación | 2026-07-09 |
+| Aprobado por | Líder General — Alberto Rodríguez (ver §1.3) |
 
 ### 1.2 Organización emisora
 Equipo SQA T 11 — Proyecto 16 (Turno Tarde). Autor: Analista de Pruebas (Oscar Jaramillo).
@@ -32,6 +34,7 @@ Líder General del Equipo 11 (Alberto Rodriguez) — responsable de revisar y ap
 | Versión | Fecha | Descripción del cambio | Razón | Autor |
 |---|---|---|---|---|
 | 1.0 | 2026-06-24 | Creación. Síntesis de casos anclados al código desde `casos-de-prueba-adicionales(revisar).md`. Alcance: Madurez + Tolerancia a Fallos. | Realineación de Fase 2 a `objetivos.txt` | Equipo 11 |
+| 1.1 | 2026-07-09 | Consolidación (issue #21): disposición explícita de los 21 casos del documento fuente (§6.2), reconciliación de numeración con PP-FIAB-001 (§6.3), diferimiento formal y documentado de TC-FIAB-028 y los 12 casos restantes fuera de alcance en el Anexo A. Retiro del archivo `(revisar)`. Cambio de estado a *Aprobado*. | Cierre del issue #21 — fuente autoritativa única antes de la simulación por sprints | Equipo 11 |
 
 ---
 
@@ -47,9 +50,9 @@ Esta especificación detalla los **ítems de cobertura de prueba** y los **casos
 
 ### 2.2 Referencias
 - **Externas:** ISO/IEC/IEEE 29119-3:2021 (estructura de este documento); ISO/IEC/IEEE 29119-4:2021 (técnicas de diseño); ISO/IEC 25010:2023 (modelo de calidad); ISO/IEC 25023:2016 (métricas).
-- **Internas:** PP-FIAB-001 (Plan de Pruebas); EST-FIAB-001 (Estrategia); `referencias/objetivos.txt` (marco de métricas); `2026-06-02_walkthrough-fiabilidad-sut-biblioteca.md` (base de prueba, hallazgos WT-01..WT-04); `casos-de-prueba-adicionales(revisar).md` (fuente de casos anclados al código).
+- **Internas:** PP-FIAB-001 (Plan de Pruebas); EST-FIAB-001 (Estrategia); `referencias/objetivos.txt` (marco de métricas); `2026-06-02_walkthrough-fiabilidad-sut-biblioteca.md` (base de prueba, hallazgos WT-01..WT-04); **Anexo A** `2026-06-24_casos-diferidos-fiabilidad.md` (fuente original de casos anclados al código; tras la consolidación del issue #21 conserva la especificación completa de los casos diferidos — ver §6.2).
 
-> **Nota de origen:** el documento `Generacion de Casos de Pueba.md` (CT-FIA-01..24) se descartó como fuente de contenido por afirmar mecanismos inexistentes en el SUT (`@Transactional`, `@ControllerAdvice`, Resilience4j, `@Retryable`, clúster/failover, validación `@Min/@Positive`). Solo se conservó su formato (taxonomía de técnicas + métrica por caso).
+> **Nota de origen:** el documento `Generacion de Casos de Pueba.md` (CT-FIA-01..24) se descartó como fuente de contenido por afirmar mecanismos inexistentes en el SUT (`@Transactional`, `@ControllerAdvice`, Resilience4j, `@Retryable`, clúster/failover, validación `@Min/@Positive`). Solo se conservó su formato (taxonomía de técnicas + métrica por caso). El documento fuente `casos-de-prueba-adicionales(revisar).md` fue renombrado a `2026-06-24_casos-diferidos-fiabilidad.md` (Anexo A) durante la consolidación del issue #21; ya no existe ningún archivo con `(revisar)` en el nombre.
 
 ### 2.3 Convenciones de notación
 | Prefijo | Significado |
@@ -305,8 +308,48 @@ Cruce sub-característica × técnica de diseño (ISO/IEC/IEEE 29119-4). Las cel
 | Cobertura de Transición de Estados | M-02 — Cobertura de decisión |
 | Índice de Corrupción de Datos | M-06 — Operaciones con guarda de estado |
 
-**Casos fuera de alcance (Disponibilidad / Recuperación):** TC-FIAB-028..032 y 038..042 del documento fuente quedan archivados.
+### 6.2 Disposición de casos del documento fuente (consolidación issue #21)
+
+El documento fuente `casos-de-prueba-adicionales(revisar).md` contenía 21 IDs (TC-FIAB-013 y 023–042). Cada uno recibe aquí una disposición explícita: **absorbido** (re-especificado en §5 con anclaje al código) o **diferido** (fuera del alcance Madurez/Tolerancia; especificación completa conservada en el **Anexo A**, `2026-06-24_casos-diferidos-fiabilidad.md`). No quedan IDs huérfanos.
+
+| ID fuente | Título abreviado | Sub-car. (25010) | Disposición | Destino / Justificación |
+|---|---|---|---|---|
+| TC-FIAB-013 | Frontera transaccional `crearPrestamo` | Madurez/Tol. | ✅ Absorbido | → **TC-FIAB-022** (§5). WT-04 / INC-WT-04. |
+| TC-FIAB-023 | Préstamos bajo carga estándar | Madurez | ⏸️ Diferido | Dimensión de carga = **Capacidad** (fuera de alcance). Ruta funcional feliz ya cubierta por TC-FIAB-020/019. |
+| TC-FIAB-024 | Peticiones concurrentes al límite Tomcat | Madurez | ⏸️ Diferido | Concurrencia = **Capacidad** (fuera de alcance §2.1). |
+| TC-FIAB-025 | Pago de amonestación sin validación | Madurez | ✅ Absorbido | → **TC-FIAB-025** (§5, mismo ID). WT-02. |
+| TC-FIAB-026 | Ciclo de vida préstamo e inventario | Madurez | ✅ Absorbido | → **TC-FIAB-019** (§5). Transición de estados. |
+| TC-FIAB-027 | Reseñas con interrupciones de red | Madurez | ✅ Absorbido | → **TC-FIAB-017** (§5, rechazo de promesa async). WT-03. |
+| TC-FIAB-028 | Pérdida de conexión a BD | Disponibilidad | ⏸️ Diferido | **Decisión issue #21 (b):** Disponibilidad fuera de alcance §2.1. Especificado en Anexo A. |
+| TC-FIAB-029 | Límite de sesión (JSESSIONID) | Disponibilidad | ⏸️ Diferido | **Disponibilidad** fuera de alcance §2.1. |
+| TC-FIAB-030 | Saturación del pool HikariCP | Disponibilidad | ⏸️ Diferido | **Disponibilidad/Capacidad** fuera de alcance. |
+| TC-FIAB-031 | Carga masiva sin paginación | Disponibilidad | ⏸️ Diferido | **Disponibilidad/Capacidad** fuera de alcance. |
+| TC-FIAB-032 | Renderizado async de imágenes | Disponibilidad | ⏸️ Diferido | **Disponibilidad** fuera de alcance §2.1. |
+| TC-FIAB-033 | Entradas malformadas en REST | Tol. a Fallos | ✅ Absorbido | → **TC-FIAB-011** (payload) + **TC-FIAB-008** (fecha). WT-01/WT-02. |
+| TC-FIAB-034 | Carga de imágenes excesivas (multipart) | Tol. a Fallos | ✅ Absorbido | → **TC-FIAB-021** (§5). Valor límite 1 MB. |
+| TC-FIAB-035 | Ausencia de frontera transaccional | Tol. a Fallos | ✅ Absorbido | → **TC-FIAB-022** (§5). WT-04 / INC-WT-04. |
+| TC-FIAB-036 | Interrupciones async en el cliente | Tol. a Fallos | ✅ Absorbido | → **TC-FIAB-017** (§5). WT-03 / INC-WT-03. |
+| TC-FIAB-037 | Caída del backend en flujos multi-paso | Tol. a Fallos | ⏸️ Diferido | Recuperación de infra (rollback MySQL) = **Recuperación** (fuera de alcance). |
+| TC-FIAB-038 | Restauración ante corrupción de BD | Recuperación | ⏸️ Diferido | **Recuperación** fuera de alcance §2.1. |
+| TC-FIAB-039 | Recuperación ante OOM de heap | Recuperación | ⏸️ Diferido | **Recuperación/Capacidad** fuera de alcance. |
+| TC-FIAB-040 | Inicialización fallida del esquema | Recuperación | ⏸️ Diferido | **Recuperación** fuera de alcance §2.1. |
+| TC-FIAB-041 | 404 de assets estáticos (hard refresh) | Recuperación | ⏸️ Diferido | **Recuperación** fuera de alcance §2.1. |
+| TC-FIAB-042 | Persistencia de estado post-caída | Recuperación | ⏸️ Diferido | **Recuperación** fuera de alcance §2.1. |
+
+**Resumen:** 8 absorbidos (013, 025, 026, 027, 033, 034, 035, 036), 13 diferidos (023, 024, 028–032, 037–042). Los 13 diferidos conservan su especificación completa en el Anexo A con la justificación de esta tabla; ninguno queda como ID huérfano.
+
+### 6.3 Reconciliación de numeración con PP-FIAB-001
+
+PP-FIAB-001 (Plan, *Revisado*) referencia un espacio de IDs más amplio (TC-FIAB-001..022, 025) por ser el plan exhaustivo. Esta especificación materializa 11 casos ejecutables en §5; el resto de los IDs del plan se consolidan o quedan como `[PLANIFICADO]`. Se resuelven los tres huecos señalados en el issue:
+
+| Hueco (plan) | Estado | Reconciliación |
+|---|---|---|
+| TC-FIAB-006 | Consolidado | Cobertura de Madurez unitaria; absorbido dentro de **TC-FIAB-004/018/019/020** (§5). No requiere caso separado. |
+| TC-FIAB-009 | Consolidado | Partición de fecha; el plan repartía WT-01 entre 008 y 009. Absorbido dentro de **TC-FIAB-008** (§5), que cubre TCI-T1.1..T1.4. |
+| TC-FIAB-014 | Consolidado | Frontera transaccional; el plan repartía WT-04 entre 013/014/015/022. Absorbido dentro de **TC-FIAB-022** (§5). |
+
+> Los demás IDs del plan no especificados aquí (001, 002, 003, 005, 010, 012, 015, 016) corresponden a otros niveles/módulos del plan exhaustivo (smoke, `UsuarioService`, `LibroService`, reseñas) y permanecen como `[PLANIFICADO]` para iteraciones futuras, sin contradicción con esta especificación. El Plan no se modifica en esta consolidación por estar en estado *Revisado*.
 
 ---
 
-*Especificación de Casos de Prueba conforme a ISO/IEC/IEEE 29119-3:2021 (§7.3), característica Reliability (Madurez · Tolerancia a Fallos) de ISO/IEC 25010:2023. Equipo SQA 11 — 24 de junio de 2026.*
+*Especificación de Casos de Prueba conforme a ISO/IEC/IEEE 29119-3:2021 (§7.3), característica Reliability (Madurez · Tolerancia a Fallos) de ISO/IEC 25010:2023. Equipo SQA 11 — creado 24 de junio de 2026; consolidado y aprobado (v1.1) 9 de julio de 2026. Anexo A: `2026-06-24_casos-diferidos-fiabilidad.md` (casos diferidos, especificación completa).*
