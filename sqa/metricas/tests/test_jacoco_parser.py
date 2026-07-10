@@ -65,3 +65,10 @@ def test_instruction_coverage_malformed_returns_none():
 
 def test_instruction_coverage_missing_file_returns_none():
     assert parser_jacoco.instruction_coverage(_fx("does_not_exist.xml")) is None
+
+
+def test_instruction_coverage_report_without_report_level_counter_returns_none():
+    # Report parses fine and per-class INSTRUCTION counters exist, but there is
+    # NO direct-child INSTRUCTION under <report>. The direct-child XPath must
+    # NOT fall back to a descendant per-class counter -> None.
+    assert parser_jacoco.instruction_coverage(_fx("jacoco_no_report_instruction.xml")) is None

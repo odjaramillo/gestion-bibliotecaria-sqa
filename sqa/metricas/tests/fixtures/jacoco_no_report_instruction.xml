@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<report name="gestion-bibliotecaria (regresion, sin INSTRUCTION report-level)">
+  <package name="com/biblioteca/service">
+    <class name="com/biblioteca/service/PrestamoService" sourcefilename="PrestamoService.java">
+      <counter type="INSTRUCTION" missed="20" covered="180"/>
+      <counter type="BRANCH" missed="2" covered="8"/>
+    </class>
+    <class name="com/biblioteca/service/AmonestacionService" sourcefilename="AmonestacionService.java">
+      <counter type="INSTRUCTION" missed="10" covered="90"/>
+      <counter type="BRANCH" missed="1" covered="9"/>
+    </class>
+  </package>
+  <counter type="BRANCH" missed="30" covered="70"/>
+  <counter type="METHOD" missed="5" covered="45"/>
+  <counter type="CLASS" missed="1" covered="9"/>
+</report>

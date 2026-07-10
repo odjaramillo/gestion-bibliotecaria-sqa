@@ -46,3 +46,25 @@ def test_detalle_reports_aggregated_counts():
         "errors": 1,
         "skipped": 0,
     }
+
+
+# --- degradation paths (regression coverage of the never-raises contract) --
+
+def test_pass_rate_malformed_xml_returns_none():
+    # Truncated/unclosed testsuite tag -> ParseError swallowed -> None.
+    assert parser_surefire.pass_rate(_dir("surefire_malformed")) is None
+
+
+def test_pass_rate_non_integer_attribute_returns_none():
+    # tests="doce" is not an int -> ValueError swallowed -> None.
+    assert parser_surefire.pass_rate(_dir("surefire_noninteger")) is None
+
+
+def test_pass_rate_empty_but_existing_directory_returns_none():
+    # Directory exists but holds no TEST-*.xml (only .gitkeep) -> empty glob -> None.
+    assert parser_surefire.pass_rate(_dir("surefire_empty")) is None
+
+
+def test_pass_rate_all_skipped_returns_none():
+    # tests == skipped (5 == 5) -> denominator 0 -> no honest ratio -> None.
+    assert parser_surefire.pass_rate(_dir("surefire_all_skipped")) is None

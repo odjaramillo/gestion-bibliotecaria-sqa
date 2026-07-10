@@ -1,0 +1,2 @@
+# Intentionally empty directory: exists but contains no TEST-*.xml reports.
+# Exercises the empty-glob degradation path (directory present, no matches -> None).
