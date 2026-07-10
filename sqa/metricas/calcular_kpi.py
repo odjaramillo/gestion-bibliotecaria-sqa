@@ -20,6 +20,7 @@ calcula evaluar_estado (nunca se declara a mano).
 """
 
 import json
+import sys
 from collections import Counter
 from pathlib import Path
 
@@ -76,6 +77,21 @@ DECLARADO_META = {
 ORDEN_FIABILIDAD = ["M-01", "M-02", "M-03", "M-04", "M-05", "M-06"]
 IDS_DECLARADOS = ("M-01", "M-05", "M-06")
 SENTINEL_ND = "N/D"
+
+# Motivos de degradacion por metrica automatica. Se emiten a stderr cuando el
+# valor cae a N/D para dejar una traza greppable en el log de CI (una N/D
+# automatica NO es un placeholder: significa artefacto ausente o no medible).
+_DEGRADACION_AUTO = {
+    "M-02": "branch coverage degraded to N/D (jacoco.xml missing or unparseable)",
+    "M-03": "regresion pass rate degraded to N/D (surefire reports missing, empty or all-skipped)",
+    "M-04": "instruction coverage degraded to N/D (jacoco.xml missing or unparseable)",
+}
+
+
+def _advertir_degradacion(metric_id: str) -> None:
+    """Emite a stderr una advertencia cuando una metrica auto cae a N/D."""
+    motivo = _DEGRADACION_AUTO.get(metric_id, "degraded to N/D")
+    print(f"WARN: {metric_id} {motivo}", file=sys.stderr)
 
 
 def _es_numero(valor) -> bool:
@@ -150,6 +166,8 @@ def _metrica_auto(metric_id: str) -> dict:
     else:  # M-04
         valor = parser_jacoco.instruction_coverage(JACOCO_XML)
         detalle = None
+    if valor is None:
+        _advertir_degradacion(metric_id)
     return _entrada(
         metric_id, meta["nombre"], valor, meta["unidad"], meta["umbral"],
         fuente="auto", detalle=detalle,

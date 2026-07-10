@@ -137,6 +137,30 @@ def _fiab_umbral_txt(umbral, unidad: str) -> str:
     return f"Umbral: {comparador} {valor}{sufijo}{prop}"
 
 
+def _detalle_texto(detalle) -> str:
+    """Formatea el detalle diagnostico de una metrica auto para la nota.
+
+    M-02 -> cobertura por clase de servicio (surface la peor clase); M-03 ->
+    conteos crudos de la suite de regresion. Cadena vacia si no hay detalle.
+    """
+    if not isinstance(detalle, dict):
+        return ""
+    if "PrestamoService" in detalle or "AmonestacionService" in detalle:
+        partes = [
+            f"{clase}: {ratio:g}%" if _es_numero(ratio) else f"{clase}: N/D"
+            for clase, ratio in detalle.items()
+        ]
+        return " · ".join(partes)
+    if "tests" in detalle:
+        return (
+            f"{detalle.get('tests', 0)} tests · "
+            f"{detalle.get('failures', 0)} fallos · "
+            f"{detalle.get('errors', 0)} errores · "
+            f"{detalle.get('skipped', 0)} omitidos"
+        )
+    return ""
+
+
 def _card_fiabilidad(m: dict) -> str:
     estado = m.get("estado", "nd")
     color, estado_label = FIAB_ESTADO.get(estado, FIAB_ESTADO["nd"])
@@ -161,14 +185,23 @@ def _card_fiabilidad(m: dict) -> str:
         if fuente_label else ""
     )
 
+    es_nd = not _es_numero(valor)
     if fuente == "auto":
-        nota = "Suite de regresion"
+        # Una N/D automatica NO es un placeholder: significa artefacto ausente
+        # o no medible. Se distingue en la nota de la N/D declarada (pendiente).
+        if es_nd:
+            nota = "Artefacto no disponible / no medible"
+        else:
+            nota = _detalle_texto(m.get("detalle")) or "Suite de regresion"
     else:
-        justificacion = m.get("justificacion") or ""
-        responsable = m.get("responsable") or ""
-        partes = [p for p in (justificacion,
-                              f"Responsable: {responsable}" if responsable else "") if p]
-        nota = " — ".join(partes)
+        if es_nd:
+            nota = "Pendiente de ratificacion"
+        else:
+            justificacion = m.get("justificacion") or ""
+            responsable = m.get("responsable") or ""
+            partes = [p for p in (justificacion,
+                                  f"Responsable: {responsable}" if responsable else "") if p]
+            nota = " — ".join(partes)
     nota_html = (
         f'<div class="fiab-nota" title="{html.escape(nota, quote=True)}">{html.escape(nota)}</div>'
         if nota else ""
