@@ -35,11 +35,19 @@ DECLARADO_JSON = "sqa/metricas/metricas_fiabilidad.json"
 FIABILIDAD_SCHEMA_VERSION = 1
 
 # Metadatos de las métricas automáticas (no viven en el registro declarado).
+#
+# Umbrales = META PRÁCTICA de la fase (piso alcanzable), no la meta aspiracional
+# ISO/IEC 25010. Criterio del docente: en la práctica no se fijan metas altas; se
+# fija lo que efectivamente se implementó y se documenta el máximo aparte. El
+# valor ISO aspiracional queda registrado aquí como referencia de fondo pero NO
+# se renderiza en el dashboard (una sola vara a la vista). Baselines redondos de
+# Fase 2 — el número real de JaCoCo/Surefire cae donde caiga.
 AUTO_META = {
     "M-02": {
         "nombre": "Cobertura de Decisión/Rama (servicios)",
         "unidad": "%",
-        "umbral": {"valor": 70, "comparador": ">=", "ratificado": False},
+        # Meta práctica F2: >=50%. Aspiracional ISO (fondo, no se muestra): 70%.
+        "umbral": {"valor": 50, "comparador": ">=", "ratificado": False},
     },
     "M-03": {
         "nombre": "Tasa de Pruebas que Pasan",
@@ -49,7 +57,8 @@ AUTO_META = {
     "M-04": {
         "nombre": "Cobertura de Instrucciones",
         "unidad": "%",
-        "umbral": {"valor": 60, "comparador": ">=", "ratificado": False},
+        # Meta práctica F2: >=30%. Aspiracional ISO (fondo, no se muestra): 60%.
+        "umbral": {"valor": 30, "comparador": ">=", "ratificado": False},
     },
 }
 
