@@ -17,67 +17,155 @@ from pathlib import Path
 
 # Etiquetas legibles para cada agrupacion de la taxonomia de labels.
 GRUPOS = {
-    "por_tipo": "Por tipo",
-    "por_area": "Por area",
-    "por_severidad": "Por severidad",
-    "por_fase": "Por fase",
-    "por_iso": "Por caracteristica ISO 25010",
-    "por_rol": "Por rol",
+    "por_tipo": "Tipo",
+    "por_area": "Area",
+    "por_severidad": "Severidad",
+    "por_fase": "Fase",
+    "por_iso": "Caracteristica ISO 25010",
+    "por_rol": "Rol",
 }
 
 CSS = """
-:root { color-scheme: light dark; }
+:root {
+  color-scheme: dark;
+  --bg: #0d1117;
+  --surface: #161b22;
+  --surface-2: #1c2230;
+  --border: #30363d;
+  --border-soft: #21262d;
+  --ink: #e6edf3;
+  --ink-muted: #9aa4b2;
+  --ink-faint: #6e7681;
+  --accent: #4493f8;
+  --good: #3fb950;
+  --bad: #f85149;
+  --nd: #8b949e;
+  --amber: #e3b341;
+}
 * { box-sizing: border-box; }
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  margin: 0; padding: 2rem; line-height: 1.5;
-  background: #0d1117; color: #e6edf3;
+  margin: 0; padding: 2.5rem 1.25rem; line-height: 1.5;
+  background:
+    radial-gradient(1200px 600px at 50% -10%, rgba(68,147,248,.10), transparent 70%),
+    var(--bg);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
 }
-.wrap { max-width: 960px; margin: 0 auto; }
-h1 { font-size: 1.6rem; margin: 0 0 .25rem; }
-.sub { color: #8b949e; margin: 0 0 2rem; font-size: .9rem; }
-.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2.5rem; }
-.card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1.25rem; }
-.card .n { font-size: 2.2rem; font-weight: 700; }
-.card .l { color: #8b949e; font-size: .85rem; text-transform: uppercase; letter-spacing: .03em; }
-.card.accent .n { color: #2f81f7; }
-section { margin-bottom: 2rem; }
-h2 { font-size: 1.05rem; border-bottom: 1px solid #30363d; padding-bottom: .4rem; }
-table { width: 100%; border-collapse: collapse; }
-td { padding: .45rem .25rem; border-bottom: 1px solid #21262d; }
-td.v { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
-.empty { color: #8b949e; font-style: italic; }
-footer { margin-top: 3rem; color: #8b949e; font-size: .8rem; border-top: 1px solid #30363d; padding-top: 1rem; }
-code { background: #161b22; padding: .1rem .35rem; border-radius: 4px; }
+.wrap { max-width: 1080px; margin: 0 auto; }
+
+/* Header */
+.masthead { margin-bottom: 2.25rem; }
+.eyebrow {
+  display: inline-block; font-size: .72rem; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--accent);
+  border: 1px solid rgba(68,147,248,.35); background: rgba(68,147,248,.08);
+  border-radius: 999px; padding: .2rem .7rem; margin-bottom: .9rem;
+}
+h1 { font-size: 1.9rem; margin: 0 0 .35rem; letter-spacing: -.01em; }
+.sub { color: var(--ink-muted); margin: 0; font-size: .9rem; }
+
+/* KPI hero tiles */
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1.75rem 0 2.75rem; }
+.kpi {
+  position: relative; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 1.25rem 1.35rem; overflow: hidden;
+}
+.kpi::before {
+  content: ""; position: absolute; inset: 0 0 auto 0; height: 3px;
+  background: linear-gradient(90deg, var(--border), var(--border));
+}
+.kpi.accent::before { background: linear-gradient(90deg, var(--accent), #7cc3ff); }
+.kpi .n { font-size: 2.4rem; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+.kpi.accent .n { color: var(--accent); }
+.kpi .l { color: var(--ink-muted); font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; margin-top: .55rem; }
+
+/* Section scaffolding */
+section { margin-bottom: 2.75rem; }
+.sec-head { display: flex; align-items: baseline; gap: .6rem; margin-bottom: .35rem; }
+h2 { font-size: 1.15rem; margin: 0; letter-spacing: -.01em; }
+.sec-desc { color: var(--ink-muted); font-size: .85rem; margin: .1rem 0 1.1rem; max-width: 62ch; }
+.rule { height: 1px; background: var(--border-soft); margin-bottom: 1.25rem; }
 
 /* Metricas de Fiabilidad (ISO/IEC 25010) */
-.fiab-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin-top: 1rem; }
-.fiab-card { background: #161b22; border: 1px solid #30363d; border-left-width: 4px; border-radius: 8px; padding: 1.1rem; display: flex; flex-direction: column; gap: .6rem; }
+.fiab-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(288px, 1fr)); gap: 1rem; }
+.fiab-card {
+  background: var(--surface); border: 1px solid var(--border); border-left-width: 4px;
+  border-radius: 12px; padding: 1.2rem 1.3rem; display: flex; flex-direction: column; gap: .75rem;
+}
 .fiab-head { display: flex; justify-content: space-between; align-items: baseline; gap: .5rem; }
-.fiab-nombre { font-size: .95rem; font-weight: 600; }
-.fiab-id { font-size: .72rem; color: #8b949e; font-weight: 700; letter-spacing: .04em; }
-.fiab-body { display: flex; align-items: center; gap: 1rem; }
+.fiab-nombre { font-size: .98rem; font-weight: 600; line-height: 1.25; }
+.fiab-id {
+  font-size: .68rem; color: var(--ink-muted); font-weight: 700; letter-spacing: .06em;
+  border: 1px solid var(--border); border-radius: 6px; padding: .12rem .4rem; flex: 0 0 auto;
+}
+.fiab-body { display: flex; align-items: center; gap: 1.1rem; }
 .fiab-visual { flex: 0 0 auto; line-height: 0; }
-.fiab-meta { display: flex; flex-direction: column; gap: .35rem; }
-.fiab-valor { font-size: 1.9rem; font-weight: 700; font-variant-numeric: tabular-nums; }
-.fiab-estado { display: inline-flex; align-items: center; gap: .4rem; font-size: .82rem; font-weight: 600; }
-.fiab-dot { width: .7rem; height: .7rem; border-radius: 50%; display: inline-block; }
-.fiab-umbral { font-size: .78rem; color: #8b949e; }
-.fiab-nota { font-size: .72rem; color: #6e7681; font-style: italic; }
-.badge { display: inline-block; padding: .12rem .5rem; border-radius: 999px; font-size: .7rem; font-weight: 700; align-self: flex-start; }
-.badge-auto { background: rgba(47,129,247,.15); color: #58a6ff; border: 1px solid #1f6feb; }
-.badge-decl { background: rgba(210,153,34,.15); color: #e3b341; border: 1px solid #9e6a03; }
+.fiab-meta { display: flex; flex-direction: column; gap: .4rem; min-width: 0; }
+.fiab-valor { font-size: 2rem; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1; }
+.fiab-estado { display: inline-flex; align-items: center; gap: .45rem; font-size: .82rem; font-weight: 600; }
+.fiab-dot { width: .7rem; height: .7rem; border-radius: 50%; display: inline-block; flex: 0 0 auto; }
+.fiab-foot { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-top: auto; }
+.fiab-umbral { font-size: .78rem; color: var(--ink-muted); }
+.fiab-nota { font-size: .74rem; color: var(--ink-faint); font-style: italic; width: 100%; }
+.badge { display: inline-block; padding: .14rem .55rem; border-radius: 999px; font-size: .68rem; font-weight: 700; letter-spacing: .02em; }
+.badge-auto { background: rgba(68,147,248,.14); color: #79b8ff; border: 1px solid rgba(68,147,248,.4); }
+.badge-decl { background: rgba(210,153,34,.14); color: #e3b341; border: 1px solid rgba(158,106,3,.6); }
+
+/* Distribucion de issues (taxonomia de labels -> barras) */
+.dist-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; }
+.dist-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.15rem 1.3rem; }
+.dist-title { font-size: .74rem; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-muted); font-weight: 700; margin: 0 0 1rem; }
+.bar-row { display: grid; grid-template-columns: minmax(64px, 34%) 1fr auto; align-items: center; gap: .7rem; margin-bottom: .7rem; }
+.bar-row:last-child { margin-bottom: 0; }
+.bar-label { font-size: .85rem; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar-track { height: 9px; background: var(--surface-2); border-radius: 999px; overflow: hidden; }
+.bar-fill { display: block; height: 100%; min-width: 4px; border-radius: 999px; background: linear-gradient(90deg, var(--accent), #6db3ff); }
+.bar-val { font-size: .85rem; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--ink); text-align: right; min-width: 2ch; }
+.empty { color: var(--ink-faint); font-style: italic; font-size: .85rem; margin: 0; }
+
+/* Metricas de proceso */
+.proc-note { font-size: .78rem; color: var(--ink-faint); margin: .9rem 0 0; font-style: italic; }
+.chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem 1.35rem; margin-top: 1rem; }
+.chart-card h3 { font-size: .74rem; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-muted); font-weight: 700; margin: 0 0 1.1rem; }
+.chart-scroll { overflow-x: auto; }
+.chart-svg { width: 100%; max-width: 640px; height: auto; display: block; }
+.legend { display: flex; gap: 1.3rem; margin-top: 1rem; flex-wrap: wrap; }
+.legend-item { display: inline-flex; align-items: center; gap: .45rem; font-size: .8rem; color: var(--ink-muted); }
+.legend-dot { width: .7rem; height: .7rem; border-radius: 3px; display: inline-block; flex: 0 0 auto; }
+
+footer { margin-top: 3.5rem; color: var(--ink-faint); font-size: .8rem; border-top: 1px solid var(--border-soft); padding-top: 1.25rem; }
+code { background: var(--surface); border: 1px solid var(--border-soft); padding: .08rem .35rem; border-radius: 5px; font-size: .85em; }
 """
 
 
-def _tabla(grupo: dict) -> str:
+def _stripped(label: str) -> str:
+    """Quita el prefijo de la taxonomia (``tipo:tarea`` -> ``tarea``)."""
+    return label.split(":", 1)[1] if ":" in label else label
+
+
+def _barras(grupo: dict) -> str:
+    """Renderiza un grupo de la taxonomia como barras horizontales.
+
+    Las barras se escalan al maximo del propio grupo (magnitud comparada dentro
+    de la categoria). Cada fila lleva un ``title`` para el hover sin JS.
+    """
     if not grupo:
         return '<p class="empty">Sin datos.</p>'
-    filas = "".join(
-        f"<tr><td>{label}</td><td class='v'>{count}</td></tr>"
-        for label, count in sorted(grupo.items(), key=lambda kv: (-kv[1], kv[0]))
-    )
-    return f"<table><tbody>{filas}</tbody></table>"
+    items = sorted(grupo.items(), key=lambda kv: (-kv[1], kv[0]))
+    maximo = max(grupo.values())
+    filas = []
+    for label, count in items:
+        pct = (count / maximo * 100) if maximo else 0
+        etiqueta = html.escape(_stripped(label))
+        filas.append(
+            f'<div class="bar-row" title="{html.escape(_stripped(label))}: {count}">'
+            f'<span class="bar-label">{etiqueta}</span>'
+            f'<span class="bar-track"><span class="bar-fill" style="width:{pct:.1f}%"></span></span>'
+            f'<span class="bar-val">{count}</span>'
+            f"</div>"
+        )
+    return "".join(filas)
 
 
 # Semaforo: estado -> (color, etiqueta). Solo cumple/no_cumple/nd (spec A2:
@@ -134,7 +222,7 @@ def _fiab_umbral_txt(umbral, unidad: str) -> str:
     valor = umbral.get("valor", "")
     sufijo = "%" if unidad == "%" else (f" {unidad}" if unidad else "")
     prop = "" if umbral.get("ratificado", False) else " [PROP]"
-    return f"Umbral: {comparador} {valor}{sufijo}{prop}"
+    return f"Meta: {comparador} {valor}{sufijo}{prop}"
 
 
 def _detalle_texto(detalle) -> str:
@@ -222,8 +310,10 @@ def _card_fiabilidad(m: dict) -> str:
           <div class="fiab-estado"><span class="fiab-dot" style="background:{color}"></span>{estado_label}</div>
         </div>
       </div>
-      <div class="fiab-umbral">{umbral_txt}</div>
-      {fuente_badge}
+      <div class="fiab-foot">
+        <span class="fiab-umbral">{umbral_txt}</span>
+        {fuente_badge}
+      </div>
       {nota_html}
     </div>"""
 
@@ -237,11 +327,130 @@ def _seccion_fiabilidad(fiab) -> str:
         return ""
     cards = "".join(_card_fiabilidad(m) for m in metricas)
     return (
-        '<section><h2>Metricas de Fiabilidad (ISO/IEC 25010)</h2>'
-        '<p class="sub">Metricas de producto M-01 a M-06. Las automaticas se miden sobre '
-        'la suite de regresion (JaCoCo / Surefire); las declaradas las mantiene el Lider '
-        'de Metricas. Los umbrales marcados [PROP] estan propuestos, no ratificados.</p>'
+        '<section>'
+        '<div class="sec-head"><h2>Metricas de Fiabilidad</h2></div>'
+        '<p class="sec-desc">Metricas de producto M-01 a M-06 (ISO/IEC 25010). Las automaticas se '
+        'miden sobre la suite de regresion (JaCoCo / Surefire); las declaradas las mantiene el '
+        'Lider de Metricas. La meta mostrada es el objetivo de la fase; los valores marcados '
+        '[PROP] estan propuestos, no ratificados.</p>'
+        '<div class="rule"></div>'
         f'<div class="fiab-grid">{cards}</div></section>'
+    )
+
+
+def _seccion_distribucion(data: dict) -> str:
+    """Renderiza la taxonomia de labels como una grilla de barras horizontales."""
+    tarjetas = []
+    for clave, titulo in GRUPOS.items():
+        tarjetas.append(
+            f'<div class="dist-card"><h3 class="dist-title">{html.escape(titulo)}</h3>'
+            f'{_barras(data.get(clave, {}))}</div>'
+        )
+    return (
+        '<section>'
+        '<div class="sec-head"><h2>Distribucion de issues</h2></div>'
+        '<p class="sec-desc">Reparto de los issues del repositorio segun la taxonomia de '
+        'etiquetas. Cada barra se escala al maximo de su propio grupo.</p>'
+        '<div class="rule"></div>'
+        f'<div class="dist-grid">{"".join(tarjetas)}</div></section>'
+    )
+
+
+# Series de la tendencia: azul (aperturas) vs verde (cierres). La identidad NO
+# depende solo del color -> leyenda + etiqueta numerica directa sobre cada barra.
+_TREND_ABIERTOS = "#4493f8"
+_TREND_CERRADOS = "#3fb950"
+
+
+def _svg_tendencia(tendencia) -> str:
+    """Barras verticales agrupadas (aperturas vs cierres por semana), SVG inline.
+
+    Sin script ni CDN (CSP/Pages safe). Cada barra lleva su valor como etiqueta
+    directa; el eje base ancla las barras. Semanas sin actividad no se emiten.
+    """
+    if not tendencia:
+        return '<p class="empty">Sin datos.</p>'
+    n = len(tendencia)
+    maximo = max((max(t["abiertos"], t["cerrados"]) for t in tendencia), default=0) or 1
+    slot, bw, gap = 104, 28, 10
+    plot_h, pad_top, pad_bottom, pad_x = 150, 26, 32, 14
+    ancho = pad_x * 2 + n * slot
+    alto = pad_top + plot_h + pad_bottom
+    base_y = pad_top + plot_h
+
+    def _barra(x: float, val: int, color: str) -> str:
+        if not val:
+            return ""
+        h = val / maximo * plot_h
+        if h < 3:
+            h = 3
+        y = base_y - h
+        return (
+            f'<rect x="{x:.1f}" y="{y:.1f}" width="{bw}" height="{h:.1f}" rx="4" fill="{color}"/>'
+            f'<text x="{x + bw / 2:.1f}" y="{y - 7:.1f}" text-anchor="middle" '
+            f'font-size="13" font-weight="700" fill="#e6edf3">{val}</text>'
+        )
+
+    piezas = [
+        f'<line x1="{pad_x}" y1="{base_y}" x2="{ancho - pad_x}" y2="{base_y}" '
+        f'stroke="#30363d" stroke-width="1.5"/>'
+    ]
+    for i, t in enumerate(tendencia):
+        cx = pad_x + i * slot + slot / 2
+        piezas.append(_barra(cx - bw - gap / 2, t["abiertos"], _TREND_ABIERTOS))
+        piezas.append(_barra(cx + gap / 2, t["cerrados"], _TREND_CERRADOS))
+        piezas.append(
+            f'<text x="{cx:.1f}" y="{base_y + 20:.1f}" text-anchor="middle" '
+            f'font-size="12" fill="#9aa4b2">{html.escape(t["semana"])}</text>'
+        )
+    return (
+        f'<svg class="chart-svg" viewBox="0 0 {ancho} {alto}" role="img" '
+        f'aria-label="Aperturas y cierres de issues por semana">{"".join(piezas)}</svg>'
+    )
+
+
+def _seccion_proceso(proceso) -> str:
+    """Renderiza la seccion de metricas de proceso. Ausente -> se omite."""
+    if not isinstance(proceso, dict):
+        return ""
+    lead = proceso.get("lead_time") or {}
+    tendencia = proceso.get("tendencia") or []
+    cerrados = lead.get("n", 0)
+
+    def _dias(v) -> str:
+        return f"{v:g} d" if _es_numero(v) else "N/D"
+
+    tiles = "".join(
+        f'<div class="kpi"><div class="n">{valor}</div><div class="l">{etiqueta}</div></div>'
+        for valor, etiqueta in (
+            (_dias(lead.get("mediana_dias")), "Lead time mediano"),
+            (_dias(lead.get("promedio_dias")), "Lead time promedio"),
+            (_dias(lead.get("p90_dias")), "Lead time P90"),
+            (str(cerrados), "Issues cerrados"),
+        )
+    )
+    nota = (
+        '' if cerrados else
+        '<p class="proc-note">Aun no hay issues cerrados con fecha de cierre para medir '
+        'lead time. Solo se mide lead time (apertura a cierre): el export no trae señal '
+        'de inicio de trabajo, por lo que el cycle time no es derivable.</p>'
+    )
+    leyenda = (
+        '<div class="legend">'
+        f'<span class="legend-item"><span class="legend-dot" style="background:{_TREND_ABIERTOS}"></span>Abiertos</span>'
+        f'<span class="legend-item"><span class="legend-dot" style="background:{_TREND_CERRADOS}"></span>Cerrados</span>'
+        '</div>'
+    )
+    return (
+        '<section>'
+        '<div class="sec-head"><h2>Metricas de proceso</h2></div>'
+        '<p class="sec-desc">Como fluye el trabajo del equipo, derivado de las fechas de '
+        'apertura y cierre de los issues. Complementa a las metricas de producto.</p>'
+        '<div class="rule"></div>'
+        f'<div class="kpis">{tiles}</div>{nota}'
+        '<div class="chart-card"><h3>Aperturas vs cierres por semana</h3>'
+        f'<div class="chart-scroll">{_svg_tendencia(tendencia)}</div>{leyenda}</div>'
+        '</section>'
     )
 
 
@@ -253,13 +462,10 @@ def generar_dashboard(
     generado = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
     fiabilidad_html = _seccion_fiabilidad(data.get("fiabilidad"))
+    proceso_html = _seccion_proceso(data.get("proceso"))
+    distribucion_html = _seccion_distribucion(data)
 
-    secciones = "".join(
-        f"<section><h2>{titulo}</h2>{_tabla(data.get(clave, {}))}</section>"
-        for clave, titulo in GRUPOS.items()
-    )
-
-    html = f"""<!DOCTYPE html>
+    documento = f"""<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="utf-8">
@@ -269,18 +475,23 @@ def generar_dashboard(
 </head>
 <body>
 <div class="wrap">
-  <h1>Dashboard de Metricas del Proceso SQA</h1>
-  <p class="sub">Sistema de Gestion Bibliotecaria - Equipo 58-1 - Generado: {generado}</p>
+  <header class="masthead">
+    <span class="eyebrow">Proceso SQA</span>
+    <h1>Dashboard de Metricas del Proceso SQA</h1>
+    <p class="sub">Sistema de Gestion Bibliotecaria &middot; Equipo 58-1 &middot; Generado {generado}</p>
+  </header>
 
-  <div class="cards">
-    <div class="card"><div class="n">{data.get("total_issues", 0)}</div><div class="l">Issues totales</div></div>
-    <div class="card"><div class="n">{data.get("cerrados", 0)}</div><div class="l">Cerrados</div></div>
-    <div class="card accent"><div class="n">{data.get("tasa_resolucion_pct", 0)}%</div><div class="l">Tasa de resolucion</div></div>
+  <div class="kpis">
+    <div class="kpi"><div class="n">{data.get("total_issues", 0)}</div><div class="l">Issues totales</div></div>
+    <div class="kpi"><div class="n">{data.get("cerrados", 0)}</div><div class="l">Cerrados</div></div>
+    <div class="kpi accent"><div class="n">{data.get("tasa_resolucion_pct", 0)}%</div><div class="l">Tasa de resolucion</div></div>
   </div>
 
   {fiabilidad_html}
 
-  {secciones}
+  {proceso_html}
+
+  {distribucion_html}
 
   <footer>
     Datos derivados de los issues del repositorio via <code>gh issue list</code> +
@@ -294,7 +505,7 @@ def generar_dashboard(
 
     out = Path(output_path)
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(html, encoding="utf-8")
+    out.write_text(documento, encoding="utf-8")
     print(f"Dashboard generado: {out}")
     return out
 

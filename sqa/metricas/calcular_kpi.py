@@ -20,8 +20,10 @@ calcula evaluar_estado (nunca se declara a mano).
 """
 
 import json
+import math
 import sys
 from collections import Counter
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import parser_jacoco
@@ -35,11 +37,19 @@ DECLARADO_JSON = "sqa/metricas/metricas_fiabilidad.json"
 FIABILIDAD_SCHEMA_VERSION = 1
 
 # Metadatos de las métricas automáticas (no viven en el registro declarado).
+#
+# Umbrales = META PRÁCTICA de la fase (piso alcanzable), no la meta aspiracional
+# ISO/IEC 25010. Criterio del docente: en la práctica no se fijan metas altas; se
+# fija lo que efectivamente se implementó y se documenta el máximo aparte. El
+# valor ISO aspiracional queda registrado aquí como referencia de fondo pero NO
+# se renderiza en el dashboard (una sola vara a la vista). Baselines redondos de
+# Fase 2 — el número real de JaCoCo/Surefire cae donde caiga.
 AUTO_META = {
     "M-02": {
         "nombre": "Cobertura de Decisión/Rama (servicios)",
         "unidad": "%",
-        "umbral": {"valor": 70, "comparador": ">=", "ratificado": False},
+        # Meta práctica F2: >=50%. Aspiracional ISO (fondo, no se muestra): 70%.
+        "umbral": {"valor": 50, "comparador": ">=", "ratificado": False},
     },
     "M-03": {
         "nombre": "Tasa de Pruebas que Pasan",
@@ -49,7 +59,8 @@ AUTO_META = {
     "M-04": {
         "nombre": "Cobertura de Instrucciones",
         "unidad": "%",
-        "umbral": {"valor": 60, "comparador": ">=", "ratificado": False},
+        # Meta práctica F2: >=30%. Aspiracional ISO (fondo, no se muestra): 60%.
+        "umbral": {"valor": 30, "comparador": ">=", "ratificado": False},
     },
 }
 
@@ -204,6 +215,114 @@ def construir_fiabilidad(
     return {"schema_version": FIABILIDAD_SCHEMA_VERSION, "metricas": metricas}
 
 
+# --- Métricas de PROCESO (derivadas del export de issues, sin artefactos) ----
+# Miden cómo fluye el trabajo del equipo, no el producto. Se calculan sólo con
+# createdAt / closedAt / state, que ya vienen en el export de gh.
+
+def _parse_iso(ts):
+    """Parsea un timestamp ISO-8601 UTC de GitHub y lo normaliza a UTC.
+
+    Acepta el formato canónico ``...Z`` (segundos) y tolera variantes ISO
+    (fracciones de segundo, offset ``+00:00``) para que una deriva menor del
+    formato del export no descarte issues de forma silenciosa. None si es
+    genuinamente inválido.
+    """
+    if not isinstance(ts, str):
+        return None
+    try:
+        return datetime.strptime(ts, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+    except ValueError:
+        pass
+    try:
+        dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    return dt.astimezone(timezone.utc) if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
+
+
+def _percentil(ordenados, p):
+    """Percentil ``p`` (0-100) por interpolación lineal sobre una lista ordenada."""
+    if not ordenados:
+        return None
+    if len(ordenados) == 1:
+        return ordenados[0]
+    k = (len(ordenados) - 1) * p / 100
+    inf, sup = math.floor(k), math.ceil(k)
+    if inf == sup:
+        return ordenados[int(k)]
+    return ordenados[inf] * (sup - k) + ordenados[sup] * (k - inf)
+
+
+def lead_time_stats(issues) -> dict:
+    """Lead time (apertura → cierre) en días para los issues cerrados.
+
+    SÓLO se mide lead time. El export de GitHub no trae una señal de "inicio de
+    trabajo", así que el cycle time no es derivable de forma fiable y NO se
+    reporta (honestidad de la métrica: no se fabrica un valor no medible).
+    """
+    dias = []
+    for it in issues:
+        if it.get("state") != "CLOSED":
+            continue
+        creado = _parse_iso(it.get("createdAt"))
+        cerrado = _parse_iso(it.get("closedAt"))
+        if creado and cerrado and cerrado >= creado:
+            dias.append((cerrado - creado).total_seconds() / 86400)
+    if not dias:
+        return {"n": 0, "mediana_dias": None, "promedio_dias": None, "p90_dias": None}
+    dias.sort()
+    return {
+        "n": len(dias),
+        "mediana_dias": round(_percentil(dias, 50), 1),
+        "promedio_dias": round(sum(dias) / len(dias), 1),
+        "p90_dias": round(_percentil(dias, 90), 1),
+    }
+
+
+def _semana_iso(dt: datetime) -> str:
+    """Etiqueta de semana ISO ordenable, p.ej. ``2026-W23``."""
+    anio, semana, _ = dt.isocalendar()
+    return f"{anio}-W{semana:02d}"
+
+
+def _lunes_iso(dt: datetime) -> datetime:
+    """Lunes (inicio) de la semana ISO que contiene ``dt``."""
+    return dt - timedelta(days=dt.isoweekday() - 1)
+
+
+def tendencia_semanal(issues) -> list:
+    """Aperturas vs cierres de issues por semana ISO, orden cronológico.
+
+    Emite un rango CONTIGUO de semanas entre la primera y la última actividad:
+    las semanas sin movimiento se incluyen en cero para no dar una falsa
+    continuidad en el gráfico (dos semanas no consecutivas lado a lado).
+    """
+    aperturas, cierres, fechas = Counter(), Counter(), []
+    for it in issues:
+        creado = _parse_iso(it.get("createdAt"))
+        if creado:
+            aperturas[_semana_iso(creado)] += 1
+            fechas.append(creado)
+        if it.get("state") == "CLOSED":
+            cerrado = _parse_iso(it.get("closedAt"))
+            if cerrado:
+                cierres[_semana_iso(cerrado)] += 1
+                fechas.append(cerrado)
+    if not fechas:
+        return []
+    cursor, fin = _lunes_iso(min(fechas)), _lunes_iso(max(fechas))
+    semanas = []
+    while cursor <= fin:
+        etiqueta = _semana_iso(cursor)
+        semanas.append({
+            "semana": etiqueta,
+            "abiertos": aperturas.get(etiqueta, 0),
+            "cerrados": cierres.get(etiqueta, 0),
+        })
+        cursor += timedelta(days=7)
+    return semanas
+
+
 def generar_reporte_metricas(issues_path: str = "sqa/metricas/issues_export.json") -> dict:
     data = json.loads(Path(issues_path).read_text(encoding="utf-8"))
     all_labels = [l["name"] for i in data for l in i.get("labels", [])]
@@ -222,6 +341,11 @@ def generar_reporte_metricas(issues_path: str = "sqa/metricas/issues_export.json
         "por_rol":       Counter(l for l in all_labels if l.startswith("rol:")),
         # Bloque aditivo de métricas de producto (ISO/IEC 25010).
         "fiabilidad":    construir_fiabilidad(),
+        # Bloque aditivo de métricas de PROCESO (flujo de trabajo del equipo).
+        "proceso": {
+            "lead_time": lead_time_stats(data),
+            "tendencia": tendencia_semanal(data),
+        },
     }
 
     output_path = Path("sqa/metricas/reporte_kpi.json")
