@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "actualizado": "2026-07-09",
+  "responsable": "Equipo 58-1",
+  "metricas": [
+    {
+      "id": "M-01",
+      "nombre": "Densidad de Defectos de Fiabilidad",
+      "valor": "N/D",
+      "unidad": "defectos/modulo",
+      "umbral": { "valor": 1.0, "comparador": "<=", "ratificado": false },
+      "justificacion": "Conteo manual de issues tipo:defecto sobre modulos afectados. Valor pendiente de firma del Lider de Metricas.",
+      "evidencia": "Pendiente: consolidar casos TC-FIAB y conteo de issues tipo:defecto por modulo.",
+      "responsable": "rol:auditor",
+      "version": 1
+    },
+    {
+      "id": "M-05",
+      "nombre": "Entradas Invalidas Controladas",
+      "valor": "N/D",
+      "unidad": "%",
+      "umbral": { "valor": 80, "comparador": ">=", "ratificado": false },
+      "justificacion": "Proporcion de entradas invalidas rechazadas de forma controlada. Valor pendiente de firma del Lider de Metricas.",
+      "evidencia": "Pendiente: casos TC-FIAB de validacion de entradas en servicios de dominio.",
+      "responsable": "rol:auditor",
+      "version": 1
+    },
+    {
+      "id": "M-06",
+      "nombre": "Operaciones con Guarda de Estado",
+      "valor": "N/D",
+      "unidad": "%",
+      "umbral": { "valor": 80, "comparador": ">=", "ratificado": false },
+      "justificacion": "Proporcion de operaciones criticas con guarda de estado verificada. Valor pendiente de firma del Lider de Metricas.",
+      "evidencia": "Pendiente: casos TC-FIAB de guardas de estado (prestamos/amonestaciones).",
+      "responsable": "rol:auditor",
+      "version": 1
+    }
+  ]
+}

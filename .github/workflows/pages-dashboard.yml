@@ -37,6 +37,43 @@ jobs:
         with:
           python-version: "3.x"
 
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: "temurin"
+          cache: maven
+
+      # Genera los artefactos de la suite de regresion (JaCoCo + Surefire) que
+      # alimentan las metricas automaticas M-02/M-03/M-04. Se usa el mismo
+      # universo que el gate (ci-tests.yml: -Dgroups=regresion). failure.ignore
+      # permite que M-03 muestre rojo en el dashboard sin abortar el build; el
+      # goal explicito jacoco:report garantiza el XML aun con fallos ignorados.
+      # failIfNoTests=true replica el gate: un universo regresion vacio falla
+      # fuerte en vez de publicar un dashboard con todo en N/D.
+      - name: Ejecutar suite regresion con cobertura JaCoCo
+        run: ./mvnw test -Dgroups=regresion -DfailIfNoTests=true -Dmaven.test.failure.ignore=true jacoco:report --no-transfer-progress
+
+      # Guarda de existencia de artefactos: si el reporte JaCoCo o los XML de
+      # Surefire no se generaron, las metricas automaticas caerian a N/D en
+      # silencio. Fallar aqui evita publicar un dashboard enganoso.
+      - name: Verificar artefactos de la suite de regresion
+        run: |
+          missing=0
+          if [ ! -f target/site/jacoco/jacoco.xml ]; then
+            echo "::error::Falta target/site/jacoco/jacoco.xml (M-02/M-04 caerian a N/D)."
+            missing=1
+          fi
+          if ! ls target/surefire-reports/TEST-*.xml >/dev/null 2>&1; then
+            echo "::error::No hay reportes Surefire en target/surefire-reports/ (M-03 caeria a N/D)."
+            missing=1
+          fi
+          if [ "$missing" -ne 0 ]; then
+            echo "Artefactos de regresion ausentes: no se publica el dashboard."
+            exit 1
+          fi
+          echo "Artefactos de regresion presentes (jacoco.xml + Surefire XML)."
+
       - name: Exportar issues a JSON
         env:
           GH_TOKEN: ${{ github.token }}

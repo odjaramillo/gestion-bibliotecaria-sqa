@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.biblioteca.service.AmonestacionServiceTest" tests="20" failures="1" errors="1" skipped="0" time="0.998">
+  <testcase name="aplicaAmonestacion" classname="com.biblioteca.service.AmonestacionServiceTest" time="0.044">
+    <failure message="boundary off by one" type="java.lang.AssertionError"/>
+  </testcase>
+  <testcase name="notificaUsuario" classname="com.biblioteca.service.AmonestacionServiceTest" time="0.050">
+    <error message="NullPointerException" type="java.lang.NullPointerException"/>
+  </testcase>
+</testsuite>

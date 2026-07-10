@@ -1,0 +1,44 @@
+name: CI — Métricas (pytest)
+
+# Ejecuta la suite pytest del tooling de métricas de fiabilidad
+# (sqa/metricas). El pipeline Java (ci-tests.yml) no cubre este código Python,
+# por lo que estas pruebas corren en un job dedicado para no acoplarse al build
+# Maven. Se dispara solo cuando cambia el tooling de métricas.
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - "sqa/metricas/**"
+      - "requirements-dev.txt"
+      - ".github/workflows/ci-metricas.yml"
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - "sqa/metricas/**"
+      - "requirements-dev.txt"
+      - ".github/workflows/ci-metricas.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pytest:
+    name: pytest sqa/metricas
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Instalar dependencias de desarrollo
+        run: pip install -r requirements-dev.txt
+
+      - name: Ejecutar pytest
+        run: python -m pytest sqa/metricas/tests/

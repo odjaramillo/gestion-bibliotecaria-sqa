@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.biblioteca.service.PrestamoServiceTest" tests="20" failures="1" errors="0" skipped="0" time="1.204">
+  <testcase name="rechazaPrestamoDuplicado" classname="com.biblioteca.service.PrestamoServiceTest" time="0.061">
+    <failure message="expected present but was absent" type="java.lang.AssertionError"/>
+  </testcase>
+</testsuite>

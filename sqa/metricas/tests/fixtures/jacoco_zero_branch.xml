@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<report name="gestion-bibliotecaria (regresion, no branches)">
+  <package name="com/biblioteca/service">
+    <class name="com/biblioteca/service/PrestamoService" sourcefilename="PrestamoService.java">
+      <counter type="BRANCH" missed="0" covered="0"/>
+    </class>
+    <class name="com/biblioteca/service/AmonestacionService" sourcefilename="AmonestacionService.java">
+      <counter type="BRANCH" missed="0" covered="0"/>
+    </class>
+  </package>
+  <counter type="INSTRUCTION" missed="400" covered="600"/>
+</report>
