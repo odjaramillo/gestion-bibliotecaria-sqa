@@ -84,6 +84,64 @@ def test_tendencia_empty_when_no_issues():
     assert ck.tendencia_semanal([]) == []
 
 
+# --- P90 (linear-interpolation percentile — the risk-bearing math) ------
+
+def test_p90_interpolates_between_ranks():
+    # días [1, 3, 9] -> P90 = 7.8 (k = 1.8, entre rank 1 y 2)
+    issues = [
+        _issue(1, "CLOSED", "2026-06-01T00:00:00Z", "2026-06-02T00:00:00Z"),  # 1d
+        _issue(2, "CLOSED", "2026-06-01T00:00:00Z", "2026-06-04T00:00:00Z"),  # 3d
+        _issue(3, "CLOSED", "2026-06-01T00:00:00Z", "2026-06-10T00:00:00Z"),  # 9d
+    ]
+    assert ck.lead_time_stats(issues)["p90_dias"] == 7.8
+
+
+def test_p90_single_value_equals_that_value():
+    issues = [_issue(1, "CLOSED", "2026-06-01T00:00:00Z", "2026-06-06T00:00:00Z")]
+    assert ck.lead_time_stats(issues)["p90_dias"] == 5.0
+
+
+def test_p90_two_values_interpolates():
+    # días [2, 8] -> P90 = 7.4 (k = 0.9)
+    issues = [
+        _issue(1, "CLOSED", "2026-06-01T00:00:00Z", "2026-06-03T00:00:00Z"),  # 2d
+        _issue(2, "CLOSED", "2026-06-01T00:00:00Z", "2026-06-09T00:00:00Z"),  # 8d
+    ]
+    assert ck.lead_time_stats(issues)["p90_dias"] == 7.4
+
+
+# --- _parse_iso tolerance -----------------------------------------------
+
+def test_parse_iso_canonical_z():
+    dt = ck._parse_iso("2026-06-01T10:00:00Z")
+    assert dt is not None and dt.year == 2026 and dt.hour == 10
+
+
+def test_parse_iso_tolerates_fractional_and_offset():
+    assert ck._parse_iso("2026-06-01T10:00:00.500Z") is not None
+    assert ck._parse_iso("2026-06-01T10:00:00+00:00") is not None
+
+
+def test_parse_iso_rejects_garbage():
+    assert ck._parse_iso("not-a-date") is None
+    assert ck._parse_iso(None) is None
+    assert ck._parse_iso(12345) is None
+
+
+# --- gap-filled contiguous weeks ----------------------------------------
+
+def test_tendencia_fills_zero_activity_weeks():
+    issues = [
+        _issue(1, "OPEN", "2026-06-01T00:00:00Z"),   # W23
+        _issue(2, "OPEN", "2026-06-15T00:00:00Z"),   # W25
+    ]
+    tendencia = ck.tendencia_semanal(issues)
+    semanas = [t["semana"] for t in tendencia]
+    assert "2026-W24" in semanas  # semana intermedia sin actividad, en cero
+    intermedia = next(t for t in tendencia if t["semana"] == "2026-W24")
+    assert intermedia["abiertos"] == 0 and intermedia["cerrados"] == 0
+
+
 # --- reporte wiring -----------------------------------------------------
 
 def test_lead_time_stats_handles_empty_list():

@@ -23,7 +23,7 @@ import json
 import math
 import sys
 from collections import Counter
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import parser_jacoco
@@ -220,13 +220,24 @@ def construir_fiabilidad(
 # createdAt / closedAt / state, que ya vienen en el export de gh.
 
 def _parse_iso(ts):
-    """Parsea un timestamp ISO-8601 UTC (``...Z``) de GitHub. None si es inválido."""
+    """Parsea un timestamp ISO-8601 UTC de GitHub y lo normaliza a UTC.
+
+    Acepta el formato canónico ``...Z`` (segundos) y tolera variantes ISO
+    (fracciones de segundo, offset ``+00:00``) para que una deriva menor del
+    formato del export no descarte issues de forma silenciosa. None si es
+    genuinamente inválido.
+    """
     if not isinstance(ts, str):
         return None
     try:
         return datetime.strptime(ts, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
     except ValueError:
+        pass
+    try:
+        dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+    except ValueError:
         return None
+    return dt.astimezone(timezone.utc) if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
 
 
 def _percentil(ordenados, p):
@@ -274,22 +285,42 @@ def _semana_iso(dt: datetime) -> str:
     return f"{anio}-W{semana:02d}"
 
 
+def _lunes_iso(dt: datetime) -> datetime:
+    """Lunes (inicio) de la semana ISO que contiene ``dt``."""
+    return dt - timedelta(days=dt.isoweekday() - 1)
+
+
 def tendencia_semanal(issues) -> list:
-    """Aperturas vs cierres de issues agrupados por semana ISO, orden cronológico."""
-    aperturas, cierres = Counter(), Counter()
+    """Aperturas vs cierres de issues por semana ISO, orden cronológico.
+
+    Emite un rango CONTIGUO de semanas entre la primera y la última actividad:
+    las semanas sin movimiento se incluyen en cero para no dar una falsa
+    continuidad en el gráfico (dos semanas no consecutivas lado a lado).
+    """
+    aperturas, cierres, fechas = Counter(), Counter(), []
     for it in issues:
         creado = _parse_iso(it.get("createdAt"))
         if creado:
             aperturas[_semana_iso(creado)] += 1
+            fechas.append(creado)
         if it.get("state") == "CLOSED":
             cerrado = _parse_iso(it.get("closedAt"))
             if cerrado:
                 cierres[_semana_iso(cerrado)] += 1
-    semanas = sorted(set(aperturas) | set(cierres))
-    return [
-        {"semana": s, "abiertos": aperturas.get(s, 0), "cerrados": cierres.get(s, 0)}
-        for s in semanas
-    ]
+                fechas.append(cerrado)
+    if not fechas:
+        return []
+    cursor, fin = _lunes_iso(min(fechas)), _lunes_iso(max(fechas))
+    semanas = []
+    while cursor <= fin:
+        etiqueta = _semana_iso(cursor)
+        semanas.append({
+            "semana": etiqueta,
+            "abiertos": aperturas.get(etiqueta, 0),
+            "cerrados": cierres.get(etiqueta, 0),
+        })
+        cursor += timedelta(days=7)
+    return semanas
 
 
 def generar_reporte_metricas(issues_path: str = "sqa/metricas/issues_export.json") -> dict:
