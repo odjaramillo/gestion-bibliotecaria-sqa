@@ -20,8 +20,10 @@ calcula evaluar_estado (nunca se declara a mano).
 """
 
 import json
+import math
 import sys
 from collections import Counter
+from datetime import datetime, timezone
 from pathlib import Path
 
 import parser_jacoco
@@ -213,6 +215,83 @@ def construir_fiabilidad(
     return {"schema_version": FIABILIDAD_SCHEMA_VERSION, "metricas": metricas}
 
 
+# --- Métricas de PROCESO (derivadas del export de issues, sin artefactos) ----
+# Miden cómo fluye el trabajo del equipo, no el producto. Se calculan sólo con
+# createdAt / closedAt / state, que ya vienen en el export de gh.
+
+def _parse_iso(ts):
+    """Parsea un timestamp ISO-8601 UTC (``...Z``) de GitHub. None si es inválido."""
+    if not isinstance(ts, str):
+        return None
+    try:
+        return datetime.strptime(ts, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+    except ValueError:
+        return None
+
+
+def _percentil(ordenados, p):
+    """Percentil ``p`` (0-100) por interpolación lineal sobre una lista ordenada."""
+    if not ordenados:
+        return None
+    if len(ordenados) == 1:
+        return ordenados[0]
+    k = (len(ordenados) - 1) * p / 100
+    inf, sup = math.floor(k), math.ceil(k)
+    if inf == sup:
+        return ordenados[int(k)]
+    return ordenados[inf] * (sup - k) + ordenados[sup] * (k - inf)
+
+
+def lead_time_stats(issues) -> dict:
+    """Lead time (apertura → cierre) en días para los issues cerrados.
+
+    SÓLO se mide lead time. El export de GitHub no trae una señal de "inicio de
+    trabajo", así que el cycle time no es derivable de forma fiable y NO se
+    reporta (honestidad de la métrica: no se fabrica un valor no medible).
+    """
+    dias = []
+    for it in issues:
+        if it.get("state") != "CLOSED":
+            continue
+        creado = _parse_iso(it.get("createdAt"))
+        cerrado = _parse_iso(it.get("closedAt"))
+        if creado and cerrado and cerrado >= creado:
+            dias.append((cerrado - creado).total_seconds() / 86400)
+    if not dias:
+        return {"n": 0, "mediana_dias": None, "promedio_dias": None, "p90_dias": None}
+    dias.sort()
+    return {
+        "n": len(dias),
+        "mediana_dias": round(_percentil(dias, 50), 1),
+        "promedio_dias": round(sum(dias) / len(dias), 1),
+        "p90_dias": round(_percentil(dias, 90), 1),
+    }
+
+
+def _semana_iso(dt: datetime) -> str:
+    """Etiqueta de semana ISO ordenable, p.ej. ``2026-W23``."""
+    anio, semana, _ = dt.isocalendar()
+    return f"{anio}-W{semana:02d}"
+
+
+def tendencia_semanal(issues) -> list:
+    """Aperturas vs cierres de issues agrupados por semana ISO, orden cronológico."""
+    aperturas, cierres = Counter(), Counter()
+    for it in issues:
+        creado = _parse_iso(it.get("createdAt"))
+        if creado:
+            aperturas[_semana_iso(creado)] += 1
+        if it.get("state") == "CLOSED":
+            cerrado = _parse_iso(it.get("closedAt"))
+            if cerrado:
+                cierres[_semana_iso(cerrado)] += 1
+    semanas = sorted(set(aperturas) | set(cierres))
+    return [
+        {"semana": s, "abiertos": aperturas.get(s, 0), "cerrados": cierres.get(s, 0)}
+        for s in semanas
+    ]
+
+
 def generar_reporte_metricas(issues_path: str = "sqa/metricas/issues_export.json") -> dict:
     data = json.loads(Path(issues_path).read_text(encoding="utf-8"))
     all_labels = [l["name"] for i in data for l in i.get("labels", [])]
@@ -231,6 +310,11 @@ def generar_reporte_metricas(issues_path: str = "sqa/metricas/issues_export.json
         "por_rol":       Counter(l for l in all_labels if l.startswith("rol:")),
         # Bloque aditivo de métricas de producto (ISO/IEC 25010).
         "fiabilidad":    construir_fiabilidad(),
+        # Bloque aditivo de métricas de PROCESO (flujo de trabajo del equipo).
+        "proceso": {
+            "lead_time": lead_time_stats(data),
+            "tendencia": tendencia_semanal(data),
+        },
     }
 
     output_path = Path("sqa/metricas/reporte_kpi.json")

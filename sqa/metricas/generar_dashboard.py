@@ -124,6 +124,16 @@ h2 { font-size: 1.15rem; margin: 0; letter-spacing: -.01em; }
 .bar-val { font-size: .85rem; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--ink); text-align: right; min-width: 2ch; }
 .empty { color: var(--ink-faint); font-style: italic; font-size: .85rem; margin: 0; }
 
+/* Metricas de proceso */
+.proc-note { font-size: .78rem; color: var(--ink-faint); margin: .9rem 0 0; font-style: italic; }
+.chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem 1.35rem; margin-top: 1rem; }
+.chart-card h3 { font-size: .74rem; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-muted); font-weight: 700; margin: 0 0 1.1rem; }
+.chart-scroll { overflow-x: auto; }
+.chart-svg { width: 100%; max-width: 640px; height: auto; display: block; }
+.legend { display: flex; gap: 1.3rem; margin-top: 1rem; flex-wrap: wrap; }
+.legend-item { display: inline-flex; align-items: center; gap: .45rem; font-size: .8rem; color: var(--ink-muted); }
+.legend-dot { width: .7rem; height: .7rem; border-radius: 3px; display: inline-block; flex: 0 0 auto; }
+
 footer { margin-top: 3.5rem; color: var(--ink-faint); font-size: .8rem; border-top: 1px solid var(--border-soft); padding-top: 1.25rem; }
 code { background: var(--surface); border: 1px solid var(--border-soft); padding: .08rem .35rem; border-radius: 5px; font-size: .85em; }
 """
@@ -346,6 +356,104 @@ def _seccion_distribucion(data: dict) -> str:
     )
 
 
+# Series de la tendencia: azul (aperturas) vs verde (cierres). La identidad NO
+# depende solo del color -> leyenda + etiqueta numerica directa sobre cada barra.
+_TREND_ABIERTOS = "#4493f8"
+_TREND_CERRADOS = "#3fb950"
+
+
+def _svg_tendencia(tendencia) -> str:
+    """Barras verticales agrupadas (aperturas vs cierres por semana), SVG inline.
+
+    Sin script ni CDN (CSP/Pages safe). Cada barra lleva su valor como etiqueta
+    directa; el eje base ancla las barras. Semanas sin actividad no se emiten.
+    """
+    if not tendencia:
+        return '<p class="empty">Sin datos.</p>'
+    n = len(tendencia)
+    maximo = max((max(t["abiertos"], t["cerrados"]) for t in tendencia), default=0) or 1
+    slot, bw, gap = 104, 28, 10
+    plot_h, pad_top, pad_bottom, pad_x = 150, 26, 32, 14
+    ancho = pad_x * 2 + n * slot
+    alto = pad_top + plot_h + pad_bottom
+    base_y = pad_top + plot_h
+
+    def _barra(x: float, val: int, color: str) -> str:
+        if not val:
+            return ""
+        h = val / maximo * plot_h
+        if h < 3:
+            h = 3
+        y = base_y - h
+        return (
+            f'<rect x="{x:.1f}" y="{y:.1f}" width="{bw}" height="{h:.1f}" rx="4" fill="{color}"/>'
+            f'<text x="{x + bw / 2:.1f}" y="{y - 7:.1f}" text-anchor="middle" '
+            f'font-size="13" font-weight="700" fill="#e6edf3">{val}</text>'
+        )
+
+    piezas = [
+        f'<line x1="{pad_x}" y1="{base_y}" x2="{ancho - pad_x}" y2="{base_y}" '
+        f'stroke="#30363d" stroke-width="1.5"/>'
+    ]
+    for i, t in enumerate(tendencia):
+        cx = pad_x + i * slot + slot / 2
+        piezas.append(_barra(cx - bw - gap / 2, t["abiertos"], _TREND_ABIERTOS))
+        piezas.append(_barra(cx + gap / 2, t["cerrados"], _TREND_CERRADOS))
+        piezas.append(
+            f'<text x="{cx:.1f}" y="{base_y + 20:.1f}" text-anchor="middle" '
+            f'font-size="12" fill="#9aa4b2">{html.escape(t["semana"])}</text>'
+        )
+    return (
+        f'<svg class="chart-svg" viewBox="0 0 {ancho} {alto}" role="img" '
+        f'aria-label="Aperturas y cierres de issues por semana">{"".join(piezas)}</svg>'
+    )
+
+
+def _seccion_proceso(proceso) -> str:
+    """Renderiza la seccion de metricas de proceso. Ausente -> se omite."""
+    if not isinstance(proceso, dict):
+        return ""
+    lead = proceso.get("lead_time") or {}
+    tendencia = proceso.get("tendencia") or []
+    cerrados = lead.get("n", 0)
+
+    def _dias(v) -> str:
+        return f"{v:g} d" if _es_numero(v) else "N/D"
+
+    tiles = "".join(
+        f'<div class="kpi"><div class="n">{valor}</div><div class="l">{etiqueta}</div></div>'
+        for valor, etiqueta in (
+            (_dias(lead.get("mediana_dias")), "Lead time mediano"),
+            (_dias(lead.get("promedio_dias")), "Lead time promedio"),
+            (_dias(lead.get("p90_dias")), "Lead time P90"),
+            (str(cerrados), "Issues cerrados"),
+        )
+    )
+    nota = (
+        '' if cerrados else
+        '<p class="proc-note">Aun no hay issues cerrados con fecha de cierre para medir '
+        'lead time. Solo se mide lead time (apertura a cierre): el export no trae señal '
+        'de inicio de trabajo, por lo que el cycle time no es derivable.</p>'
+    )
+    leyenda = (
+        '<div class="legend">'
+        f'<span class="legend-item"><span class="legend-dot" style="background:{_TREND_ABIERTOS}"></span>Abiertos</span>'
+        f'<span class="legend-item"><span class="legend-dot" style="background:{_TREND_CERRADOS}"></span>Cerrados</span>'
+        '</div>'
+    )
+    return (
+        '<section>'
+        '<div class="sec-head"><h2>Metricas de proceso</h2></div>'
+        '<p class="sec-desc">Como fluye el trabajo del equipo, derivado de las fechas de '
+        'apertura y cierre de los issues. Complementa a las metricas de producto.</p>'
+        '<div class="rule"></div>'
+        f'<div class="kpis">{tiles}</div>{nota}'
+        '<div class="chart-card"><h3>Aperturas vs cierres por semana</h3>'
+        f'<div class="chart-scroll">{_svg_tendencia(tendencia)}</div>{leyenda}</div>'
+        '</section>'
+    )
+
+
 def generar_dashboard(
     reporte_path: str = "sqa/metricas/reporte_kpi.json",
     output_path: str = "site/index.html",
@@ -354,6 +462,7 @@ def generar_dashboard(
     generado = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
     fiabilidad_html = _seccion_fiabilidad(data.get("fiabilidad"))
+    proceso_html = _seccion_proceso(data.get("proceso"))
     distribucion_html = _seccion_distribucion(data)
 
     documento = f"""<!DOCTYPE html>
@@ -379,6 +488,8 @@ def generar_dashboard(
   </div>
 
   {fiabilidad_html}
+
+  {proceso_html}
 
   {distribucion_html}
 
