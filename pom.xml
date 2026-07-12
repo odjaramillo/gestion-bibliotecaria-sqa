@@ -28,6 +28,14 @@
 	</scm>
 	<properties>
 		<java.version>21</java.version>
+
+		<!-- SonarQube Cloud connection. Analysis runs from ci-static.yml via
+		     sonar-maven-plugin; SONAR_TOKEN is injected there as an env var.
+		     sonar.sources / sonar.tests / sonar.java.binaries are derived from
+		     the Maven model and must not be set by hand. -->
+		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
+		<sonar.organization>odjaramillo</sonar.organization>
+		<sonar.projectKey>odjaramillo_gestion-bibliotecaria-sqa</sonar.projectKey>
 	</properties>
 	
 	<dependencies>
