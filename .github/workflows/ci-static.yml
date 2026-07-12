@@ -70,14 +70,13 @@ jobs:
       - name: SonarCloud Scan
         # Solo corre si SONAR_TOKEN está configurado (evita fallar en forks/PRs externos).
         if: ${{ env.SONAR_TOKEN != '' }}
-        uses: SonarSource/sonarcloud-github-action@v5.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          args: >
-            -Dsonar.projectKey=odjaramillo_gestion-bibliotecaria-sqa
-            -Dsonar.organization=odjaramillo
-            -Dsonar.java.binaries=target/classes
-            -Dsonar.sources=src/main/java
-            -Dsonar.exclusions=**/test/**
+        # SonarScanner for Maven, no la action de scanner CLI: SonarSource la
+        # desaconseja explícitamente para proyectos Maven. El plugin deriva
+        # sources, tests y binaries del pom.xml. Conexión: <properties> del pom.
+        # Versión fijada para que el análisis sea reproducible.
+        run: >
+          ./mvnw org.sonarsource.scanner.maven:sonar-maven-plugin:5.1.0.4751:sonar
+          --no-transfer-progress
