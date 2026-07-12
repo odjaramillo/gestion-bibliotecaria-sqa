@@ -3,11 +3,15 @@ name: Pages — Dashboard de métricas SQA
 # Publica el dashboard de métricas del proceso SQA en GitHub Pages.
 # Cadena: exportar issues (gh) -> calcular KPIs -> generar HTML -> desplegar a Pages.
 #
-# Triggers deliberados (no corre en cada cambio de issue para no generar ruido):
+# Triggers (no corre en cada cambio de issue para no generar ruido):
+#   - push a main       : republica al integrar cambios (código + estado de issues).
 #   - workflow_dispatch : ejecución manual on-demand desde la pestaña Actions.
-#   - schedule          : refresco semanal (lunes 06:00 UTC).
+#   - schedule          : refresco semanal (lunes 06:00 UTC) para cubrir la deriva
+#                         del estado de issues entre merges.
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
   schedule:
     - cron: "0 6 * * 1"
