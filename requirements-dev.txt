@@ -1,3 +1,5 @@
-# Development / test-only dependencies for the SQA metrics tooling.
-# Runtime dashboard scripts use only the Python standard library.
+# Development / test-only dependencies for the SQA tooling.
+# Runtime dependencies live in requirements.txt (install both to run the tests:
+# the site-generator suite imports sqa/sitio/generar_docs.py, which needs the
+# markdown package).
 pytest>=8.0

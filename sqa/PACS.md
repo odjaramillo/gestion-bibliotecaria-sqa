@@ -4,7 +4,7 @@
 |---|---|
 | Documento | Plan de Aseguramiento de la Calidad del Software (PACS) |
 | Identificador | PACS-CONSOLIDADO-001 |
-| Versión | 1.4 |
+| Versión | 1.5 |
 | Fecha de emisión | 2026-07-13 |
 | Estado | Emitido |
 | Organización emisora | Equipo SQA T 11 — Proyecto 16 (Turno Tarde) |
@@ -257,6 +257,8 @@ La medición de calidad de proceso se apoya en tres piezas: (1) el marco de mét
 
 Toda desviación documentada respecto de lo planificado en este PACS se registra como GitHub Issue con la etiqueta `estado:en-analisis`. La aplicación de la dispensa requiere aprobación explícita del Líder General antes de ejecutarse, y queda registrada en el historial del Pull Request asociado (si aplica). Ninguna desviación se aplica de forma silenciosa.
 
+**Nota de desvío de dependencias (tooling del sitio).** La convención declarada del tooling Python del ecosistema (`requirements-dev.txt`) era: *los scripts de runtime usan únicamente la biblioteca estándar de Python*; `pytest` era la única dependencia, y solo de desarrollo. La publicación de los documentos SQA en GitHub Pages (issue #3) introduce una dependencia de runtime: `markdown==3.10.2` (Python-Markdown), usada por `sqa/sitio/generar_docs.py` con las extensiones `tables`, `fenced_code`, `toc` y `attr_list`. Justificación: escribir a mano un renderizador de Markdown con tablas y anclas es reimplementar —peor y sin pruebas de terceros— una pieza resuelta; la biblioteca es *pure Python*, sin dependencias nativas ni acceso de red en tiempo de ejecución, y se instala pineada en el workflow, por lo que el build de Pages sigue siendo determinista. El desvío se materializa como un `requirements.txt` de runtime separado de `requirements-dev.txt`, y queda registrado aquí conforme a esta sección. El sitio publicado mantiene la restricción de ser *self-contained* (HTML + CSS inline, sin JavaScript ni CDN).
+
 ### §6.4 Repetición de tareas
 
 Se repiten con la siguiente frecuencia: (1) los checks del PACS mismo, trimestralmente o por hito de milestone (§5.2); (2) el recálculo de M-01..M-06, al cierre de cada sprint simulado (0..4, §4.5); y (3) la re-ejecución de la suite `regresion`, en cada push a `main` / `develop` y en cada Pull Request hacia `main` (workflow `ci-tests.yml`, `-Dgroups=regresion`).
@@ -341,6 +343,7 @@ Los **INC-WT-01, INC-WT-02, INC-WT-03 e INC-WT-04** (incidencias derivadas del w
 | 1.2 | 2026-07-12 | Oscar Jaramillo (Líder Tecnológico F1 / Analista de Pruebas F2) | Incorporación del **infograma del ecosistema tecnológico** como apéndice (issue #9, `anexos/infograma-ecosistema.md` — ANX-ECO-001), referenciado desde §4.3. Correcciones de hecho en §4.3: la orquestación declara **seis** workflows (faltaba `ci-metricas.yml`) y el anexo de herramientas se referencia en su versión vigente (v2.1). Se retira «cobertura» de las métricas atribuidas a SonarCloud: hoy el scan corre sin datos de cobertura (issue #31) |
 | 1.3 | 2026-07-12 | Oscar Jaramillo (Líder Tecnológico F1 / Analista de Pruebas F2) | Incorporación de la **reflexión crítica sobre el ecosistema tecnológico** como apéndice (issue #10, `anexos/reflexion-critica-ecosistema.md` — ANX-REF-001), referenciada desde §4.3. Completa el criterio e) de la rúbrica junto con el infograma (ANX-ECO-001): decisiones de selección e integración, uso de IA en el proceso y sus controles, ventajas, limitaciones registradas con issue de seguimiento y evaluación de la integración |
 | 1.4 | 2026-07-13 | Oscar Jaramillo (Líder Tecnológico F1 / Analista de Pruebas F2) | Incorporación del **informe de revisión de requisitos de Fase 1** como apéndice (issue #32, `fase1/informe-revision-requisitos-f1.md` — INF-REV-001), referenciado desde §5.1. Consolida los resultados de la inspección estática: cobertura de revisión 93,3 % (56/60 ítems aplicables), 17 defectos adjudicados (15 confirmados, 1 falso positivo, 1 refutado por la ejecución dinámica), 5 críticos. Los hallazgos quedan trazados como issues `tipo:hallazgo` (#38–#54); antes de esta versión el repositorio no registraba ninguno. Cumple el requisito de *Aspectos Complementarios* del enunciado de Fase 2 (L53) |
+| 1.5 | 2026-07-13 | Oscar Jaramillo (Líder Tecnológico F1 / Analista de Pruebas F2) | Publicación de los documentos SQA en GitHub Pages (issue #3): el mismo workflow que despliega el dashboard (`pages-dashboard.yml`) renderiza ahora los entregables y anexos curados bajo `/docs`, preservando el único `deploy-pages` del repositorio y la trazabilidad de cada documento a su fuente en `main`. §6.3 — registro del desvío de dependencias: `markdown==3.10.2` pasa a ser dependencia de runtime (`requirements.txt`) del generador `sqa/sitio/generar_docs.py` |
 
 ---
 

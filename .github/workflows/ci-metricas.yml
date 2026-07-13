@@ -1,21 +1,28 @@
-name: CI — Métricas (pytest)
+name: CI — Métricas y sitio (pytest)
 
-# Ejecuta la suite pytest del tooling de métricas de fiabilidad
-# (sqa/metricas). El pipeline Java (ci-tests.yml) no cubre este código Python,
-# por lo que estas pruebas corren en un job dedicado para no acoplarse al build
-# Maven. Se dispara solo cuando cambia el tooling de métricas.
+# Ejecuta la suite pytest del tooling Python del ecosistema: métricas de
+# fiabilidad (sqa/metricas) y generador del sitio de documentos (sqa/sitio).
+# El pipeline Java (ci-tests.yml) no cubre este código Python, por lo que estas
+# pruebas corren en un job dedicado para no acoplarse al build Maven.
+#
+# El trigger observa `sqa/**` y no solo el tooling: el MANIFIESTO de
+# `sqa/sitio/generar_docs.py` es un contrato sobre los documentos entregables.
+# Si alguien renombra o elimina uno de ellos, el test del manifiesto debe fallar
+# en el Pull Request — no recién en el build de Pages, cuando ya se mergeó.
 
 on:
   push:
     branches: [main, develop]
     paths:
-      - "sqa/metricas/**"
+      - "sqa/**"
+      - "requirements.txt"
       - "requirements-dev.txt"
       - ".github/workflows/ci-metricas.yml"
   pull_request:
     branches: [main, develop]
     paths:
-      - "sqa/metricas/**"
+      - "sqa/**"
+      - "requirements.txt"
       - "requirements-dev.txt"
       - ".github/workflows/ci-metricas.yml"
   workflow_dispatch:
@@ -25,7 +32,7 @@ permissions:
 
 jobs:
   pytest:
-    name: pytest sqa/metricas
+    name: pytest sqa/metricas + sqa/sitio
     runs-on: ubuntu-latest
 
     steps:
@@ -37,8 +44,10 @@ jobs:
         with:
           python-version: "3.x"
 
-      - name: Instalar dependencias de desarrollo
-        run: pip install -r requirements-dev.txt
+      # La suite de sqa/sitio importa generar_docs.py, que depende de markdown
+      # (dependencia de runtime, requirements.txt): se instalan ambas listas.
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt -r requirements-dev.txt
 
       - name: Ejecutar pytest
-        run: python -m pytest sqa/metricas/tests/
+        run: python -m pytest sqa/metricas/tests/ sqa/sitio/tests/

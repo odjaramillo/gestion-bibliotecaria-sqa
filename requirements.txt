@@ -1,0 +1,9 @@
+# Runtime dependencies for the SQA site generators (GitHub Pages build).
+#
+# Deviation from the "standard library only" convention documented in
+# requirements-dev.txt: sqa/sitio/generar_docs.py renders the curated SQA
+# markdown deliverables to HTML with Python-Markdown (pure Python, no native
+# deps, no runtime network access). Registered in sqa/PACS.md §6.3.
+#
+# Extensions in use: tables, fenced_code, toc, attr_list.
+markdown==3.10.2
