@@ -4,7 +4,7 @@
 |---|---|
 | Documento | Plan de Aseguramiento de la Calidad del Software (PACS) |
 | Identificador | PACS-CONSOLIDADO-001 |
-| Versión | 1.1 |
+| Versión | 1.2 |
 | Fecha de emisión | 2026-07-12 |
 | Estado | Emitido |
 | Organización emisora | Equipo SQA T 11 — Proyecto 16 (Turno Tarde) |
@@ -146,12 +146,14 @@ El Equipo 11 opera un ecosistema de aseguramiento 100% nativo de GitHub, resulta
 
 1. **GitHub Issues** — registro de hallazgos (`tipo:hallazgo`), defectos (`tipo:defecto`) y auditorías, con plantillas dedicadas en `.github/ISSUE_TEMPLATE/`.
 2. **GitHub Projects v2 (tablero #4)** — [tablero público](https://github.com/users/odjaramillo/projects/4) con campos Fase / Severidad / Rol y estado SQA (`Backlog → En Ejecución → En Revisión → Cerrado`).
-3. **GitHub Actions** — orquestación de CI: `ci-static.yml`, `ci-tests.yml`, `sync-labels.yml`, `pr-project.yml`, `pages-dashboard.yml`.
-4. **SonarCloud** — análisis estático continuo (bugs, vulnerabilidades, code smells, cobertura, duplicación, deuda técnica) integrado a `ci-static.yml`.
+3. **GitHub Actions** — orquestación de CI mediante seis workflows: `ci-static.yml`, `ci-tests.yml`, `ci-metricas.yml`, `sync-labels.yml`, `pr-project.yml`, `pages-dashboard.yml`.
+4. **SonarCloud** — análisis estático continuo (bugs, vulnerabilidades, code smells, duplicación, deuda técnica) integrado a `ci-static.yml`.
 
 Ningún componente del ecosistema depende de plataformas externas de gestión documental o de incidencias fuera de GitHub; el reemplazo del ecosistema previo se documenta históricamente en `REPORTE-ECOSISTEMA.md` §1.
 
-La matriz completa de herramientas declaradas por sub-característica de calidad (Madurez, Tolerancia a Fallos) vive como anexo técnico en [`anexos/herramientas-fase2.md`](anexos/herramientas-fase2.md) v2.0 (PR #B, issue #5).
+El **esquema visual de integración** entre estas piezas —qué dispara qué, qué evidencia produce cada workflow y cómo esa evidencia termina publicada— es el apéndice [`anexos/infograma-ecosistema.md`](anexos/infograma-ecosistema.md) (ANX-ECO-001, issue #9). El infograma declara además los huecos conocidos del ecosistema, cada uno con su issue de seguimiento.
+
+La matriz completa de herramientas declaradas por sub-característica de calidad (Madurez, Tolerancia a Fallos) vive como anexo técnico en [`anexos/herramientas-fase2.md`](anexos/herramientas-fase2.md) v2.1 (issue #5).
 
 ### §4.4 Estándares, prácticas y convenciones
 
@@ -334,6 +336,7 @@ Los **INC-WT-01, INC-WT-02, INC-WT-03 e INC-WT-04** (incidencias derivadas del w
 |---|---|---|---|
 | 1.0 | 2026-07-07 | Oscar Jaramillo (Líder Tecnológico F1 / Analista de Pruebas F2) | Emisión inicial del PACS formal consolidado F1+F2, conforme a IEEE 730-2014 §Clause 5 (issue #6) |
 | 1.1 | 2026-07-12 | Oscar Jaramillo (Líder Tecnológico F1 / Analista de Pruebas F2) | Sincronización del estado declarado con el repositorio (issue #33): §5.1 — niveles unitario, integración y sistema pasan a **🟢 Implementada** con enlace a los tests y al dashboard de cobertura; se documenta la partición `regresion` / `defecto-conocido` y el desvío de herramienta del nivel de sistema (MockMvc en lugar de Postman / RestAssured); aceptación permanece planificada (issue #34). §6.2 y §6.6 — el dashboard se refresca también en cada push a `main`. §6.4 — disparadores reales de `ci-tests.yml`. §6.5 — riesgo 1 (bloqueador externo de re-entrega de código) marcado como cerrado |
+| 1.2 | 2026-07-12 | Oscar Jaramillo (Líder Tecnológico F1 / Analista de Pruebas F2) | Incorporación del **infograma del ecosistema tecnológico** como apéndice (issue #9, `anexos/infograma-ecosistema.md` — ANX-ECO-001), referenciado desde §4.3. Correcciones de hecho en §4.3: la orquestación declara **seis** workflows (faltaba `ci-metricas.yml`) y el anexo de herramientas se referencia en su versión vigente (v2.1). Se retira «cobertura» de las métricas atribuidas a SonarCloud: hoy el scan corre sin datos de cobertura (issue #31) |
 
 ---
 
