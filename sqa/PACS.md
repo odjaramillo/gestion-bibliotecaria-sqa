@@ -4,7 +4,7 @@
 |---|---|
 | Documento | Plan de Aseguramiento de la Calidad del Software (PACS) |
 | Identificador | PACS-CONSOLIDADO-001 |
-| Versión | 1.2 |
+| Versión | 1.3 |
 | Fecha de emisión | 2026-07-12 |
 | Estado | Emitido |
 | Organización emisora | Equipo SQA T 11 — Proyecto 16 (Turno Tarde) |
@@ -152,6 +152,8 @@ El Equipo 11 opera un ecosistema de aseguramiento 100% nativo de GitHub, resulta
 Ningún componente del ecosistema depende de plataformas externas de gestión documental o de incidencias fuera de GitHub; el reemplazo del ecosistema previo se documenta históricamente en `REPORTE-ECOSISTEMA.md` §1.
 
 El **esquema visual de integración** entre estas piezas —qué dispara qué, qué evidencia produce cada workflow y cómo esa evidencia termina publicada— es el apéndice [`anexos/infograma-ecosistema.md`](anexos/infograma-ecosistema.md) (ANX-ECO-001, issue #9). El infograma declara además los huecos conocidos del ecosistema, cada uno con su issue de seguimiento.
+
+El **análisis crítico** de estas decisiones —por qué se descartaron Jira y Confluence, qué herramientas de IA apoyan el proceso y bajo qué controles, y cuáles son las limitaciones y oportunidades de mejora del ecosistema— es el apéndice [`anexos/reflexion-critica-ecosistema.md`](anexos/reflexion-critica-ecosistema.md) (ANX-REF-001, issue #10). Ambos anexos son complementarios: el infograma muestra el ecosistema, la reflexión lo juzga.
 
 La matriz completa de herramientas declaradas por sub-característica de calidad (Madurez, Tolerancia a Fallos) vive como anexo técnico en [`anexos/herramientas-fase2.md`](anexos/herramientas-fase2.md) v2.1 (issue #5).
 
@@ -337,6 +339,7 @@ Los **INC-WT-01, INC-WT-02, INC-WT-03 e INC-WT-04** (incidencias derivadas del w
 | 1.0 | 2026-07-07 | Oscar Jaramillo (Líder Tecnológico F1 / Analista de Pruebas F2) | Emisión inicial del PACS formal consolidado F1+F2, conforme a IEEE 730-2014 §Clause 5 (issue #6) |
 | 1.1 | 2026-07-12 | Oscar Jaramillo (Líder Tecnológico F1 / Analista de Pruebas F2) | Sincronización del estado declarado con el repositorio (issue #33): §5.1 — niveles unitario, integración y sistema pasan a **🟢 Implementada** con enlace a los tests y al dashboard de cobertura; se documenta la partición `regresion` / `defecto-conocido` y el desvío de herramienta del nivel de sistema (MockMvc en lugar de Postman / RestAssured); aceptación permanece planificada (issue #34). §6.2 y §6.6 — el dashboard se refresca también en cada push a `main`. §6.4 — disparadores reales de `ci-tests.yml`. §6.5 — riesgo 1 (bloqueador externo de re-entrega de código) marcado como cerrado |
 | 1.2 | 2026-07-12 | Oscar Jaramillo (Líder Tecnológico F1 / Analista de Pruebas F2) | Incorporación del **infograma del ecosistema tecnológico** como apéndice (issue #9, `anexos/infograma-ecosistema.md` — ANX-ECO-001), referenciado desde §4.3. Correcciones de hecho en §4.3: la orquestación declara **seis** workflows (faltaba `ci-metricas.yml`) y el anexo de herramientas se referencia en su versión vigente (v2.1). Se retira «cobertura» de las métricas atribuidas a SonarCloud: hoy el scan corre sin datos de cobertura (issue #31) |
+| 1.3 | 2026-07-12 | Oscar Jaramillo (Líder Tecnológico F1 / Analista de Pruebas F2) | Incorporación de la **reflexión crítica sobre el ecosistema tecnológico** como apéndice (issue #10, `anexos/reflexion-critica-ecosistema.md` — ANX-REF-001), referenciada desde §4.3. Completa el criterio e) de la rúbrica junto con el infograma (ANX-ECO-001): decisiones de selección e integración, uso de IA en el proceso y sus controles, ventajas, limitaciones registradas con issue de seguimiento y evaluación de la integración |
 
 ---
 
