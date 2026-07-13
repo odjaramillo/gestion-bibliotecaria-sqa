@@ -4,8 +4,8 @@
 |---|---|
 | Documento | Plan de Aseguramiento de la Calidad del Software (PACS) |
 | Identificador | PACS-CONSOLIDADO-001 |
-| Versión | 1.3 |
-| Fecha de emisión | 2026-07-12 |
+| Versión | 1.4 |
+| Fecha de emisión | 2026-07-13 |
 | Estado | Emitido |
 | Organización emisora | Equipo SQA T 11 — Proyecto 16 (Turno Tarde) |
 | Autoridad de aprobación | Líder General (Alberto Rodriguez) |
@@ -196,7 +196,7 @@ Los **sprints 0..4** de integración simulada, definidos en [`fase2/planificacio
 
 | Tipo | Técnica | Herramienta | Entregable | Status |
 |---|---|---|---|---|
-| Estática | Inspección (checklist F1) | Checklist markdown (75 ítems) | [`fase1/Checklists-Inspeccion-Estatica-v1.md`](fase1/Checklists-Inspeccion-Estatica-v1.md) | ✅ Completado |
+| Estática | Inspección (checklist F1) | Checklist markdown (75 ítems) | Instrumento: [`fase1/Checklists-Inspeccion-Estatica-v1.md`](fase1/Checklists-Inspeccion-Estatica-v1.md) — Resultados: [`fase1/informe-revision-requisitos-f1.md`](fase1/informe-revision-requisitos-f1.md) (INF-REV-001) | ✅ Completado — cobertura de revisión 93,3 % (56/60 ítems); 17 defectos adjudicados, 5 críticos; hallazgos trazados en issues #38–#54 |
 | Estática | Walkthrough (F2) | ISO/IEC/IEEE 29119-4 + matriz de hallazgos | [`fase2/estaticas/2026-06-02_walkthrough-fiabilidad-sut-biblioteca.md`](fase2/estaticas/2026-06-02_walkthrough-fiabilidad-sut-biblioteca.md) | ✅ Completado |
 | Estática | Auditoría asistida con IA (F2) | ISO/IEC 25010, informe PDF | [`fase2/estaticas/2026-06-02_auditoria-estatica-fiabilidad-iso25010.pdf`](fase2/estaticas/2026-06-02_auditoria-estatica-fiabilidad-iso25010.pdf) | ✅ Completado |
 | Dinámica | Unitaria | JUnit 5 + Mockito + JaCoCo | `PP-FIAB-001` §4.1 — [`src/test/java/com/biblioteca/unit/`](../src/test/java/com/biblioteca/unit) (5 clases, 15 métodos de prueba) | 🟢 Implementada — ejecutada por `ci-tests.yml`; cobertura en el [dashboard](https://odjaramillo.github.io/gestion-bibliotecaria-sqa/) |
@@ -340,6 +340,7 @@ Los **INC-WT-01, INC-WT-02, INC-WT-03 e INC-WT-04** (incidencias derivadas del w
 | 1.1 | 2026-07-12 | Oscar Jaramillo (Líder Tecnológico F1 / Analista de Pruebas F2) | Sincronización del estado declarado con el repositorio (issue #33): §5.1 — niveles unitario, integración y sistema pasan a **🟢 Implementada** con enlace a los tests y al dashboard de cobertura; se documenta la partición `regresion` / `defecto-conocido` y el desvío de herramienta del nivel de sistema (MockMvc en lugar de Postman / RestAssured); aceptación permanece planificada (issue #34). §6.2 y §6.6 — el dashboard se refresca también en cada push a `main`. §6.4 — disparadores reales de `ci-tests.yml`. §6.5 — riesgo 1 (bloqueador externo de re-entrega de código) marcado como cerrado |
 | 1.2 | 2026-07-12 | Oscar Jaramillo (Líder Tecnológico F1 / Analista de Pruebas F2) | Incorporación del **infograma del ecosistema tecnológico** como apéndice (issue #9, `anexos/infograma-ecosistema.md` — ANX-ECO-001), referenciado desde §4.3. Correcciones de hecho en §4.3: la orquestación declara **seis** workflows (faltaba `ci-metricas.yml`) y el anexo de herramientas se referencia en su versión vigente (v2.1). Se retira «cobertura» de las métricas atribuidas a SonarCloud: hoy el scan corre sin datos de cobertura (issue #31) |
 | 1.3 | 2026-07-12 | Oscar Jaramillo (Líder Tecnológico F1 / Analista de Pruebas F2) | Incorporación de la **reflexión crítica sobre el ecosistema tecnológico** como apéndice (issue #10, `anexos/reflexion-critica-ecosistema.md` — ANX-REF-001), referenciada desde §4.3. Completa el criterio e) de la rúbrica junto con el infograma (ANX-ECO-001): decisiones de selección e integración, uso de IA en el proceso y sus controles, ventajas, limitaciones registradas con issue de seguimiento y evaluación de la integración |
+| 1.4 | 2026-07-13 | Oscar Jaramillo (Líder Tecnológico F1 / Analista de Pruebas F2) | Incorporación del **informe de revisión de requisitos de Fase 1** como apéndice (issue #32, `fase1/informe-revision-requisitos-f1.md` — INF-REV-001), referenciado desde §5.1. Consolida los resultados de la inspección estática: cobertura de revisión 93,3 % (56/60 ítems aplicables), 17 defectos adjudicados (15 confirmados, 1 falso positivo, 1 refutado por la ejecución dinámica), 5 críticos. Los hallazgos quedan trazados como issues `tipo:hallazgo` (#38–#54); antes de esta versión el repositorio no registraba ninguno. Cumple el requisito de *Aspectos Complementarios* del enunciado de Fase 2 (L53) |
 
 ---
 

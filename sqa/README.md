@@ -7,8 +7,8 @@
 | Ruta | Contenido |
 |---|---|
 | `fase1/` | Entrega 1 — técnicas estáticas sobre requisitos y arquitectura |
-| `fase1/Checklists-Inspeccion-Estatica-v1.md` | Checklist maestro de inspección estática (75 ítems: BRIEF, ERS, DAS, Código, PAC) |
-| `fase1/gestion/` | Informes de gestión: aprobación del Líder General, resumen ejecutivo, roadmap de mejoras, informe M7, modo producción WF4 |
+| `fase1/Checklists-Inspeccion-Estatica-v1.md` | Checklist maestro de inspección estática (75 ítems: BRIEF, ERS, DAS, Código, PAC) — el **instrumento** |
+| `fase1/informe-revision-requisitos-f1.md` | Informe de revisión de requisitos F1 (INF-REV-001) — los **resultados** de aplicar el instrumento: cobertura, defectos adjudicados y correcciones incorporadas |
 | `fase2/` | Entrega 2 — estáticas a código + técnicas dinámicas (fiabilidad ISO/IEC 25010:2023) |
 | `fase2/planificacion/` | Estrategia de Pruebas y Plan de Pruebas de fiabilidad |
 | `fase2/estaticas/` | Informes de revisión estática de Fase 2 (walkthrough, auditoría) |
