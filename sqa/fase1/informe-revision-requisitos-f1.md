@@ -89,7 +89,7 @@ Los cinco son **confirmados** y ninguno fue refutado por la ejecución dinámica
 | **D-007** | DAS | Decisiones ID-5 e ID-6 fechadas **después** de la emisión del documento. Imposibilidad temporal: el histórico no refleja las ediciones. | [#44](https://github.com/odjaramillo/gestion-bibliotecaria-sqa/issues/44) |
 | **D-012** | CÓDIGO | `RegistroUsuario.vue:104` — la validación de contraseña está **comentada**. | [#49](https://github.com/odjaramillo/gestion-bibliotecaria-sqa/issues/49) |
 | **D-013** | CÓDIGO | El backend **no valida** la complejidad de contraseña que la ERS exige. | [#50](https://github.com/odjaramillo/gestion-bibliotecaria-sqa/issues/50) |
-| **D-014** | CÓDIGO | `application.properties` con `password=admin` **hardcodeado** y versionado. | [#51](https://github.com/odjaramillo/gestion-bibliotecaria-sqa/issues/51) |
+| **D-014** | CÓDIGO | `application.properties` con la contraseña de la base de datos **hardcodeada** y versionada (valor omitido en este informe; ver #51). | [#51](https://github.com/odjaramillo/gestion-bibliotecaria-sqa/issues/51) |
 
 **Lectura de los críticos.** D-012 y D-013 son el mismo defecto en dos capas: la política de contraseñas declarada en la ERS —8 caracteres, mayúscula, número, símbolo— **no se aplica en ninguna capa del sistema**. El requisito existe en el documento y en ningún otro lugar. Y el sistema **sí hashea correctamente** la contraseña al persistirla (`COD-07` ✅): protege criptográficamente una credencial que nunca debió aceptar.
 

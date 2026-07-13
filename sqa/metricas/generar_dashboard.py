@@ -64,6 +64,8 @@ body {
 }
 h1 { font-size: 1.9rem; margin: 0 0 .35rem; letter-spacing: -.01em; }
 .sub { color: var(--ink-muted); margin: 0; font-size: .9rem; }
+.docs-link { display: inline-block; margin-top: .6rem; font-size: .85rem; font-weight: 600; color: var(--accent); text-decoration: none; }
+.docs-link:hover { text-decoration: underline; }
 
 /* KPI hero tiles */
 .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1.75rem 0 2.75rem; }
@@ -479,6 +481,7 @@ def generar_dashboard(
     <span class="eyebrow">Proceso SQA</span>
     <h1>Dashboard de Metricas del Proceso SQA</h1>
     <p class="sub">Sistema de Gestion Bibliotecaria &middot; Equipo 58-1 &middot; Generado {generado}</p>
+    <a class="docs-link" href="docs/index.html">Documentos del proceso SQA &rarr;</a>
   </header>
 
   <div class="kpis">

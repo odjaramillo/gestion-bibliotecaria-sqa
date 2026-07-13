@@ -198,7 +198,7 @@ Este BRIEF contiene información clave en formato de imágenes (tablas, diagrama
 | COD-07 | ¿Las contraseñas se hashean antes de persistir? | [ ] Cumple [ ] No Cumple | | ✅ `UsuarioService` usa `passwordEncoder.encode()` |
 | COD-08 | ¿El backend valida la complejidad de contraseña antes de hashear? | [ ] Cumple [ ] No Cumple | | **DEFECTO:** ERS exige 8 caracteres + mayúscula + número + símbolo. Backend NO valida esto. |
 | COD-09 | ¿El frontend valida la complejidad de contraseña antes de enviar? | [ ] Cumple [ ] No Cumple | | **DEFECTO:** `RegistroUsuario.vue` línea 104 tiene la validación COMENTADA: `// if (password.length < 8)...` |
-| COD-10 | ¿Las credenciales de base de datos están externalizadas? | [ ] Cumple [ ] No Cumple | | **DEFECTO:** `application.properties` tiene `password=admin` hardcodeado |
+| COD-10 | ¿Las credenciales de base de datos están externalizadas? | [ ] Cumple [ ] No Cumple | | **DEFECTO:** `application.properties` tiene la contraseña de la base de datos hardcodeada (valor omitido: no se reproducen secretos en un entregable público) |
 | COD-11 | ¿SecurityConfig protege endpoints sensibles por rol? | [ ] Cumple [ ] No Cumple | | **PARCIAL:** DELETE /api/libros protegido, pero POST /api/libros depende de lógica de negocio, no de seguridad |
 | COD-12 | ¿Hay manejo global de excepciones (@ControllerAdvice)? | [ ] Cumple [ ] No Cumple | | **DEFECTO:** No existe — riesgo de exponer stack traces |
 

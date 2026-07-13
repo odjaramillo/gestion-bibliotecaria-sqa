@@ -41,6 +41,12 @@ jobs:
         with:
           python-version: "3.x"
 
+      # Dependencias de runtime del generador de documentos (markdown pineado).
+      # Desviacion de la convencion "solo biblioteca estandar", registrada en
+      # sqa/PACS.md §6.3.
+      - name: Instalar dependencias de runtime
+        run: pip install -r requirements.txt
+
       - name: Setup Java 21
         uses: actions/setup-java@v4
         with:
@@ -91,6 +97,29 @@ jobs:
 
       - name: Generar dashboard HTML
         run: python sqa/metricas/generar_dashboard.py
+
+      # Los documentos SQA se renderizan DENTRO del mismo directorio site/
+      # (dashboard en /, documentos en /docs): un unico artefacto y un unico
+      # deploy-pages en todo el repositorio (issue #3, opcion A).
+      - name: Generar documentos SQA (site/docs)
+        run: python sqa/sitio/generar_docs.py
+
+      - name: Verificar el sitio antes de publicar
+        run: |
+          missing=0
+          if [ ! -f site/index.html ]; then
+            echo "::error::Falta site/index.html (dashboard de metricas)."
+            missing=1
+          fi
+          if [ ! -f site/docs/index.html ]; then
+            echo "::error::Falta site/docs/index.html (indice de documentos SQA)."
+            missing=1
+          fi
+          if [ "$missing" -ne 0 ]; then
+            echo "Sitio incompleto: no se publica."
+            exit 1
+          fi
+          echo "Sitio completo (dashboard + documentos)."
 
       - name: Subir artefacto de Pages
         uses: actions/upload-pages-artifact@v3
