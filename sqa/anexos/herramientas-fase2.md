@@ -6,8 +6,8 @@
 | Documento | Anexo técnico de herramientas — sub-doc de `sqa/PACS.md` §4.3 |
 | Equipo SQA | Equipo 11 |
 | SUT (Sistema Under Test) | Código del Equipo 58-1 (Java 21 + Spring Boot 3.4.5 / Vue 3) |
-| Versión | 2.0 |
-| Fecha | 2026-07-08 |
+| Versión | 2.1 |
+| Fecha | 2026-07-12 |
 | Issue | #5 (regeneración v2.0, absorbido en PACS §4.3 — issue #6) |
 | Restricción | Código fuente y documentación PDF en `/documentacion` son INTACTOS. Solo se auditan. |
 
@@ -174,11 +174,15 @@ La Fase 2 está en ejecución mediante una cadena de 5 Pull Requests encadenados
 
 | Orden | Actividad | Herramientas | Estado | Evidencia |
 |---|---|---|---|---|
-| PR 1/5 | Configuración de JaCoCo + migración de CI a H2 | `pom.xml` (JaCoCo check informativo, regla `BRANCH ≥ 0.70` en `PrestamoService`/`AmonestacionService`) + `ci-tests.yml` (sin servicio MySQL) | 🟢 En implementación (issue #15, PR #16) | PR #16 |
+| PR 1/5 | Configuración de JaCoCo + migración de CI a H2 | `pom.xml` (JaCoCo check informativo, regla `BRANCH ≥ 0.70` en `PrestamoService`/`AmonestacionService`) + `ci-tests.yml` (sin servicio MySQL) | 🟢 Implementado (issue #15) | PR #16 (mergeado 2026-07-08) |
 | — | Especificación de 11 casos de prueba | `TCS-FIAB-001` (JUnit 5 + Mockito, mapeados a M-01..M-06) | 🟢 Especificados | [`2026-06-24_especificacion-casos-prueba-fiabilidad.md`](../fase2/planificacion/2026-06-24_especificacion-casos-prueba-fiabilidad.md) — 11 filas `TC-FIAB-*` |
-| PR 2-3/5 | Implementar pruebas unitarias e integración (Madurez + Tolerancia a Fallos) | JUnit 5, Mockito, Spring Boot Test, H2 | 🟡 Pendiente | Sprints 1-3 (`PP-FIAB-001` §5.2) |
-| PR 4/5 | Implementar pruebas de sistema | RestAssured / Postman | 🟡 Pendiente | Sprint 3-4 |
-| PR 5/5 | Consolidar métricas M-01..M-06 y publicar dashboard | `metricas/calcular_kpi.py` → `reporte_kpi.json` + GitHub Pages | 🟡 Pendiente | Cierre de Fase 2 (milestone #2, `due_on` 2026-07-19) |
+| PR 2-3/5 | Implementar pruebas unitarias e integración (Madurez + Tolerancia a Fallos) | JUnit 5, Mockito, Spring Boot Test, H2 | 🟢 Implementado | [`src/test/java/com/biblioteca/unit/`](../../src/test/java/com/biblioteca/unit) (5 clases, 15 métodos de prueba) e [`integration/`](../../src/test/java/com/biblioteca/integration) (4 clases, 4 métodos de prueba), ejecutadas por `ci-tests.yml` |
+| PR 4/5 | Implementar pruebas de sistema | Spring Boot Test + MockMvc (desvío respecto de RestAssured / Postman, ver `PACS.md` §5.1) | 🟢 Implementado | [`src/test/java/com/biblioteca/system/`](../../src/test/java/com/biblioteca/system) (3 clases, 8 métodos de prueba) |
+| PR 5/5 | Consolidar métricas M-01..M-06 y publicar dashboard | `metricas/calcular_kpi.py` → `reporte_kpi.json` + GitHub Pages (`pages-dashboard.yml`) | 🟢 Implementado | [Dashboard publicado](https://odjaramillo.github.io/gestion-bibliotecaria-sqa/), desplegado en cada push a `main` (issue #27, PR #28) |
+
+> **Nota sobre los grupos de prueba**: la suite dinámica se ejecuta en dos universos `@Tag` — `regresion` (gate de integración, base de la cobertura JaCoCo y de M-03) y `defecto-conocido` (pruebas que codifican defectos reales del SUT congelado y fallan de forma esperada; se ejecutan de modo informativo). El desglose por clase está en [`sqa/PACS.md`](../PACS.md) §5.1.
+
+El único nivel dinámico aún ausente es el de **aceptación** (Playwright), planificado en el [issue #34](https://github.com/odjaramillo/gestion-bibliotecaria-sqa/issues/34).
 
 ---
 
@@ -207,6 +211,7 @@ Fuente de datos por métrica: JaCoCo (M-02, M-04), Maven Surefire (M-01, M-03, M
 |---|---|---|---|
 | 1.0 | 2026-05-06 | Equipo SQA | Declaración inicial de herramientas. Incluye Fase 1 (implementada) y Fase 2 (planificada, sub-características Tolerancia a fallos + Capacidad de recuperación). Documenta 99 tests pasando. Referencia plataformas externas de reporte (reemplazadas en v2.0). |
 | 2.0 | 2026-07-08 | Equipo SQA | Regeneración (issue #5): sub-características Fiabilidad actualizadas a **Madurez + Tolerancia a Fallos** (ISO/IEC 25010:2023, alineado a `objetivos.txt`/`EST-FIAB-001`); matriz de herramientas de Fiabilidad reescrita (JUnit 5, Mockito, H2, JaCoCo, Maven Surefire, RestAssured/Postman, Spring Boot Test, GitHub Actions); diagrama de integración 100% nativo de GitHub; Fase 2 actualizada a **EN EJECUCIÓN** (issue #15, PR #16 abierto); glosario de métricas reemplazado por M-01..M-06 con fórmulas, umbrales `[PROP]` y fuentes; eliminadas todas las referencias a plataformas externas de reporte de incidencias y documentación. |
+| 2.1 | 2026-07-12 | Equipo SQA | Sincronización del estado declarado con el repositorio (issue #33): roadmap de Fase 2 — PR 1/5 (mergeado), PR 2-3/5, PR 4/5 y PR 5/5 pasan a **🟢 Implementado**, con enlace a los tests y al dashboard; el nivel de sistema declara MockMvc como herramienta real (desvío respecto de RestAssured / Postman, registrado en `PACS.md` §5.1); nota sobre los universos `regresion` / `defecto-conocido`; aceptación (Playwright) queda como único nivel dinámico pendiente (issue #34). |
 
 ---
 

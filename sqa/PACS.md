@@ -4,8 +4,8 @@
 |---|---|
 | Documento | Plan de Aseguramiento de la Calidad del Software (PACS) |
 | Identificador | PACS-CONSOLIDADO-001 |
-| Versión | 1.0 |
-| Fecha de emisión | 2026-07-07 |
+| Versión | 1.1 |
+| Fecha de emisión | 2026-07-12 |
 | Estado | Emitido |
 | Organización emisora | Equipo SQA T 11 — Proyecto 16 (Turno Tarde) |
 | Autoridad de aprobación | Líder General (Alberto Rodriguez) |
@@ -195,10 +195,21 @@ Los **sprints 0..4** de integración simulada, definidos en [`fase2/planificacio
 | Estática | Inspección (checklist F1) | Checklist markdown (75 ítems) | [`fase1/Checklists-Inspeccion-Estatica-v1.md`](fase1/Checklists-Inspeccion-Estatica-v1.md) | ✅ Completado |
 | Estática | Walkthrough (F2) | ISO/IEC/IEEE 29119-4 + matriz de hallazgos | [`fase2/estaticas/2026-06-02_walkthrough-fiabilidad-sut-biblioteca.md`](fase2/estaticas/2026-06-02_walkthrough-fiabilidad-sut-biblioteca.md) | ✅ Completado |
 | Estática | Auditoría asistida con IA (F2) | ISO/IEC 25010, informe PDF | [`fase2/estaticas/2026-06-02_auditoria-estatica-fiabilidad-iso25010.pdf`](fase2/estaticas/2026-06-02_auditoria-estatica-fiabilidad-iso25010.pdf) | ✅ Completado |
-| Dinámica | Unitaria | JUnit 5 + Mockito + JaCoCo | `PP-FIAB-001` §4.1 | 🟡 Planificada (bloqueada por re-entrega de código, ver §6.5) |
-| Dinámica | Integración | Spring Boot Test + H2 | `PP-FIAB-001` §4.2 | 🟡 Planificada |
-| Dinámica | Sistema | Postman / RestAssured | `PP-FIAB-001` §4.3 | 🟡 Planificada |
-| Dinámica | Aceptación | Manual / Playwright | `PP-FIAB-001` §4.4 | 🟡 Planificada |
+| Dinámica | Unitaria | JUnit 5 + Mockito + JaCoCo | `PP-FIAB-001` §4.1 — [`src/test/java/com/biblioteca/unit/`](../src/test/java/com/biblioteca/unit) (5 clases, 15 métodos de prueba) | 🟢 Implementada — ejecutada por `ci-tests.yml`; cobertura en el [dashboard](https://odjaramillo.github.io/gestion-bibliotecaria-sqa/) |
+| Dinámica | Integración | Spring Boot Test + H2 | `PP-FIAB-001` §4.2 — [`src/test/java/com/biblioteca/integration/`](../src/test/java/com/biblioteca/integration) (4 clases, 4 métodos de prueba) | 🟢 Implementada — ejecutada por `ci-tests.yml` |
+| Dinámica | Sistema | Spring Boot Test + MockMvc (desvío respecto de Postman / RestAssured, ver nota abajo) | `PP-FIAB-001` §4.3 — [`src/test/java/com/biblioteca/system/`](../src/test/java/com/biblioteca/system) (3 clases, 8 métodos de prueba) | 🟢 Implementada — ejecutada por `ci-tests.yml` |
+| Dinámica | Aceptación | Manual / Playwright | `PP-FIAB-001` §4.4 | 🟡 Planificada — único nivel dinámico ausente ([issue #34](https://github.com/odjaramillo/gestion-bibliotecaria-sqa/issues/34)) |
+
+**Dos universos de prueba (`@Tag`).** La suite dinámica está deliberadamente partida en dos grupos JUnit 5, y el workflow `ci-tests.yml` los ejecuta por separado:
+
+| Grupo `@Tag` | Rol | Clases |
+|---|---|---|
+| `regresion` | **Gate de integración**: debe estar en verde para integrar a `main`. Es el universo sobre el que se calculan la cobertura JaCoCo y M-03 (`-Dgroups=regresion`) | Unitaria: `ParseFechaValidaTest`, `PrestamosActivosLimiteTest`, `PrestamoServiceCrearPrestamoTest`, `EliminarAmonestacionTest` · Integración: `PrestamoEstadoInventarioTest`, `PrestamoMoraAmonestacionTest` · Sistema: `SecurityGatingTest` · Smoke: `GestionBibliotecariaApplicationTests` |
+| `defecto-conocido` | **Evidencia de defecto**: pruebas que codifican defectos reales detectados en el SUT y que, por lo tanto, fallan de forma esperada. Se ejecutan de modo **informativo** y no tiñen el CI de rojo | Unitaria: `ParseFechaInvalidaTest` · Integración: `PagarAmonestacionTest`, `TransactionalGapTest` · Sistema: `MultipartLimitTest`, `PrestarJsonMalformadoTest` |
+
+Esta partición no es deuda técnica: es el resultado esperado de la Fase 2 dinámica. Las pruebas `defecto-conocido` son la evidencia formal de que la ejecución dinámica **encontró defectos** en un SUT congelado (§6.1) que el Equipo 11 no puede corregir; se registran como tales y se miden aparte para que el gate de regresión siga siendo una señal fiable de no-regresión.
+
+**Nota de desvío de herramienta (Sistema).** La versión 1.0 de este PACS declaraba *Postman / RestAssured* para el nivel de sistema. La implementación usa `@SpringBootTest` + `@AutoConfigureMockMvc` (MockMvc): ejercita el mismo contrato HTTP de extremo a extremo (rutas, códigos de estado, serialización JSON, gating de seguridad) dentro del mismo pipeline Maven/Surefire, sin exigir un servidor desplegado ni una herramienta externa al CI. El desvío queda registrado aquí conforme a §6.3.
 
 Los hallazgos **WT-01, WT-02, WT-03, WT-04, WT-05 y WT-06** del walkthrough son la entrada primaria al registro de riesgos de producto (ver §4.2 de este documento). Los tres documentos dinámicos de Fase 2 (`EST-FIAB-001`, `PP-FIAB-001`, `TCS-FIAB-001`) no se duplican aquí; se referencian tal cual fueron entregados en PR #4.
 
@@ -236,7 +247,7 @@ El contrato de aseguramiento entre el Equipo 11 (SQA) y el Equipo 58-1 (autor de
 
 ### §6.2 Medición de calidad
 
-La medición de calidad de proceso se apoya en tres piezas: (1) el marco de métricas M-01..M-06 de [`referencias/objetivos.txt`](referencias/objetivos.txt); (2) la cobertura de revisión por pares, calculada como PRs revisados / PRs abiertos; y (3) el flujo automatizado `metricas/calcular_kpi.py` → `reporte_kpi.json`, versionado en el repositorio y publicado como dashboard en GitHub Pages (https://odjaramillo.github.io/gestion-bibliotecaria-sqa/, workflow `pages-dashboard.yml`, refresco semanal + on-demand).
+La medición de calidad de proceso se apoya en tres piezas: (1) el marco de métricas M-01..M-06 de [`referencias/objetivos.txt`](referencias/objetivos.txt); (2) la cobertura de revisión por pares, calculada como PRs revisados / PRs abiertos; y (3) el flujo automatizado `metricas/calcular_kpi.py` → `reporte_kpi.json`, versionado en el repositorio y publicado como dashboard en GitHub Pages (https://odjaramillo.github.io/gestion-bibliotecaria-sqa/, workflow `pages-dashboard.yml`, refresco en cada push a `main` + cron semanal + on-demand).
 
 ### §6.3 Dispensas y desviaciones
 
@@ -244,13 +255,13 @@ Toda desviación documentada respecto de lo planificado en este PACS se registra
 
 ### §6.4 Repetición de tareas
 
-Se repiten con la siguiente frecuencia: (1) los checks del PACS mismo, trimestralmente o por hito de milestone (§5.2); (2) el recálculo de M-01..M-06, al cierre de cada sprint simulado (0..4, §4.5); y (3) la re-ejecución de la suite `regresion`, en cada push a la rama `simulacion-desarrollo` (workflow `ci-tests.yml`).
+Se repiten con la siguiente frecuencia: (1) los checks del PACS mismo, trimestralmente o por hito de milestone (§5.2); (2) el recálculo de M-01..M-06, al cierre de cada sprint simulado (0..4, §4.5); y (3) la re-ejecución de la suite `regresion`, en cada push a `main` / `develop` y en cada Pull Request hacia `main` (workflow `ci-tests.yml`, `-Dgroups=regresion`).
 
 ### §6.5 Riesgo de realizar el SQA
 
 | # | Riesgo del proceso SQA | Mitigación |
 |---|---|---|
-| 1 | Bloqueador externo: la Fase 2 dinámica depende de que el Equipo 58-1 re-entregue el código con pruebas unitarias (enunciado F2, línea 55); sin esa entrega, `ci-tests.yml` no tiene qué ejecutar | Escalamiento formal vía RIE-J01 (§4.2); la documentación del PACS y las especificaciones de prueba avanzan en paralelo sin depender del bloqueador |
+| 1 | Bloqueador externo: la Fase 2 dinámica depende de que el Equipo 58-1 re-entregue el código con pruebas unitarias (enunciado F2, línea 55); sin esa entrega, `ci-tests.yml` no tiene qué ejecutar | Escalamiento formal vía RIE-J01 (§4.2); la documentación del PACS y las especificaciones de prueba avanzaron en paralelo sin depender del bloqueador. **Riesgo cerrado (2026-07-12)**: los niveles unitario, de integración y de sistema están implementados y en ejecución sobre `main` (§5.1) |
 | 2 | Sub-características desactualizadas — riesgo ya materializado: la versión 1.0 del anexo de herramientas declaraba *Tolerancia a fallos + Capacidad de recuperación* como sub-características, abandonadas tras la realineación del equipo a *Madurez + Tolerancia a Fallos* (`referencias/objetivos.txt`) | Absorción y regeneración del anexo a v2.0 (issue #5, PR de seguimiento a este) |
 | 3 | Sub-utilización del tablero Projects v2 #4 (issues que no avanzan por los estados definidos) | Revisión del tablero como parte del cierre de cada sprint (§5.2) |
 | 4 | WT-03, WT-05 y WT-06 son hallazgos del walkthrough sin `RIE` formal asignado en el registro de riesgos de producto (§4.2); podrían perderse de vista si no se referencian explícitamente | Referenciados aquí y en la tabla de mapeo WT→RIE de §4.2 como riesgos latentes bajo seguimiento |
@@ -263,7 +274,7 @@ Se repiten con la siguiente frecuencia: (1) los checks del PACS mismo, trimestra
 | GitHub Projects v2 (tablero #4) | Estado visual del avance SQA para el docente | Continuo, actualizado por movimiento de issue |
 | Pull Requests | Peer-review IEEE 730 formal de cada entregable | Por entregable |
 | Reuniones de cierre de sprint | Revisión de métricas M-01..M-06 y ajuste del plan | Al cierre de cada sprint simulado (0..4) |
-| GitHub Pages (dashboard) | Publicación pública de métricas de proceso para el docente | Semanal (cron lunes 06:00 UTC) + manual on-demand |
+| GitHub Pages (dashboard) | Publicación pública de métricas de proceso para el docente | Cada push a `main` + cron semanal (lunes 06:00 UTC) + manual on-demand |
 
 ### §6.7 Proceso de no conformidades
 
@@ -322,6 +333,7 @@ Los **INC-WT-01, INC-WT-02, INC-WT-03 e INC-WT-04** (incidencias derivadas del w
 | Versión | Fecha | Autor | Cambios |
 |---|---|---|---|
 | 1.0 | 2026-07-07 | Oscar Jaramillo (Líder Tecnológico F1 / Analista de Pruebas F2) | Emisión inicial del PACS formal consolidado F1+F2, conforme a IEEE 730-2014 §Clause 5 (issue #6) |
+| 1.1 | 2026-07-12 | Oscar Jaramillo (Líder Tecnológico F1 / Analista de Pruebas F2) | Sincronización del estado declarado con el repositorio (issue #33): §5.1 — niveles unitario, integración y sistema pasan a **🟢 Implementada** con enlace a los tests y al dashboard de cobertura; se documenta la partición `regresion` / `defecto-conocido` y el desvío de herramienta del nivel de sistema (MockMvc en lugar de Postman / RestAssured); aceptación permanece planificada (issue #34). §6.2 y §6.6 — el dashboard se refresca también en cada push a `main`. §6.4 — disparadores reales de `ci-tests.yml`. §6.5 — riesgo 1 (bloqueador externo de re-entrega de código) marcado como cerrado |
 
 ---
 
