@@ -1,8 +1,8 @@
 # Sistema de Checklists de Inspección Estática — SQA Equipo 11
 ## Basado en Evidencia Real de Artefactos del Equipo 58-1
 
-**Versión:** 1.0
-**Fecha:** 2026-05-06
+**Versión:** 1.1
+**Fecha:** 2026-07-13
 **Equipo:** SQA 11 (Auditoría del Sistema de Gestión Bibliotecaria del Equipo 58-1)
 **Principio rector:** Cada ítem de checklist debe ser verificable contra el contenido REAL del artefacto. No se audita con estándares que el artefacto no declara seguir.
 
@@ -360,7 +360,7 @@ El artefacto NO puede pasar a Workflow 1 (Auditoría con IA) ni Workflow 2 (Aná
 
 | ID | Artefacto | Defecto | Severidad | Checklist ID |
 |---|---|---|---|---|
-| D-001 | BRIEF | Backlog vacío | Alta | BRIEF-04 |
+| D-001 | BRIEF | ~~Backlog vacío~~ — **descartado**: el backlog existe y está poblado (User Story Map, 5 épicas — pág. 5). El «defecto» fue un artefacto del método de extracción de texto, no del documento auditado. | ⚠️ **FALSO POSITIVO** <br>(declarada: Alta) | BRIEF-04 |
 | D-002 | BRIEF | Rangos de calidad no medibles | Media | BRIEF-06 |
 | D-003 | ERS | Inconsistencia de versión (1.1 vs 1.2) | Media | ERS-02 |
 | D-004 | ERS | HU5 contradicción interna | **Crítica** | ERS-07 |
@@ -374,9 +374,26 @@ El artefacto NO puede pasar a Workflow 1 (Auditoría con IA) ni Workflow 2 (Aná
 | D-012 | CÓDIGO | Validación contraseña comentada en frontend | **Crítica** | COD-09 |
 | D-013 | CÓDIGO | Backend no valida complejidad de contraseña | **Crítica** | COD-08 |
 | D-014 | CÓDIGO | Credenciales hardcodeadas | **Crítica** | COD-10 |
-| D-015 | CÓDIGO | Sin @ControllerAdvice | Alta | COD-12 |
+| D-015 | CÓDIGO | Sin `@ControllerAdvice` — **reclasificado**: la ejecución dinámica (TC-FIAB-011) demostró que Spring maneja `HttpMessageNotReadableException` por defecto (HTTP 400, sin exponer la traza). Subsiste como observación de mantenibilidad: no hay política de errores explícita del equipo. | **Menor** <br>(declarada: Alta) | COD-12 |
 | D-016 | CÓDIGO | Dependencias duplicadas en pom.xml | Baja | COD-06 |
 | D-017 | CÓDIGO | Parsing de fecha sin manejo de excepciones | Media | COD-13 |
+
+> **Nota sobre las adjudicaciones (D-001 y D-015).**
+> Las filas de D-001 y D-015 **no se eliminan de esta tabla**, se anotan. La inspección estática produce *hipótesis de defecto*; la revisión posterior y la ejecución dinámica de Fase 2 las **adjudican**, y el veredicto puede ser contrario al hallazgo original.
+>
+> - **D-001** resultó un **falso positivo**: el defecto estaba en el instrumento, no en el artefacto auditado.
+> - **D-015** fue **refutado parcialmente** por `TC-FIAB-011` y reclasificado de Alta a Menor.
+>
+> Conservar la traza es deliberado. Un instrumento de inspección que nunca produce falsos positivos no está siendo auditado, y un proceso que solo publica los hallazgos que le dieron la razón no está midiendo: está seleccionando. El detalle completo de cada adjudicación está en el informe de revisión de requisitos F1 (`INF-REV-001`) y en los issues [#38](https://github.com/odjaramillo/gestion-bibliotecaria-sqa/issues/38) y [#52](https://github.com/odjaramillo/gestion-bibliotecaria-sqa/issues/52).
+
+---
+
+## Control de versiones
+
+| Versión | Fecha | Autor | Cambios |
+|---|---|---|---|
+| 1.0 | 2026-05-06 | Equipo SQA 11 | Emisión inicial. Definición de las 5 checklists de inspección estática y ejecución de la revisión sobre los artefactos del Equipo 58-1. |
+| 1.1 | 2026-07-13 | Equipo SQA 11 | Adjudicación de hallazgos en el resumen de defectos: **D-001** anotado como falso positivo (issue #38) y **D-015** reclasificado de Alta a Menor tras su refutación parcial por `TC-FIAB-011` (issue #52). Se añade nota metodológica sobre la conservación de la traza. Se incorpora esta sección de control de versiones: el instrumento debe cumplir el mismo estándar de trazabilidad documental que exige a los artefactos auditados (`ERS-01`). Redactado el valor literal de la credencial en `COD-10` — un informe declara dónde está el secreto y su severidad, no lo reproduce (issue #51). |
 
 ---
 
