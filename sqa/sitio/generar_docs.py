@@ -1,9 +1,11 @@
 """Genera el sitio de documentos SQA (site/docs/) desde un manifiesto curado.
 
 Capa de presentacion documental: NO produce contenido (eso vive en los .md de
-sqa/). Renderiza a HTML self-contained (sin JS, sin CDN, sin fuentes externas:
-CSP/Pages safe) unicamente los documentos declarados en MANIFIESTO, y publica
-un indice navegable en site/docs/index.html.
+sqa/). Renderiza a HTML self-contained (sin dependencias externas: sin CDN,
+sin fuentes remotas, sin fetch; el unico script es el conmutador de tema
+inline, listo para GitHub Pages) unicamente los documentos declarados en
+MANIFIESTO,
+y publica un indice navegable en site/docs/index.html.
 
 La publicacion es una decision explicita: el manifiesto es una lista blanca, no
 un glob. Un borrador nuevo en sqa/ NO se publica solo; hay que agregarlo aqui.
@@ -263,10 +265,36 @@ ACTIVOS: tuple[Activo, ...] = (
 # ---------------------------------------------------------------------------
 # Estilos — misma paleta y tipografia que el dashboard (generar_dashboard.py).
 # Los documentos deben leerse como el mismo producto que el dashboard.
+# Tema dual: paleta oscura por defecto (:root); la clara entra por
+# prefers-color-scheme o forzada via data-theme (conmutador inline).
 # ---------------------------------------------------------------------------
-CSS = """
+
+# Paleta clara (GitHub-light-like). Se inyecta dos veces: bajo la media query
+# (tema del sistema) y bajo [data-theme="light"] (tema forzado), para que el
+# override explicito gane en ambos sentidos.
+_PALETA_CLARA = """\
+  color-scheme: light;
+  --bg: #f6f8fa;
+  --surface: #ffffff;
+  --surface-2: #eff2f5;
+  --border: #d0d7de;
+  --border-soft: #d8dee4;
+  --ink: #1f2328;
+  --ink-muted: #59636e;
+  --ink-faint: #6e7781;
+  --accent: #0969da;
+  --accent-2: #218bff;
+  --accent-tint: rgba(9,105,218,.06);
+  --accent-line: rgba(9,105,218,.35);
+  --accent-hover: rgba(9,105,218,.5);
+  --halo: rgba(9,105,218,.07);
+  --halo-2: rgba(26,127,55,.04);
+  --sombra: rgba(31,35,40,.12);
+"""
+
+_CSS_BASE = """
 :root {
-  color-scheme: dark;
+  color-scheme: light dark;
   --bg: #0d1117;
   --surface: #161b22;
   --surface-2: #1c2230;
@@ -276,13 +304,33 @@ CSS = """
   --ink-muted: #9aa4b2;
   --ink-faint: #6e7681;
   --accent: #4493f8;
+  --accent-2: #7cc3ff;
+  --accent-tint: rgba(68,147,248,.08);
+  --accent-line: rgba(68,147,248,.35);
+  --accent-hover: rgba(68,147,248,.5);
+  --halo: rgba(68,147,248,.10);
+  --halo-2: rgba(63,185,80,.05);
+  --sombra: rgba(1,4,9,.55);
 }
+/* Tema del sistema; un data-theme explicito (conmutador) lo pisa. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+__PALETA_CLARA__
+  }
+}
+:root[data-theme="light"] {
+__PALETA_CLARA__
+}
+:root[data-theme="dark"] { color-scheme: dark; }
+
 * { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   margin: 0; padding: 2.5rem 1.25rem; line-height: 1.6;
   background:
-    radial-gradient(1200px 600px at 50% -10%, rgba(68,147,248,.10), transparent 70%),
+    radial-gradient(1100px 540px at 18% -12%, var(--halo), transparent 70%),
+    radial-gradient(900px 480px at 85% -14%, var(--halo-2), transparent 72%),
     var(--bg);
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
@@ -290,38 +338,63 @@ body {
 }
 .wrap { max-width: 1080px; margin: 0 auto; }
 
-/* Header */
-.masthead { margin-bottom: 2.25rem; }
-.eyebrow {
-  display: inline-block; font-size: .72rem; font-weight: 700; letter-spacing: .12em;
-  text-transform: uppercase; color: var(--accent);
-  border: 1px solid rgba(68,147,248,.35); background: rgba(68,147,248,.08);
-  border-radius: 999px; padding: .2rem .7rem; margin-bottom: .9rem;
+a:focus-visible, button:focus-visible, summary:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px;
 }
-h1 { font-size: 1.9rem; margin: 0 0 .35rem; letter-spacing: -.01em; line-height: 1.25; }
+
+/* Header */
+.masthead { margin-bottom: 2.5rem; padding-top: .5rem; }
+.eyebrow {
+  display: inline-block; font-size: .72rem; font-weight: 700; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--accent);
+  border: 1px solid var(--accent-line); background: var(--accent-tint);
+  border-radius: 999px; padding: .22rem .75rem; margin-bottom: 1rem;
+}
+h1 { font-size: 2.1rem; margin: 0 0 .45rem; letter-spacing: -.02em; line-height: 1.2; }
+@supports (-webkit-background-clip: text) or (background-clip: text) {
+  .masthead h1 {
+    background: linear-gradient(105deg, var(--ink) 55%, var(--accent));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+  }
+}
 .sub { color: var(--ink-muted); margin: 0; font-size: .9rem; }
 
 /* Navegacion (misma en indice y en cada documento) */
-.nav { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1.1rem 0 0; }
+.nav { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin: 1.1rem 0 0; }
 .nav a {
   font-size: .78rem; font-weight: 600; text-decoration: none; color: var(--ink-muted);
   border: 1px solid var(--border); background: var(--surface);
   border-radius: 999px; padding: .3rem .8rem;
+  transition: color .15s ease, border-color .15s ease;
 }
-.nav a:hover { color: var(--accent); border-color: rgba(68,147,248,.5); }
+.nav a:hover { color: var(--accent); border-color: var(--accent-hover); }
+.theme-toggle {
+  font: inherit; font-size: .78rem; font-weight: 600; color: var(--ink-muted);
+  border: 1px solid var(--border); background: var(--surface);
+  border-radius: 999px; padding: .3rem .8rem; cursor: pointer;
+  transition: color .15s ease, border-color .15s ease;
+}
+.theme-toggle:hover { color: var(--accent); border-color: var(--accent-hover); }
 
 /* Indice de documentos */
 section { margin-bottom: 2.75rem; }
 .sec-head { display: flex; align-items: baseline; gap: .6rem; margin-bottom: .35rem; }
 h2 { font-size: 1.15rem; margin: 0; letter-spacing: -.01em; }
+.sec-count {
+  font-size: .72rem; font-weight: 700; color: var(--ink-muted);
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 999px; padding: .1rem .6rem;
+}
 .sec-desc { color: var(--ink-muted); font-size: .85rem; margin: .1rem 0 1.1rem; max-width: 62ch; }
 .rule { height: 1px; background: var(--border-soft); margin-bottom: 1.25rem; }
 .doc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; }
 .doc-card {
-  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
-  padding: 1.15rem 1.3rem; display: flex; flex-direction: column; gap: .55rem;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+  padding: 1.2rem 1.35rem; display: flex; flex-direction: column; gap: .55rem;
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
 }
-.doc-card:hover { border-color: rgba(68,147,248,.5); }
+.doc-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px var(--sombra); border-color: var(--accent-hover); }
 .doc-head { display: flex; justify-content: space-between; align-items: baseline; gap: .5rem; }
 .doc-titulo { font-size: .98rem; font-weight: 600; line-height: 1.3; }
 .doc-titulo a { color: var(--ink); text-decoration: none; }
@@ -335,20 +408,39 @@ h2 { font-size: 1.15rem; margin: 0; letter-spacing: -.01em; }
 .doc-foot a { font-size: .76rem; color: var(--ink-faint); text-decoration: none; }
 .doc-foot a:hover { color: var(--accent); }
 
+/* Tabla de contenidos del documento (plegada por defecto) */
+.toc { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; margin: 0 0 1.5rem; }
+.toc summary {
+  cursor: pointer; padding: .85rem 1.25rem; font-size: .88rem; font-weight: 600;
+  color: var(--ink-muted); transition: color .15s ease;
+}
+.toc summary:hover { color: var(--accent); }
+.toc[open] summary { border-bottom: 1px solid var(--border-soft); }
+.toc nav { padding: .7rem 1.25rem 1rem; }
+.toc ul { margin: 0; padding-left: 1.2rem; }
+.toc li { font-size: .85rem; margin: .3rem 0; }
+.toc a { color: var(--ink-muted); text-decoration: none; }
+.toc a:hover { color: var(--accent); }
+
 /* Cuerpo del documento renderizado */
-.md { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.75rem 2rem; }
+.md { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.85rem 2.1rem; }
 .md > :first-child { margin-top: 0; }
-.md h1 { font-size: 1.5rem; margin: 2rem 0 .75rem; }
-.md h2 { font-size: 1.2rem; margin: 1.9rem 0 .7rem; padding-bottom: .35rem; border-bottom: 1px solid var(--border-soft); }
+.md h1 { font-size: 1.5rem; margin: 2rem 0 .75rem; letter-spacing: -.01em; }
+.md h2 {
+  font-size: 1.2rem; margin: 1.9rem 0 .7rem; padding: 0 0 .35rem .75rem;
+  border-bottom: 1px solid var(--border-soft); border-left: 3px solid var(--accent);
+}
 .md h3 { font-size: 1.02rem; margin: 1.6rem 0 .6rem; }
 .md h4, .md h5, .md h6 { font-size: .92rem; margin: 1.3rem 0 .5rem; color: var(--ink-muted); }
-.md p, .md li { font-size: .92rem; }
+/* Medida de lectura acotada; las tablas conservan el ancho completo. */
+.md p, .md li { font-size: .92rem; max-width: 74ch; }
 .md a { color: var(--accent); text-decoration: none; }
 .md a:hover { text-decoration: underline; }
 .md hr { border: 0; height: 1px; background: var(--border-soft); margin: 2rem 0; }
 .md blockquote {
-  margin: 1.1rem 0; padding: .1rem 1rem; color: var(--ink-muted);
-  border-left: 3px solid var(--border); background: var(--surface-2); border-radius: 0 8px 8px 0;
+  margin: 1.1rem 0; padding: .35rem 1.1rem; color: var(--ink-muted);
+  border-left: 3px solid var(--accent-line); background: var(--surface-2);
+  border-radius: 0 8px 8px 0; max-width: 74ch;
 }
 .md code {
   background: var(--surface-2); border: 1px solid var(--border-soft);
@@ -367,10 +459,71 @@ h2 { font-size: 1.15rem; margin: 0; letter-spacing: -.01em; }
 .md th { background: var(--surface-2); color: var(--ink-muted); text-transform: uppercase; font-size: .7rem; letter-spacing: .06em; white-space: nowrap; }
 .md tr:last-child td { border-bottom: 0; }
 
+/* Pager anterior / siguiente (orden del manifiesto) */
+.pager { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.5rem; }
+.pager a {
+  display: flex; flex-direction: column; gap: .3rem;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+  padding: .95rem 1.2rem; text-decoration: none;
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
+.pager a:hover { transform: translateY(-2px); box-shadow: 0 8px 24px var(--sombra); border-color: var(--accent-hover); }
+.pager-prev { grid-column: 1; }
+.pager-next { grid-column: 2; text-align: right; }
+.pager-dir { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-faint); }
+.pager-titulo { font-size: .88rem; font-weight: 600; color: var(--ink); line-height: 1.35; }
+.pager a:hover .pager-titulo { color: var(--accent); }
+@media (max-width: 640px) {
+  .pager { grid-template-columns: 1fr; }
+  .pager-prev, .pager-next { grid-column: auto; text-align: left; }
+}
+
 footer { margin-top: 3.5rem; color: var(--ink-faint); font-size: .8rem; border-top: 1px solid var(--border-soft); padding-top: 1.25rem; }
 footer a { color: var(--ink-muted); text-decoration: none; }
 footer a:hover { color: var(--accent); }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: .01ms !important; animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
 """
+
+CSS = _CSS_BASE.replace("__PALETA_CLARA__", _PALETA_CLARA)
+
+# Conmutador de tema: script inline minimo (sin recursos externos). Corre en
+# <head> antes del primer paint para evitar el destello de tema incorrecto.
+# Duplicado deliberado de generar_dashboard.py (misma convencion que la paleta):
+# la clave "tema" de localStorage y los valores de data-theme son un contrato
+# compartido; ambos bloques deben cambiar juntos.
+SCRIPT_TEMA = """\
+<script>
+(function () {
+  var guardado = null;
+  try { guardado = localStorage.getItem("tema"); } catch (e) { /* sin storage */ }
+  if (guardado === "light" || guardado === "dark") {
+    document.documentElement.setAttribute("data-theme", guardado);
+  }
+  window.alternarTema = function () {
+    var raiz = document.documentElement;
+    var actual = raiz.getAttribute("data-theme") ||
+      (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+    var nuevo = actual === "dark" ? "light" : "dark";
+    raiz.setAttribute("data-theme", nuevo);
+    try { localStorage.setItem("tema", nuevo); } catch (e) { /* sin storage */ }
+  };
+})();
+</script>"""
+
+BOTON_TEMA = (
+    '<button class="theme-toggle" type="button" onclick="alternarTema()" '
+    'aria-label="Cambiar entre tema claro y oscuro">◐ Tema</button>'
+)
+
+# Umbral del TOC por documento: con menos de 4 secciones h2 no amerita indice.
+TOC_MIN_H2 = 4
 
 
 # ---------------------------------------------------------------------------
@@ -455,11 +608,87 @@ def envolver_tablas(html_doc: str) -> str:
 # ---------------------------------------------------------------------------
 # Render
 # ---------------------------------------------------------------------------
-def renderizar_markdown(texto: str, fuente_doc: str) -> str:
-    """Markdown -> HTML self-contained, con enlaces ya reescritos."""
+def _tokens_h2(toc_tokens: list) -> list:
+    """Aplana los toc_tokens de Python-Markdown a la lista de entradas h2.
+
+    Los documentos suelen abrir con un h1 (titulo), asi que los h2 pueden venir
+    anidados como hijos; se recorre cualquier nivel superior hasta encontrarlos.
+    """
+    encontrados = []
+    for token in toc_tokens:
+        if token["level"] == 2:
+            encontrados.append(token)
+        elif token["level"] < 2:
+            encontrados.extend(_tokens_h2(token.get("children", [])))
+    return encontrados
+
+
+def _toc_html(toc_tokens: list) -> str:
+    """TOC plegado del documento (h2 con sus h3), o cadena vacia si es corto.
+
+    Las anclas reutilizan los ids que ya genero el slugger de GitHub
+    (CONFIG_TOC): NO se re-sluggea, o los enlaces divergirian del cuerpo.
+    """
+    h2s = _tokens_h2(toc_tokens)
+    if len(h2s) < TOC_MIN_H2:
+        return ""
+    items = []
+    for token in h2s:
+        hijos = [t for t in token.get("children", []) if t["level"] == 3]
+        sub = ""
+        if hijos:
+            sub = "<ul>" + "".join(
+                f'<li><a href="#{html.escape(t["id"], quote=True)}">'
+                f'{html.escape(t["name"])}</a></li>'
+                for t in hijos
+            ) + "</ul>"
+        items.append(
+            f'<li><a href="#{html.escape(token["id"], quote=True)}">'
+            f'{html.escape(token["name"])}</a>{sub}</li>'
+        )
+    return (
+        '<details class="toc"><summary>Contenido del documento</summary>'
+        f'<nav><ul>{"".join(items)}</ul></nav></details>'
+    )
+
+
+def _render_con_toc(texto: str, fuente_doc: str) -> tuple[str, str]:
+    """Markdown -> (cuerpo HTML con enlaces reescritos, TOC plegado o '')."""
     md = markdown.Markdown(extensions=EXTENSIONES_MD, extension_configs=CONFIG_TOC)
     cuerpo = md.convert(texto)
-    return envolver_tablas(reescribir_enlaces(cuerpo, fuente_doc))
+    cuerpo = envolver_tablas(reescribir_enlaces(cuerpo, fuente_doc))
+    return cuerpo, _toc_html(md.toc_tokens)
+
+
+def renderizar_markdown(texto: str, fuente_doc: str) -> str:
+    """Markdown -> HTML self-contained, con enlaces ya reescritos."""
+    cuerpo, _ = _render_con_toc(texto, fuente_doc)
+    return cuerpo
+
+
+def _pager_html(doc: Documento) -> str:
+    """Pager anterior/siguiente segun el orden del MANIFIESTO.
+
+    El primero no tiene anterior y el ultimo no tiene siguiente: se omite el
+    slot, no se rellena con un placeholder.
+    """
+    idx = MANIFIESTO.index(doc)
+    piezas = []
+    if idx > 0:
+        previo = MANIFIESTO[idx - 1]
+        piezas.append(
+            f'<a class="pager-prev" href="{html.escape(previo.destino, quote=True)}">'
+            '<span class="pager-dir">&larr; Anterior</span>'
+            f'<span class="pager-titulo">{html.escape(previo.titulo)}</span></a>'
+        )
+    if idx < len(MANIFIESTO) - 1:
+        siguiente = MANIFIESTO[idx + 1]
+        piezas.append(
+            f'<a class="pager-next" href="{html.escape(siguiente.destino, quote=True)}">'
+            '<span class="pager-dir">Siguiente &rarr;</span>'
+            f'<span class="pager-titulo">{html.escape(siguiente.titulo)}</span></a>'
+        )
+    return f'<nav class="pager">{"".join(piezas)}</nav>'
 
 
 def _cabecera(titulo: str, subtitulo: str, nav: str) -> str:
@@ -468,7 +697,7 @@ def _cabecera(titulo: str, subtitulo: str, nav: str) -> str:
         '<span class="eyebrow">Documentos SQA</span>'
         f"<h1>{html.escape(titulo)}</h1>"
         f'<p class="sub">{subtitulo}</p>'
-        f'<nav class="nav">{nav}</nav>'
+        f'<nav class="nav">{nav}{BOTON_TEMA}</nav>'
         "</header>"
     )
 
@@ -480,10 +709,11 @@ def _pagina(titulo_head: str, cuerpo: str) -> str:
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{html.escape(titulo_head)}</title>
+{SCRIPT_TEMA}
 <style>{CSS}</style>
 </head>
 <body>
-<div class="wrap">
+<div class="wrap" id="top">
 {cuerpo}
 </div>
 </body>
@@ -492,9 +722,9 @@ def _pagina(titulo_head: str, cuerpo: str) -> str:
 
 
 def _pagina_documento(doc: Documento, generado: str) -> str:
-    """Pagina de un documento: nav + cuerpo renderizado + trazabilidad (DoD #3)."""
+    """Pagina de un documento: nav + TOC + cuerpo + pager + trazabilidad (DoD #3)."""
     fuente = RAIZ_REPO / doc.fuente
-    cuerpo_md = renderizar_markdown(fuente.read_text(encoding="utf-8"), doc.fuente)
+    cuerpo_md, toc = _render_con_toc(fuente.read_text(encoding="utf-8"), doc.fuente)
     url_fuente = doc.url_fuente
     nav = (
         '<a href="index.html">&larr; Índice de documentos</a>'
@@ -505,11 +735,14 @@ def _pagina_documento(doc: Documento, generado: str) -> str:
     subtitulo = f"{codigo}Sistema de Gestión Bibliotecaria &middot; Equipo 58-1"
     cuerpo = (
         f"{_cabecera(doc.titulo, subtitulo, nav)}"
+        f"{toc}"
         f'<article class="md">{cuerpo_md}</article>'
+        f"{_pager_html(doc)}"
         "<footer>"
         f'Fuente: <a href="{html.escape(url_fuente, quote=True)}">'
         f"Ver fuente en el repositorio</a> (<code>{html.escape(doc.fuente)}</code>). "
-        f"Renderizado automaticamente el {generado} por <code>sqa/sitio/generar_docs.py</code>."
+        f"Renderizado automáticamente el {generado} por <code>sqa/sitio/generar_docs.py</code>. "
+        '<a href="#top">Volver arriba &uarr;</a>'
         "</footer>"
     )
     return _pagina(f"{doc.titulo} - Documentos SQA", cuerpo)
@@ -561,24 +794,26 @@ def _pagina_indice(generado: str) -> str:
     cuerpo = (
         f"{_cabecera('Documentos del proceso SQA', 'Equipo 58-1 &middot; Sistema de Gestión Bibliotecaria &middot; Generado ' + generado, nav)}"
         "<section>"
-        '<div class="sec-head"><h2>Entregables</h2></div>'
+        '<div class="sec-head"><h2>Entregables</h2>'
+        f'<span class="sec-count">{len(entregables)}</span></div>'
         '<p class="sec-desc">Documentos formales del proceso de aseguramiento de la '
         "calidad. Cada uno enlaza a su fuente en el repositorio.</p>"
         '<div class="rule"></div>'
         f'<div class="doc-grid">{"".join(entregables)}</div>'
         "</section>"
         "<section>"
-        '<div class="sec-head"><h2>Anexos</h2></div>'
+        '<div class="sec-head"><h2>Anexos</h2>'
+        f'<span class="sec-count">{len(anexos)}</span></div>'
         '<p class="sec-desc">Material de soporte: evidencia, matrices, reflexión y '
         "casos diferidos referenciados por los entregables.</p>"
         '<div class="rule"></div>'
         f'<div class="doc-grid">{"".join(anexos)}</div>'
         "</section>"
         "<footer>"
-        "Publicacion curada: solo se publican los documentos declarados en el "
+        "Publicación curada: solo se publican los documentos declarados en el "
         "manifiesto de <code>sqa/sitio/generar_docs.py</code>. Sitio self-contained "
-        "(sin JS ni recursos externos), desplegado junto al dashboard por "
-        "<code>pages-dashboard.yml</code>."
+        "(sin dependencias externas: sin CDN ni recursos remotos), desplegado junto "
+        "al dashboard por <code>pages-dashboard.yml</code>."
         "</footer>"
     )
     return _pagina("Documentos SQA - Equipo 58-1", cuerpo)
