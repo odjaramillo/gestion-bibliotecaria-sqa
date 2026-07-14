@@ -1,8 +1,10 @@
 """Tests de render del sitio de documentos.
 
-Invariantes: el sitio es self-contained (sin JS, sin CDN ni fuentes externas),
-el indice lista todo el manifiesto, y generar los documentos NO toca el
-dashboard (site/index.html) — un unico artefacto de Pages, dos generadores.
+Invariantes: el sitio es self-contained (sin dependencias externas: sin CDN,
+sin fuentes remotas, sin scripts cargados por red — el unico script permitido
+es el conmutador de tema inline), el indice lista todo el manifiesto, y generar
+los documentos NO toca el dashboard (site/index.html) — un unico artefacto de
+Pages, dos generadores.
 """
 
 import re
@@ -12,9 +14,9 @@ from contexto_sitio import RAIZ_REPO
 
 import generar_docs as gd
 
-# Referencias a recursos externos: <script>, <link ... href="http...">,
+# Referencias a recursos externos: <script src=...>, <link ... href="http...">,
 # @import de una URL, url(http...) en CSS. Cualquiera romperia la invariante.
-RE_SCRIPT = re.compile(r"<script", re.IGNORECASE)
+RE_SCRIPT_EXTERNO = re.compile(r"<script[^>]+src=", re.IGNORECASE)
 RE_LINK_EXTERNO = re.compile(r'<link[^>]+href="https?://', re.IGNORECASE)
 RE_IMPORT_EXTERNO = re.compile(r'@import\s+(?:url\()?["\']?https?://', re.IGNORECASE)
 RE_CSS_URL_EXTERNA = re.compile(r'url\(\s*["\']?https?://', re.IGNORECASE)
@@ -67,9 +69,9 @@ def _paginas_html(sitio):
     return sorted((sitio / "docs").glob("*.html"))
 
 
-def test_ninguna_pagina_incluye_javascript(sitio):
+def test_ninguna_pagina_carga_script_externo(sitio):
     for pagina in _paginas_html(sitio):
-        assert not RE_SCRIPT.search(pagina.read_text(encoding="utf-8")), pagina.name
+        assert not RE_SCRIPT_EXTERNO.search(pagina.read_text(encoding="utf-8")), pagina.name
 
 
 def test_ninguna_pagina_referencia_recursos_externos(sitio):

@@ -21,13 +21,13 @@ def _card(**over) -> str:
 def test_auto_nd_reads_as_broken_artifact():
     html = _card(fuente="auto", valor="N/D")
     assert "no disponible" in html or "no medible" in html
-    assert "Pendiente de ratificacion" not in html
+    assert "Pendiente de ratificación" not in html
 
 
 def test_declared_nd_reads_as_pending_ratification():
     html = _card(id="M-01", nombre="Densidad de defectos",
                  unidad="defectos/modulo", fuente="declarado", valor="N/D")
-    assert "Pendiente de ratificacion" in html
+    assert "Pendiente de ratificación" in html
     assert "no disponible" not in html
 
 
