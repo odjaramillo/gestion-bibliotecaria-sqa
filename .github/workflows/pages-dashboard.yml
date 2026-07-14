@@ -16,12 +16,13 @@ on:
   schedule:
     - cron: "0 6 * * 1"
 
-# Permisos mínimos: leer issues para el export, escribir el despliegue de Pages.
+# Permisos minimos a nivel de workflow: solo lectura. Los permisos de
+# despliegue (pages, id-token) viven unicamente en el job deploy: el job
+# build instala codigo de terceros desde PyPI y no debe sostener el token
+# OIDC de Pages (issue #58, minimo privilegio).
 permissions:
   contents: read
   issues: read
-  pages: write
-  id-token: write
 
 # Una sola publicación a la vez; no cancelar un deploy en curso.
 concurrency:
@@ -130,6 +131,11 @@ jobs:
     name: Desplegar a Pages
     needs: build
     runs-on: ubuntu-latest
+    # Unico job con capacidad de publicar: no ejecuta codigo del repositorio
+    # ni de PyPI, solo actions/deploy-pages sobre el artefacto ya construido.
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
