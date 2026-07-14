@@ -35,6 +35,7 @@ Líder General del Equipo 11 (Alberto Rodriguez) — responsable de revisar y ap
 |---|---|---|---|---|
 | 1.0 | 2026-06-24 | Creación. Síntesis de casos anclados al código desde `casos-de-prueba-adicionales(revisar).md`. Alcance: Madurez + Tolerancia a Fallos. | Realineación de Fase 2 a `objetivos.txt` | Equipo 11 |
 | 1.1 | 2026-07-09 | Consolidación (issue #21): disposición explícita de los 21 casos del documento fuente (§6.2), reconciliación de numeración con PP-FIAB-001 (§6.3), diferimiento formal y documentado de TC-FIAB-028 y los 12 casos restantes fuera de alcance en el Anexo A. Retiro del archivo `(revisar)`. Cambio de estado a *Aprobado*. | Cierre del issue #21 — fuente autoritativa única antes de la simulación por sprints | Equipo 11 |
+| 1.2 | 2026-07-14 | Alta de **TC-FIAB-043** (§5): caso de nivel **aceptación** que ejercita el ciclo de préstamo por la interfaz Vue contra el backend real (re-ejercita TCI-M4.1/M4.2 a nivel UI, complementando a TC-FIAB-020 que los cubre a nivel sistema). Nota de automatización en TC-FIAB-017: el caso de frontend, hasta ahora manual, se automatiza con Playwright. | Implementación del nivel de aceptación, único ausente (issue #34) | Equipo 58-1 |
 
 ---
 
@@ -282,6 +283,15 @@ Cruce sub-característica × técnica de diseño (ISO/IEC/IEEE 29119-4). Las cel
 - **Entradas:** inyectar `RuntimeException` entre `prestamoRepository.save(prestamo)` (L58) y `libroRepository.save(libro)` (L61).
 - **Resultado esperado (documentado):** sin `@Transactional`, no hay rollback; `Prestamo` huérfano persiste, `cantidad` no decrementada. Índice de corrupción esperado = 0; observado = 1 por aborto.
 
+### TC-FIAB-043 — Ciclo operativo de préstamo por interfaz [aceptación]
+- **Objetivo:** verificar, desde la perspectiva del usuario final, que un BIBLIOTECARIO puede registrar y devolver un préstamo accionando la interfaz Vue contra el backend Spring Boot real, sin fallas de integración. · **Prioridad:** Alta · **Suite:** `regresion` · **Métrica:** M-01, M-03
+- **Nivel de prueba:** **aceptación** (frontend Vue → backend real). Es el equivalente por interfaz de TC-FIAB-020, que ejercita el mismo escenario operativo a nivel sistema (MockMvc, sin frontend); ambos comparten TCI-M4.1/M4.2. No es un caso ficticio: es la primera y única prueba que cruza la frontera frontend/backend, nivel exigido por PP-FIAB-001 §4.4 y declarado en PACS §5.1.
+- **Trazabilidad:** TCI-M4.1, TCI-M4.2 · issue #34.
+- **Precondiciones:** backend contra MySQL (motor de producción; H2 no aplica a este nivel). El estado se siembra por API antes de la ejecución (BIBLIOTECARIO, usuario lector y un libro con ISBN de 13 dígitos y `cantidad > 0`), ya que `data.sql` está vacío.
+- **Entradas/pasos:** iniciar sesión como BIBLIOTECARIO por la UI; registrar un préstamo (correo del lector + ISBN) con `fechaPrestamo = hoy`; devolverlo desde la pantalla de devolución.
+- **Resultado esperado:** el préstamo se registra con confirmación en verde; la devolución dentro del plazo se completa sin excepción y sin amonestación por mora. Flujo end-to-end sin fallas de integración.
+- **Herramienta:** Playwright (`biblioteca-frontend/tests/e2e/tc-fiab-043-prestamo-e2e.spec.js`).
+
 ---
 
 ## 6. Resumen de trazabilidad
@@ -299,6 +309,9 @@ Cruce sub-característica × técnica de diseño (ISO/IEC/IEEE 29119-4). Las cel
 | TC-FIAB-021 | Tolerancia | TCI-T3.1..T3.3 | AVL | defecto-conocido | TC-034 | M-05 |
 | TC-FIAB-017 | Tolerancia | TCI-T4.1 | TE | defecto-conocido | WT-03 / INC-WT-03 | M-05 |
 | TC-FIAB-022 | Tolerancia | TCI-T5.1 | TD | defecto-conocido | WT-04 / INC-WT-04 | M-01, M-06 |
+| TC-FIAB-043 | Madurez | TCI-M4.1, M4.2 | PBE | regresion (aceptación) | issue #34 | M-01, M-03 |
+
+> **Nivel de aceptación (issue #34).** TC-FIAB-043 (nuevo) y TC-FIAB-017 (automatizado) constituyen el nivel de **aceptación** por interfaz. TC-FIAB-017, antes de ejecución manual (ver `sqa/fase2/dinamicas/tc-fiab-017-evidencia.md`), se automatiza con Playwright sin cambiar su disposición `defecto-conocido`: sigue documentando el rechazo de promesa sin manejar, ahora de forma reproducible. Ambos viven en `biblioteca-frontend/tests/e2e/`.
 
 ### 6.1 Remapeo de métricas IEEE 1061 (fuente) → ISO/IEC 25023 (vigente)
 | IEEE 1061 (documento fuente) | ISO/IEC 25023 (`objetivos.txt`) |

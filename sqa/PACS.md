@@ -127,7 +127,7 @@ La independencia organizativa del proceso SQA se sostiene en la separación comp
 | RIE-J02 | Proyecto | Incompatibilidad H2/MySQL: queries específicas de MySQL fallan en H2 | Media | Alto | Líder Tecnológico | Usar `MODE=MySQL`; aislar tests afectados con `@Disabled` |
 | RIE-J03 | Proyecto | Cobertura de decisión insuficiente por lógica condicional compleja | Media | Medio | Líder de Métricas | Meta ≥ 50% al cierre del Sprint 3; ≥ 70% al cierre del Sprint 4 |
 | RIE-J04 | Proyecto | Cronograma ajustado: 5 sprints simulados antes de la entrega | Alta | Alto | Líder General | Sprint 0 y 1 en paralelo la primera semana; Sprint 4 con subconjunto de casos de sistema si falta tiempo |
-| RIE-J05 | Proyecto | Pruebas de frontend (Vue) no ejecutables en CI sin configuración adicional | Alta | Medio | Líder Tecnológico | TC-FIAB-017 como prueba manual con Playwright, con pasos de reproducción documentados |
+| RIE-J05 | Proyecto | Pruebas de frontend (Vue) no ejecutables en CI sin configuración adicional | Alta | Medio | Líder Tecnológico | ✅ Mitigado (issue #34): `ci-e2e.yml` ejecuta Playwright (Vue → backend real) contra MySQL como service container; TC-FIAB-017 y TC-FIAB-043 corren en cada PR que toca frontend/backend |
 
 **Mapeo de hallazgos del walkthrough a riesgos de producto** (fuente: [`fase2/estaticas/2026-06-02_walkthrough-fiabilidad-sut-biblioteca.md`](fase2/estaticas/2026-06-02_walkthrough-fiabilidad-sut-biblioteca.md)):
 
@@ -202,7 +202,7 @@ Los **sprints 0..4** de integración simulada, definidos en [`fase2/planificacio
 | Dinámica | Unitaria | JUnit 5 + Mockito + JaCoCo | `PP-FIAB-001` §4.1 — [`src/test/java/com/biblioteca/unit/`](../src/test/java/com/biblioteca/unit) (5 clases, 15 métodos de prueba) | 🟢 Implementada — ejecutada por `ci-tests.yml`; cobertura en el [dashboard](https://odjaramillo.github.io/gestion-bibliotecaria-sqa/) |
 | Dinámica | Integración | Spring Boot Test + H2 | `PP-FIAB-001` §4.2 — [`src/test/java/com/biblioteca/integration/`](../src/test/java/com/biblioteca/integration) (4 clases, 4 métodos de prueba) | 🟢 Implementada — ejecutada por `ci-tests.yml` |
 | Dinámica | Sistema | Spring Boot Test + MockMvc (desvío respecto de Postman / RestAssured, ver nota abajo) | `PP-FIAB-001` §4.3 — [`src/test/java/com/biblioteca/system/`](../src/test/java/com/biblioteca/system) (3 clases, 8 métodos de prueba) | 🟢 Implementada — ejecutada por `ci-tests.yml` |
-| Dinámica | Aceptación | Manual / Playwright | `PP-FIAB-001` §4.4 | 🟡 Planificada — único nivel dinámico ausente ([issue #34](https://github.com/odjaramillo/gestion-bibliotecaria-sqa/issues/34)) |
+| Dinámica | Aceptación | Playwright (Vue → backend real) | `PP-FIAB-001` §4.4 — [`biblioteca-frontend/tests/e2e/`](../biblioteca-frontend/tests/e2e) (TC-FIAB-043 camino feliz; TC-FIAB-017 rechazo async) | 🟢 Implementada — ejecutada por `ci-e2e.yml` contra MySQL ([issue #34](https://github.com/odjaramillo/gestion-bibliotecaria-sqa/issues/34)) |
 
 **Dos universos de prueba (`@Tag`).** La suite dinámica está deliberadamente partida en dos grupos JUnit 5, y el workflow `ci-tests.yml` los ejecuta por separado:
 
