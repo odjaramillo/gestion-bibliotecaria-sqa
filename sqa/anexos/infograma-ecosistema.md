@@ -46,7 +46,7 @@ El ecosistema se organiza en **cinco capas**, y la pieza se lee de arriba hacia 
 
 **La suite dinámica está partida en dos universos.** El grupo `regresion` es el gate de integración; el grupo `defecto-conocido` codifica defectos reales detectados en el SUT y falla de forma esperada, ejecutándose de modo informativo. La cobertura y las métricas se calculan **solo sobre `regresion`**, para que el número publicado signifique algo. El desglose está en `PACS.md` §5.1.
 
-**El sitio publicado es self-contained.** El dashboard se genera como HTML con SVG embebido, sin JavaScript ni CDN. El infograma respeta el mismo criterio y por eso es SVG y no una imagen generada por una herramienta de diagramas: se integra al sitio sin arrastrar dependencias.
+**El sitio publicado es self-contained.** El dashboard se genera como HTML con SVG embebido, sin dependencias externas: sin CDN, sin fuentes remotas, sin `fetch`; el único JavaScript es el conmutador de tema inline propio (desvío registrado en `PACS.md` §6.3, issue #62). El infograma respeta el mismo criterio y por eso es SVG y no una imagen generada por una herramienta de diagramas: se integra al sitio sin arrastrar dependencias.
 
 ---
 
