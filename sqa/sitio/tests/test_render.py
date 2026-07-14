@@ -21,6 +21,36 @@ RE_LINK_EXTERNO = re.compile(r'<link[^>]+href="https?://', re.IGNORECASE)
 RE_IMPORT_EXTERNO = re.compile(r'@import\s+(?:url\()?["\']?https?://', re.IGNORECASE)
 RE_CSS_URL_EXTERNA = re.compile(r'url\(\s*["\']?https?://', re.IGNORECASE)
 
+# ---------------------------------------------------------------------------
+# Guard de seguridad del render (issue #59)
+# ---------------------------------------------------------------------------
+# El renderer NO sanea el HTML: markdown==3.10.2 deja pasar <script>, hrefs
+# javascript:/data:text/html, handlers on*= e <iframe>/<object> tal cual.
+# La frontera de confianza es "cualquier PR que toque sqa/**.md", asi que este
+# guard es lo que impide publicar un sink de XSS almacenado. Los unicos
+# fragmentos con JS permitidos son los del conmutador de tema (SCRIPT_TEMA y
+# BOTON_TEMA, generados por el propio modulo): se descuentan del contenido y
+# sobre el resto rige tolerancia cero.
+RE_SCRIPT_TAG = re.compile(r"<script", re.IGNORECASE)
+RE_URI_PELIGROSA = re.compile(
+    r'(?:href|src)\s*=\s*["\']\s*(?:javascript:|vbscript:|data:text/html)', re.IGNORECASE
+)
+RE_HANDLER_INLINE = re.compile(r"<[^>]*\son\w+\s*=", re.IGNORECASE)
+RE_EMBEBIDO = re.compile(r"<(?:iframe|object|embed)\b", re.IGNORECASE)
+
+_GUARD_XSS = (
+    ("tag <script>", RE_SCRIPT_TAG),
+    ("URI javascript:/vbscript:/data:text/html", RE_URI_PELIGROSA),
+    ("handler inline on*=", RE_HANDLER_INLINE),
+    ("elemento embebido <iframe>/<object>/<embed>", RE_EMBEBIDO),
+)
+
+
+def hallazgos_de_seguridad(html_pagina: str) -> list[str]:
+    """Sinks de XSS presentes en una pagina, descontando el conmutador de tema."""
+    resto = html_pagina.replace(gd.SCRIPT_TEMA, "").replace(gd.BOTON_TEMA, "")
+    return [nombre for nombre, patron in _GUARD_XSS if patron.search(resto)]
+
 
 @pytest.fixture(scope="module")
 def sitio(tmp_path_factory):
@@ -72,6 +102,50 @@ def _paginas_html(sitio):
 def test_ninguna_pagina_carga_script_externo(sitio):
     for pagina in _paginas_html(sitio):
         assert not RE_SCRIPT_EXTERNO.search(pagina.read_text(encoding="utf-8")), pagina.name
+
+
+def test_ninguna_pagina_contiene_sinks_de_xss(sitio):
+    # Todas las paginas generadas, no una muestra (DoD del issue #59).
+    for pagina in _paginas_html(sitio):
+        hallazgos = hallazgos_de_seguridad(pagina.read_text(encoding="utf-8"))
+        assert hallazgos == [], f"{pagina.name}: {hallazgos}"
+
+
+# El guard debe morder: cada fila replica un passthrough verificado del issue
+# #59 contra markdown==3.10.2. Si alguna deja de detectarse, el guard quedo
+# mas angosto que el sink.
+@pytest.mark.parametrize(
+    "malicioso",
+    [
+        "<p><script>alert(1)</script></p>",
+        '<a href="javascript:alert(1)">x</a>',
+        "<a href='JaVaScRiPt:alert(1)'>x</a>",
+        '<a href="data:text/html;base64,PHNjcmlwdD4=">x</a>',
+        '<img src=x onerror="alert(1)">',
+        '<iframe src="//evil.tld"></iframe>',
+        '<object data="x"></object>',
+        "<embed src='x'>",
+    ],
+)
+def test_el_guard_detecta_cada_sink(malicioso):
+    assert hallazgos_de_seguridad(malicioso) != []
+
+
+# Y no debe dar falsos positivos: los documentos citan <script> y handlers
+# entre backticks (p. ej. sqa/anexos/herramientas-fase2.md) y el markdown los
+# escapa como texto; el conmutador de tema legitimo se descuenta entero.
+@pytest.mark.parametrize(
+    "benigno",
+    [
+        "<code>&lt;script&gt;alert(1)&lt;/script&gt;</code>",
+        "<code>onerror=alert(1)</code>",
+        "<p>El atributo onclick= se describe como texto plano.</p>",
+        '<a href="https://example.org/ruta/data:text/html">x</a>',
+        gd.SCRIPT_TEMA + gd.BOTON_TEMA,
+    ],
+)
+def test_el_guard_no_da_falsos_positivos(benigno):
+    assert hallazgos_de_seguridad(benigno) == []
 
 
 def test_ninguna_pagina_referencia_recursos_externos(sitio):
