@@ -226,6 +226,16 @@ jobs:
 
             if (action === 'closed') {
               await setStatusLabel(prNumber, 'estado:cerrado');
+              // Simetrico con el bloque de apertura: alli los issues vinculados
+              // pasan a estado:en-analisis, asi que aca hay que sacarlos de ese
+              // estado o quedan «en analisis» para siempre. Merge => el issue se
+              // cerro (estado:cerrado). Cierre sin merge => el trabajo sigue
+              // pendiente y el issue vuelve a estado:abierto.
+              const estadoIssue = pr.merged ? 'estado:cerrado' : 'estado:abierto';
+              for (const issueNum of parseClosing(body)) {
+                try { await setStatusLabel(issueNum, estadoIssue); }
+                catch (e) { if (e.status !== 404) throw e; }
+              }
               return;
             }
 
