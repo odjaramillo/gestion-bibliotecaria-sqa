@@ -180,6 +180,18 @@ MANIFIESTO: tuple[Documento, ...] = (
         seccion="entregable",
     ),
     Documento(
+        fuente="sqa/fase2/dinamicas/2026-07-19_informe-resultados-pruebas-fiabilidad.md",
+        slug="informe-resultados-pruebas-fiabilidad",
+        titulo="Informe de Resultados de Pruebas de Fiabilidad",
+        codigo="INF-RES-001",
+        descripcion=(
+            "Resultado de la ejecución dinámica de Fase 2: los cuatro niveles de "
+            "prueba, las incidencias trazadas y las seis métricas de fiabilidad "
+            "ratificadas — cierre de la fase."
+        ),
+        seccion="entregable",
+    ),
+    Documento(
         fuente="sqa/anexos/infograma-ecosistema.md",
         slug="infograma-ecosistema",
         titulo="Anexo — Infograma del Ecosistema Tecnológico",
