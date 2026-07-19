@@ -59,7 +59,7 @@ Los resultados provienen de la ejecución automatizada en CI sobre `main`: repor
 |---|---|---|---|---|
 | Unitario | Caja blanca (JUnit 5 + Mockito) | 5 | 18 | ✅ 18/18 |
 | Integración | Caja gris (Spring context + H2) | 4 | 7 | ✅ 7/7 |
-| Sistema | Caja negra (MockMvc) | 3 | 8 | ✅ 8/8 |
+| Sistema | Caja negra (MockMvc / TestRestTemplate) | 3 | 8 | ✅ 8/8 |
 | Smoke | Carga de contexto | 1 | 1 | ✅ 1/1 |
 | **Subtotal JVM** | | **13** | **34** | **✅ 34/34** |
 | Aceptación | Caja negra (Playwright, UI→backend real) | 2 specs | 2 | ✅ (ver §4.4) |
@@ -99,7 +99,7 @@ Ejercita la colaboración entre servicios, repositorios y la persistencia H2 en 
 
 ### 4.3 Nivel de sistema — 8 pruebas ✅ (caja negra)
 
-Estimula los endpoints REST vía `MockMvc`, sin conocimiento de la implementación.
+Estimula los endpoints REST desde afuera, sin conocimiento de la implementación: `MockMvc` para el gating de seguridad, y `TestRestTemplate` sobre Tomcat embebido (`RANDOM_PORT`) para los casos que exigen el contenedor real — donde MockMvc no aplica el límite multipart ni enruta las excepciones no controladas al mecanismo de página de error.
 
 | Clase | Pruebas | Caso | Suite | Métrica |
 |---|---|---|---|---|
