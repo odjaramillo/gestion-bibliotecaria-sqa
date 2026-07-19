@@ -201,7 +201,7 @@ Marco vigente de sub-características **Madurez + Tolerancia a Fallos** (ISO/IEC
 
 Fuente de datos por métrica: JaCoCo (M-02, M-04), Maven Surefire (M-01, M-03, M-05, M-06 vía suites `regresion`/`defecto-conocido`), revisión manual complementaria para M-06. Los umbrales marcados `[PROP]` son propuestas conservadoras a confirmar por el Líder de Métricas / Líder General.
 
-> **Nota de consistencia**: esta numeración M-01..M-06 replica exactamente la de `EST-FIAB-001` v2.0 §8 y `PP-FIAB-001`, ya en uso por los 11 casos de `TCS-FIAB-001`. La tabla de `sqa/PACS.md` §5.2 usa una numeración distinta para las mismas seis métricas (asigna M-01 a Cobertura de Decisión y M-06 a Cobertura de Instrucciones); esa discrepancia es preexistente al alcance de esta regeneración — B-02 (issue #5) solo autoriza editar `PACS.md` §4.3 — y queda documentada como pendiente de corrección en una iteración posterior (ver apply-progress de `pacs-formal-consolidado-f1-f2`).
+> **Nota de consistencia**: esta numeración M-01..M-06 replica exactamente la de `EST-FIAB-001` v2.0 §8 y `PP-FIAB-001`, ya en uso por los 11 casos de `TCS-FIAB-001`. La tabla de `sqa/PACS.md` §5.2 quedó **alineada a esta misma numeración** durante la ratificación de métricas de la Fase 2 (issue #24): la discrepancia previa —que asignaba M-01 a Cobertura de Decisión y M-06 a Cobertura de Instrucciones— fue corregida, de modo que el PACS y el pipeline de cálculo (`metricas/calcular_kpi.py`) ya no divergen.
 
 ---
 

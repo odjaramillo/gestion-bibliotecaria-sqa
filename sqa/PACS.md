@@ -226,18 +226,18 @@ Los hallazgos **WT-01, WT-02, WT-03, WT-04, WT-05 y WT-06** del walkthrough son 
 | Auditoría interna del PACS | Checklist de 12 ítems del issue #6 | Revisión del Pull Request que modifica `sqa/PACS.md` | Trimestral o por hito de milestone |
 | Registro de proceso | GitHub Issues + Actions + Projects v2 #4 | Historial de issues, PRs y ejecuciones | Continuo |
 
-**Métricas M-01..M-06 vigentes** (fuente: [`referencias/objetivos.txt`](referencias/objetivos.txt)):
+**Métricas M-01..M-06 vigentes** — la numeración es la del pipeline de cálculo (`metricas/calcular_kpi.py` → `reporte_kpi.json`), sobre el marco de medición de [`referencias/objetivos.txt`](referencias/objetivos.txt):
 
-| ID | Métrica | Sub-característica | Fórmula | Umbral |
-|---|---|---|---|---|
-| M-01 | Cobertura de decisión/rama sobre el SUT | Madurez — corrección de lógica crítica | (ramas ejercitadas / ramas totales) × 100 | ≥ 70% [PROP] |
-| M-02 | Densidad de defectos | Madurez — ausencia de defectos | defectos detectados / KLOC (o por clase crítica) | Registrar y reducir; sin umbral de aprobación fijo [PROP] |
-| M-03 | Tasa de pruebas que pasan | Madurez — madurez de la suite | (pruebas exitosas / pruebas ejecutadas) × 100 | 100% en verde para integrar a `main` [PROP] |
-| M-04 | Entradas inválidas controladas | Tolerancia a Fallos — manejo de entradas inválidas | (casos inválidos manejados sin excepción no controlada / casos inválidos probados) × 100 | ≥ 80% [PROP] |
-| M-05 | Operaciones con guarda de estado previa | Tolerancia a Fallos — prevención de estados inconsistentes | (operaciones críticas con validación de precondición / operaciones críticas totales) × 100 | ≥ 80% [PROP] |
-| M-06 | Cobertura de instrucciones JaCoCo | Madurez — soporte | (instrucciones cubiertas / total de instrucciones) × 100 | ≥ 60% [PROP] |
+| ID | Métrica | Sub-característica | Fórmula | Umbral | Fuente |
+|---|---|---|---|---|---|
+| M-01 | Densidad de defectos de fiabilidad | Madurez — ausencia de defectos | hallazgos de diseño / módulos críticos revisados (def/módulo) | ≤ 1.0 | Declarada |
+| M-02 | Cobertura de decisión/rama sobre el SUT | Madurez — corrección de lógica crítica | (ramas ejercitadas / ramas totales) × 100 | ≥ 50% | Automática (JaCoCo) |
+| M-03 | Tasa de pruebas que pasan | Madurez — madurez de la suite | (pruebas exitosas / pruebas ejecutadas) × 100 | ≥ 100% | Automática (Surefire) |
+| M-04 | Cobertura de instrucciones JaCoCo | Madurez — soporte | (instrucciones cubiertas / total de instrucciones) × 100 | ≥ 30% | Automática (JaCoCo) |
+| M-05 | Entradas inválidas controladas | Tolerancia a Fallos — manejo de entradas inválidas | (casos inválidos manejados sin excepción no controlada / casos inválidos probados) × 100 | ≥ 80% | Declarada |
+| M-06 | Operaciones con guarda de estado previa | Tolerancia a Fallos — prevención de estados inconsistentes | (operaciones críticas con validación de precondición / operaciones críticas totales) × 100 | ≥ 80% | Declarada |
 
-> Los umbrales marcados `[PROP]` son propuestas conservadoras a confirmar por el Líder de Métricas / Líder General (ver `referencias/objetivos.txt`).
+> Umbrales **ratificados** para la Fase 2 (issue #24). Las metas automáticas (M-02, M-04) se calibraron a un piso alcanzable de fase — el máximo aspiracional ISO (70% / 60%) queda como referencia de fondo, no como vara publicada. Las declaradas (M-01, M-05, M-06) se fijaron sobre evidencia verificada de forma independiente. El estado *cumple/no_cumple* siempre lo calcula la herramienta a partir del valor y el umbral; nunca se declara a mano.
 
 El **Pull Request** del repositorio constituye la evidencia formal de revisión por pares conforme a IEEE 730: cada PR incluye el checklist de peer-review del `.github/PULL_REQUEST_TEMPLATE.md`, que un revisor distinto del autor debe completar antes del merge. Los **checks del PACS mismo** (auditoría interna de este documento) se ejecutan con frecuencia **trimestral o en cada hito de milestone** (#1, #2), lo que ocurra primero.
 
