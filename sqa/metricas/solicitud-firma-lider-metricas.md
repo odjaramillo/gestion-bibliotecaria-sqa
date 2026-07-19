@@ -27,7 +27,7 @@ Fijados sobre evidencia verificada de forma independiente (doble revisión ciega
 | ID | Métrica | Unidad | Valor | Meta | Evidencia |
 |----|---------|--------|-------|------|-----------|
 | **M-01** | Densidad de Defectos de Fiabilidad | defectos/módulo | **1.0** | ≤ 1.0 | 6 hallazgos de diseño (WT-01..WT-06) / 6 módulos críticos — walkthrough §5.2. Vista puntual divulgada: ~2.0 (auditoría 2026-06-02). |
-| **M-05** | Entradas Inválidas Controladas | % | **44.4** | ≥ 80 | 8 condiciones controladas / 18 condiciones inválidas probadas — especificación TCS-FIAB-001 §4. Robusto < 80% en todo alcance. |
+| **M-05** | Entradas Inválidas Controladas | % | **55.6** | ≥ 80 | 10 condiciones controladas / 18 probadas — medido sobre la ejecución (JSON tipo incorrecto→HTTP 400, multipart→HTTP 413 vía manejadores por defecto de Spring; la fecha no parseable T2.2 sí da HTTP 500; ver #52). Robusto < 80% en todo alcance. |
 | **M-06** | Operaciones con Guarda de Estado | % | **75.0** | ≥ 80 | 3 de 4 operaciones críticas de capa Service con guarda de precondición; sin guarda: `renovarPrestamo` (decrementa inventario sin verificar `>= 1`) — objetivos.txt Atributo 2.2, `PrestamoService.java:151-154`. |
 
 > **M-05 y M-06 quedan en rojo (no cumple), y es correcto:** miden la fiabilidad del SUT (Equipo 58-1), no la calidad de la suite del Equipo 11. El valor cae donde cae; el umbral es la vara de calidad. Bajarlo para pintar de verde ocultaría el hallazgo. El estado lo calcula la herramienta, nunca se declara a mano.
@@ -44,7 +44,7 @@ Todos los umbrales pasan a **ratificados** (`[PROP]` retirado del dashboard).
 | M-02 | Automática | 60.7 % | ≥ 50 % | ✅ cumple |
 | M-03 | Automática | 100 % | ≥ 100 % | ✅ cumple |
 | M-04 | Automática | 38.1 % | ≥ 30 % | ✅ cumple |
-| M-05 | Declarada | 44.4 % | ≥ 80 % | ❌ no cumple (hallazgo del SUT) |
+| M-05 | Declarada | 55.6 % | ≥ 80 % | ❌ no cumple (hallazgo del SUT) |
 | M-06 | Declarada | 75.0 % | ≥ 80 % | ❌ no cumple (hallazgo del SUT) |
 
 > **Criterio a considerar (indicación del docente):** en la práctica no se fijan

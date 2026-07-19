@@ -17,13 +17,13 @@
     {
       "id": "M-05",
       "nombre": "Entradas Invalidas Controladas",
-      "valor": 44.4,
+      "valor": 55.6,
       "unidad": "%",
       "umbral": { "valor": 80, "comparador": ">=", "ratificado": true },
-      "justificacion": "8 condiciones de entrada inválida controladas (guardas de negocio TCI-M1.1..M1.6 de crearPrestamo y TCI-M5.1/M5.2 de eliminarAmonestacion, que rechazan con mensaje) sobre 18 condiciones inválidas probadas = 44.4%. Las 10 restantes (fechas no ISO, JSON malformado, multipart sobre el límite, pago sin validar, promesa async) escalan a excepción no controlada / HTTP 500 / unhandled promise. El veredicto no_cumple es robusto: aperturas alternativas de alcance dan 50% (incluyendo fronteras) o 0% (solo Tolerancia), todas < 80%.",
-      "evidencia": "sqa/fase2/planificacion/2026-06-24_especificacion-casos-prueba-fiabilidad.md §4 (ítems de cobertura TCI); marco de medición objetivos.txt Atributo 2.1 (Manejo de entradas inválidas).",
+      "justificacion": "10 condiciones de entrada inválida controladas sobre 18 probadas = 55.6%. Controladas: guardas de negocio TCI-M1.1..M1.6 (crearPrestamo) y TCI-M5.1/M5.2 (eliminarAmonestacion) que rechazan con mensaje; JSON con tipo incorrecto TCI-T2.1 que Spring responde HTTP 400 vía HttpMessageNotReadableException; multipart sobre el límite TCI-T3.3 que Spring responde HTTP 413 vía DefaultHandlerExceptionResolver. No controladas (8): fechas no ISO/nula TCI-T1.2..T1.4 y fecha no parseable en payload JSON válido TCI-T2.2 (DateTimeParseException → HTTP 500, defecto WT-01 aflorando en sistema), pago sin validar TCI-M6.1..M6.3 (persiste silencioso), promesa async TCI-T4.1 (unhandled rejection). Ajuste sobre evidencia de EJECUCIÓN: la spec anticipaba HTTP 500 para todo el grupo de sintaxis JSON; solo el tipo incorrecto (T2.1) resulta controlado (400), mientras la fecha no parseable (T2.2, verificado en PrestarJsonMalformadoTest) sí escala a 500. Veredicto no_cumple robusto (< 80%).",
+      "evidencia": "Ejecución: PrestarJsonMalformadoTest (TC-FIAB-011, aserciones HTTP 400 para T2.1 y HTTP 500 para T2.2) y MultipartLimitTest (TC-FIAB-021, HTTP 413); issue #52 (refutación parcial de D-015). Especificación TCS-FIAB-001 §4; marco objetivos.txt Atributo 2.1.",
       "responsable": "rol:metricas",
-      "version": 2
+      "version": 4
     },
     {
       "id": "M-06",
