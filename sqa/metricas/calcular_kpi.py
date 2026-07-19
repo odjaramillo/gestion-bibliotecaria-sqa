@@ -49,18 +49,18 @@ AUTO_META = {
         "nombre": "Cobertura de Decisión/Rama (servicios)",
         "unidad": "%",
         # Meta práctica F2: >=50%. Aspiracional ISO (fondo, no se muestra): 70%.
-        "umbral": {"valor": 50, "comparador": ">=", "ratificado": False},
+        "umbral": {"valor": 50, "comparador": ">=", "ratificado": True},
     },
     "M-03": {
         "nombre": "Tasa de Pruebas que Pasan",
         "unidad": "%",
-        "umbral": {"valor": 100, "comparador": ">=", "ratificado": False},
+        "umbral": {"valor": 100, "comparador": ">=", "ratificado": True},
     },
     "M-04": {
         "nombre": "Cobertura de Instrucciones",
         "unidad": "%",
         # Meta práctica F2: >=30%. Aspiracional ISO (fondo, no se muestra): 60%.
-        "umbral": {"valor": 30, "comparador": ">=", "ratificado": False},
+        "umbral": {"valor": 30, "comparador": ">=", "ratificado": True},
     },
 }
 
