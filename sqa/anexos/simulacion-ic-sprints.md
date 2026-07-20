@@ -4,7 +4,7 @@
 |---|---|
 | Documento | Anexo reconciliador de la simulación de sprints del SUT (Equipo 58-1) sobre la rama `simulacion-desarrollo` — apéndice de `sqa/PACS.md` §4.5 y refinamiento de `sqa/fase2/dinamicas/2026-07-19_informe-resultados-pruebas-fiabilidad.md` §2.4 |
 | Identificador | ANX-SIM-IC-001 |
-| Versión | 1.0 |
+| Versión | 1.1 |
 | Fecha | 2026-07-19 |
 | Equipo SQA | Equipo 11 — Proyecto 16 (rol `lider-tec` / `tester`) |
 | Issue | #79 |
@@ -42,6 +42,24 @@ git checkout simulacion-desarrollo
 git log --oneline 2c28118~1..3c05025   # 5 commits S0..S4
 git tag -l 'sprint-*'                  # sprint-0 sprint-1 sprint-2 sprint-3 sprint-4
 ```
+
+### Progresión medida por sprint (datos de los 5 runs reales)
+
+Los números de esta tabla se extrajeron el 2026-07-19 directamente de los 5 runs en verde del workflow `ci-fiabilidad` (conclusión `success` verificada vía `gh run view`). La **cantidad de tests** sale del resumen Surefire (`Tests run: N, Failures: 0, Errors: 0, Skipped: 0`) del paso *Ejecutar suite regresion (gate) con cobertura JaCoCo* del **log** de cada run. La **cobertura** sale de los counters globales `BRANCH` y `LINE` del `jacoco.xml` contenido en el **artifact** `jacoco-coverage-report` de cada run (`covered / (covered + missed)` sobre todo el código re-comprometido en ese sprint).
+
+| Sprint | Commit / tag | Tests ejecutados (gate `regresion`) | Cobertura de ramas global | Cobertura de líneas global | Gate `regresion` | Run de CI |
+|---|---|---|---|---|---|---|
+| **S0** | `2c28118` / `sprint-0` | 1 (smoke) | — *(sin counter `BRANCH`: el código de S0 no contiene ramas)* | 1/3 = 33.3% | success | [#29710403835](https://github.com/odjaramillo/gestion-bibliotecaria-sqa/actions/runs/29710403835) |
+| **S1** | `a19bda5` / `sprint-1` | 1 (smoke — §4 desvío A) | 0/30 = 0.0% | 48/250 = 19.2% | success | [#29710462088](https://github.com/odjaramillo/gestion-bibliotecaria-sqa/actions/runs/29710462088) |
+| **S2** | `94deb29` / `sprint-2` | 1 (smoke — §4 desvío A) | 0/48 = 0.0% | 49/292 = 16.8% | success | [#29710476918](https://github.com/odjaramillo/gestion-bibliotecaria-sqa/actions/runs/29710476918) |
+| **S3** | `dbd2ee2` / `sprint-3` | 16 | 17/76 = 22.4% | 148/366 = 40.4% | success | [#29710541583](https://github.com/odjaramillo/gestion-bibliotecaria-sqa/actions/runs/29710541583) |
+| **S4** | `3c05025` / `sprint-4` | 23 | 34/158 = 21.5% | 236/601 = 39.3% | success | [#29710568145](https://github.com/odjaramillo/gestion-bibliotecaria-sqa/actions/runs/29710568145) |
+
+**Cómo leer la progresión.** La tabla evidencia el **crecimiento de la cobertura de pruebas sobre el SUT congelado** a medida que la simulación re-compromete código y tests: los tests del gate pasan de 1 → 1 → 1 → 16 → 23 y las ramas cubiertas en absoluto de 0 → 0 → 17 → 34. No es mejora del código — el SUT está congelado (TCS-FIAB-001 §2.1, PACS §6.1) — sino del arnés de pruebas que el Equipo 11 incorpora por sprint. Tres lecturas honestas:
+
+1. **S1 y S2 son gates smoke.** Ejecutan únicamente el smoke test porque las suites de `UsuarioService` y `LibroService` (TC-FIAB-002/003 y TC-FIAB-005..007) no existen en el SUT del Equipo 58-1 — desvío A, ya declarado en §4. La cobertura de ramas de 0.0% con 30 y 48 ramas disponibles es la evidencia numérica de ese hueco, no un dato a maquillar.
+2. **El porcentaje global no es monótono y no debería serlo.** La cobertura de líneas baja de 19.2% (S1) a 16.8% (S2) porque S2 agrega `LibroService` sin tests nuevos, y la de ramas baja de 22.4% (S3) a 21.5% (S4) porque S4 incorpora el `Controller` de 458 líneas y tres services adicionales más rápido de lo que agrega tests. El denominador (el código del SUT re-comprometido) crece en cada sprint; lo que crece sin excepción es el numerador absoluto — ramas cubiertas 0 → 0 → 17 → 34 — y la cantidad de tests — 1 → 1 → 1 → 16 → 23.
+3. **Distinto alcance que la métrica M-02.** El dato de §3 (BRANCH = 0.60 sobre `com.biblioteca.service.PrestamoService`) es una cobertura **por clase**; esta tabla reporta la cobertura **global del reporte JaCoCo** de cada run. No se contradicen: miden cosas distintas.
 
 ---
 
@@ -160,3 +178,4 @@ La lección que el equipo extrae no es que el plan estaba mal diseñado: estaba 
 | Versión | Fecha | Autor | Cambios |
 |---|---|---|---|
 | 1.0 | 2026-07-19 | Equipo SQA — rol `lider-tec` (`tester`) | Emisión del anexo reconciliador de la simulación de IC por sprints del SUT (issue #79): tabla Sprint→commit/tag/run real, PRs/workflow runs del proyecto ancla, declaración de los siete desivíos (TC-FIAB-002/003 nunca implementados, Controller monolítico no rebanable, M-02 60.7% vs 70% planificado, ejecución tardía del plan, bootstrap del Initializr, defecto-conocido informativo, frontend versionado pero e2e en `main`), refinamiento explícito de INF-RES-001 §2.4 y reflexión sobre el valor de la simulación declarativa. |
+| 1.1 | 2026-07-19 | Equipo SQA — rol `metricas` | Incorporación de la subsección «Progresión medida por sprint» en §2: tabla con tests ejecutados (resumen Surefire del log de cada run) y cobertura global de ramas/líneas (counters `BRANCH`/`LINE` del `jacoco.xml` del artifact `jacoco-coverage-report`) extraídos de los 5 runs reales del workflow `ci-fiabilidad`, con lectura honesta de la no-monotonicidad del porcentaje global y referencias cruzadas a los desvíos A y C. |
