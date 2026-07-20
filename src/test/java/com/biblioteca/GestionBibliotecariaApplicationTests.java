@@ -1,4 +1,4 @@
-package __1.spring_boot;
+package com.biblioteca;
 
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -10,8 +10,9 @@ import org.springframework.test.context.ActiveProfiles;
 @Tag("regresion")
 class GestionBibliotecariaApplicationTests {
 
-	@Test
-	void contextLoads() {
-	}
+    @Test
+    void contextLoads() {
+    }
 
 }
+
