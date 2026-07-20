@@ -118,8 +118,8 @@ qué debe **producir el equipo** (⬜) para cada criterio.
 ### f) Organización del equipo y roles (5 pts)
 *Evalúa: liderazgo, sinergia y reflexión sobre el desempeño.*
 - ✅ Roles trazables por etiqueta `rol:*`, autoría de commits, PRs e issues por integrante.
-- ⬜ **Evidencia de actividad por rol**: cada integrante con issues/PRs/commits a su nombre.
-- ⬜ **Reflexión sobre el desempeño** del equipo y la sinergia entre roles.
+- ✅ **Evidencia de actividad por rol**: issues/PRs por etiqueta `rol:*` (100% de los issues etiquetados) + autoría de commits — consolidada en la [reflexión de desempeño del equipo](fase2/dinamicas/2026-07-19_reflexion-desempeno-equipo.md) §3.
+- ✅ **Reflexión sobre el desempeño** del equipo y la sinergia entre roles — [Reflexión de desempeño del equipo (criterio f)](fase2/dinamicas/2026-07-19_reflexion-desempeno-equipo.md).
 
 ---
 

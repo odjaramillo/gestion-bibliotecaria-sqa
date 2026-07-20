@@ -214,6 +214,17 @@ MANIFIESTO: tuple[Documento, ...] = (
         seccion="anexo",
     ),
     Documento(
+        fuente="sqa/fase2/dinamicas/2026-07-19_reflexion-desempeno-equipo.md",
+        slug="reflexion-desempeno-equipo",
+        titulo="Anexo — Reflexión de Desempeño del Equipo",
+        codigo="",
+        descripcion=(
+            "Criterio f) de la rúbrica: roles aplicados con liderazgo y sinergia — "
+            "evidencia por rol, handoffs trazables y reflexión sobre el desempeño."
+        ),
+        seccion="anexo",
+    ),
+    Documento(
         fuente="sqa/anexos/herramientas-fase2.md",
         slug="herramientas-fase2",
         titulo="Anexo — Matriz de Herramientas Tecnológicas (Fase 2)",
