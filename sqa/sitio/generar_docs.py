@@ -257,6 +257,32 @@ MANIFIESTO: tuple[Documento, ...] = (
         ),
         seccion="anexo",
     ),
+    Documento(
+        fuente="sqa/anexos/simulacion-ic-sprints.md",
+        slug="simulacion-ic-sprints",
+        titulo="Anexo — Simulación de Integración Continua por Sprints del SUT",
+        codigo="ANX-SIM-IC-001",
+        descripcion=(
+            "Anexo reconciliador de la rama simulacion-desarrollo: tabla Sprint → commit / tag / "
+            "ci-fiabilidad run real, PRs y workflow runs del proyecto, declaración de los siete "
+            "desvíos (TC-FIAB-002/003 nunca implementados, Controller monolítico, M-02 60.7% vs "
+            "70% planificado, ejecución tardía del plan) y refinamiento explícito de INF-RES-001 §2.4."
+        ),
+        seccion="anexo",
+    ),
+    Documento(
+        fuente="sqa/anexos/demo-ic-sprints.md",
+        slug="demo-ic-sprints",
+        titulo="Anexo — Guía de Demo de la Simulación de IC por Sprints",
+        codigo="ANX-SIM-DEMO-001",
+        descripcion=(
+            "Guía corta para mostrar al docente la simulación: re-corrido de workflows en vivo "
+            "(ci-fiabilidad, ci-e2e), inspección local de la traza por sprint en "
+            "simulacion-desarrollo, y levantada local del SUT (backend H2 con JDK 21, frontend "
+            "Vue 3 en puerto 5173)."
+        ),
+        seccion="anexo",
+    ),
 )
 
 # Activos binarios copiados al sitio. El PDF de la auditoria estatica ES un
