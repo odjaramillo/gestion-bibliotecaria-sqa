@@ -194,7 +194,7 @@ El análisis completo, con la evidencia en el historial de commits, está en [`a
 
 | # | Corrección | Evidencia |
 |---|---|---|
-| C-05 | **Ecosistema GitHub-native operativo**, con la cadena de evidencia registrada en la misma herramienta que custodia los artefactos (peer-review IEEE 730 vía Pull Request). | 6 workflows en `.github/workflows/` |
+| C-05 | **Ecosistema GitHub-native operativo**, con la cadena de evidencia registrada en la misma herramienta que custodia los artefactos (peer-review IEEE 730 vía Pull Request). | 7 workflows en `.github/workflows/` |
 | C-06 | **PACS formal consolidado F1+F2** conforme a IEEE 730-2014 §Clause 5, con sus apéndices. | [`sqa/PACS.md`](../PACS.md) |
 | C-07 | **Métricas medidas, no declaradas.** M-02/M-03/M-04 se derivan de artefactos reales de ejecución (JaCoCo, Surefire); las no medibles se marcan explícitamente como declaradas. | `sqa/metricas/`, dashboard publicado |
 | C-08 | **Dashboard de métricas publicado y auto-desplegado** en cada push a `main`. | [Dashboard](https://odjaramillo.github.io/gestion-bibliotecaria-sqa/) |
@@ -205,7 +205,7 @@ El análisis completo, con la evidencia en el historial de commits, está en [`a
 
 | # | Corrección | Evidencia |
 |---|---|---|
-| C-11 | **Tres de los cuatro niveles de prueba implementados y en ejecución**: unitaria (5 clases / 15 métodos), integración (4 / 4) y sistema (3 / 8). Aceptación permanece pendiente ([#34](https://github.com/odjaramillo/gestion-bibliotecaria-sqa/issues/34)). | `src/test/java/com/biblioteca/**`, `ci-tests.yml` |
+| C-11 | **Los cuatro niveles de prueba implementados y en ejecución**: unitaria (5 clases / 15 métodos), integración (4 / 4), sistema (3 / 8) y aceptación E2E con Playwright ([#34](https://github.com/odjaramillo/gestion-bibliotecaria-sqa/issues/34), workflow `ci-e2e.yml`). | `src/test/java/com/biblioteca/**`, `biblioteca-frontend/tests/e2e/`, `ci-tests.yml` / `ci-e2e.yml` |
 | C-12 | **Los defectos se codifican como pruebas ejecutables.** El grupo `defecto-conocido` convierte cada defecto confirmado en un test que corre en cada push, sin destruir la señal del gate de regresión. | `ci-tests.yml`, `PACS.md` §5.1 |
 
 ---
