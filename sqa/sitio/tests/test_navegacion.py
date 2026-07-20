@@ -78,12 +78,12 @@ def test_documento_corto_no_lleva_toc(docs):
 
 
 def test_toc_usa_los_ids_del_slugger_github(docs):
-    # "## §1. Propósito y alcance" -> id "1-propósito-y-alcance" (acentos
+    # "## Histórico de Revisiones" -> id "histórico-de-revisiones" (acentos
     # conservados). El TOC debe reutilizar ese id, no re-sluggear.
     pacs = _leer(docs, "pacs.html")
     toc = re.search(r'<details class="toc">.*?</details>', pacs, re.S)
     assert toc is not None
-    assert 'href="#1-propósito-y-alcance"' in toc.group(0)
+    assert 'href="#histórico-de-revisiones"' in toc.group(0)
 
 
 def test_todas_las_anclas_del_toc_tienen_destino(docs):
