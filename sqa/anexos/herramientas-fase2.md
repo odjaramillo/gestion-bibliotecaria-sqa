@@ -107,7 +107,7 @@ Las filas de **Adecuación Funcional**, **Mantenibilidad** y **Seguridad** descr
 │         ↓                 ↓                 ↓                 ↓            │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐   │
 │  │ RestAssured/ │  │   JaCoCo     │  │  Playwright  │  │   k6 (opt)   │   │
-│  │  Postman     │  │ (BRANCH      │  │   (E2E)*     │  │  (Carga)*    │   │
+│  │  Postman     │  │ (BRANCH      │  │   (E2E)      │  │  (Carga)*    │   │
 │  │  (sistema)   │  │  ≥ 0.70)     │  │              │  │              │   │
 │  └──────────────┘  └──────────────┘  └──────────────┘  └──────────────┘   │
 │         ↓                 ↓                 ↓                 ↓            │
@@ -127,9 +127,10 @@ Las filas de **Adecuación Funcional**, **Mantenibilidad** y **Seguridad** descr
 │                    └──────────────┘       └──────────────┘                  │
 └─────────────────────────────────────────────────────────────────────────────┘
 
-* Playwright (E2E) y k6 (carga) son herramientas propuestas para iteraciones
-  futuras fuera del alcance actual de Fiabilidad (issue #15); se declaran como
-  roadmap tecnológico, no como parte de la matriz activa de esta iteración.
+* k6 (carga) es una herramienta propuesta para iteraciones futuras fuera del
+  alcance actual de Fiabilidad (issue #15); se declara como roadmap tecnológico,
+  no como parte de la matriz activa de esta iteración. Playwright (E2E) ya está
+  implementado y en ejecución (`ci-e2e.yml`, issue #34).
 ```
 
 Todo el ecosistema es nativo de GitHub (Actions, SonarCloud, Pages, Issues); no depende de plataformas externas de gestión documental o de incidencias.
@@ -182,7 +183,7 @@ La Fase 2 está en ejecución mediante una cadena de 5 Pull Requests encadenados
 
 > **Nota sobre los grupos de prueba**: la suite dinámica se ejecuta en dos universos `@Tag` — `regresion` (gate de integración, base de la cobertura JaCoCo y de M-03) y `defecto-conocido` (pruebas que codifican defectos reales del SUT congelado y fallan de forma esperada; se ejecutan de modo informativo). El desglose por clase está en [`sqa/PACS.md`](../PACS.md) §5.1.
 
-El único nivel dinámico aún ausente es el de **aceptación** (Playwright), planificado en el [issue #34](https://github.com/odjaramillo/gestion-bibliotecaria-sqa/issues/34).
+El nivel de **aceptación** (Playwright, E2E) quedó implementado y en ejecución en `ci-e2e.yml` ([issue #34](https://github.com/odjaramillo/gestion-bibliotecaria-sqa/issues/34)), completando los cuatro niveles dinámicos del `PP-FIAB-001`.
 
 ---
 

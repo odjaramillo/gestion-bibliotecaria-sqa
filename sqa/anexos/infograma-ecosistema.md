@@ -57,7 +57,7 @@ Un infograma que dibuja un ecosistema perfecto es propaganda. Este declara lo qu
 | Hueco | Dónde se ve | Issue |
 |---|---|---|
 | SonarCloud analiza **sin datos de cobertura**: el scan corre en `ci-static.yml` (que compila sin ejecutar pruebas) y el `jacoco.xml` se genera en `ci-tests.yml`. Los dos insumos existen y nunca coinciden en el mismo job. | Capa 4 — tarjeta *SonarCloud* | [#31](https://github.com/odjaramillo/gestion-bibliotecaria-sqa/issues/31) |
-| **Pruebas de aceptación ausentes**: es el único nivel dinámico sin implementar. Los niveles unitario, de integración y de sistema están en ejecución. | Capa 3 — tarjeta *ci-tests.yml* | [#34](https://github.com/odjaramillo/gestion-bibliotecaria-sqa/issues/34) |
+| **Sincronización parcial del tablero**: la columna *Status* de Projects v2 no se refleja automáticamente desde las etiquetas `estado:*`; hay dos fuentes de verdad para el mismo dato. *(Los cuatro niveles dinámicos —incluida la aceptación E2E con Playwright, `ci-e2e.yml`— ya están implementados y en ejecución.)* | Capa 5 — tablero Kanban | [#11](https://github.com/odjaramillo/gestion-bibliotecaria-sqa/issues/11) |
 
 ---
 
@@ -67,7 +67,7 @@ Un infograma que dibuja un ecosistema perfecto es propaganda. Este declara lo qu
 - **Matriz operativa**: [`herramientas-fase2.md`](herramientas-fase2.md) — el detalle herramienta por herramienta que este infograma sintetiza
 - **Estado del ecosistema**: [`ECOSISTEMA-ESTADO.md`](../ECOSISTEMA-ESTADO.md)
 - **Reflexión crítica** (complementa este anexo): issue [#10](https://github.com/odjaramillo/gestion-bibliotecaria-sqa/issues/10)
-- **Fuentes verificadas**: `.github/workflows/*.yml` (6 workflows), `sqa/metricas/calcular_kpi.py`, `sqa/metricas/generar_dashboard.py`
+- **Fuentes verificadas**: `.github/workflows/*.yml` (7 workflows), `sqa/metricas/calcular_kpi.py`, `sqa/metricas/generar_dashboard.py`
 
 ---
 

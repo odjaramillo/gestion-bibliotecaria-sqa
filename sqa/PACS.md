@@ -12,10 +12,10 @@
 
 El nivel de calidad deseado se centra en garantizar que el Sistema de Gestión Bibliotecaria (SUT) integre de manera intrínseca la característica de **Fiabilidad** (según ISO/IEC 25010). Los objetivos SMART se definen y evalúan a través de las métricas del §5: cada sub-característica se expresa como un indicador cuantitativo con una meta verificable, no como una propiedad del código.
 
-- **Tolerancia a Fallos** — Medida por **M-04 (Entradas Inválidas Controladas)**, con meta **≥ 80%**: proporción de entradas malformadas o inválidas que el sistema gestiona sin producir excepciones no controladas.
-- **Capacidad de Recuperación** — Medida por **M-05 (Operaciones con Guarda de Estado)**, con meta **≥ 80%**: proporción de operaciones críticas que preservan la consistencia y la atomicidad del estado ante fallos parciales.
+- **Tolerancia a Fallos** — Medida por **M-05 (Entradas Inválidas Controladas)**, con meta **≥ 80%**: proporción de entradas malformadas o inválidas que el sistema gestiona sin producir excepciones no controladas.
+- **Capacidad de Recuperación** — Medida por **M-06 (Operaciones con Guarda de Estado)**, con meta **≥ 80%**: proporción de operaciones críticas que preservan la consistencia y la atomicidad del estado ante fallos parciales.
 
-Ambos objetivos se sostienen sobre la madurez de la suite de pruebas, evaluada de forma transversal con **M-01 (Cobertura de decisión/rama, meta ≥ 70%)** y **M-03 (Tasa de pruebas que pasan)**.
+Ambos objetivos se sostienen sobre la madurez de la suite de pruebas, evaluada de forma transversal con **M-02 (Cobertura de decisión/rama, meta ≥ 70%)**, **M-04 (Cobertura de instrucciones, meta ≥ 30%)** y **M-03 (Tasa de pruebas que pasan)**.
 
 ## 2. Gestión
 
@@ -26,7 +26,7 @@ El equipo SQA (Equipo 11) está conformado por los siguientes 5 integrantes, qui
 - **Líder General (Alberto Rodriguez)**: Coordina el proceso completo, elabora el PAC, aprueba entregables y dirige la inspección y el walkthrough.
 - **Líder Tecnológico / DevOp (Daniel Cohen / Oscar Jaramillo)**: Diseña e implementa el ecosistema tecnológico automatizado en GitHub Actions simulando la integración continua.
 - **Líder Funcional (Daniel Cohen)**: Brinda soporte en la verificación de dominio, trazabilidad de requisitos y comportamiento del negocio.
-- **Líder de Métricas (Edwin Li)**: Define, calcula y reporta las métricas a lo largo de los sprints (M-01 a M-05).
+- **Líder de Métricas (Edwin Li)**: Define, calcula y reporta las métricas a lo largo de los sprints (M-01 a M-06).
 - **Escriba (Samuel Artiles)**: Documenta hallazgos, levanta actas y diseña/reporta las auditorías estáticas.
 - *Rol Complementario* — **Analista de Pruebas / Tester (Oscar Jaramillo)**: Diseña el Plan de Pruebas, Especificación de Casos y ejecuta las pruebas dinámicas.
 
@@ -72,11 +72,12 @@ Los estándares y prácticas normativas que rigen el proyecto son:
 
 | N | Definición | Objetivo | Procedimiento | Responsables |
 |---|---|---|---|---|
-| M-01 | **Cobertura de decisión/rama** | Evaluar la corrección de la lógica de negocio crítica (Meta: ≥ 70%). | Cálculo automático mediante JaCoCo y CI midiendo ramas ejercitadas / ramas totales en tests unitarios. | Líder de Métricas, Líder Tecnológico |
-| M-02 | **Densidad de defectos** | Cuantificar la ausencia de defectos estructurales en la Fiabilidad. | Conteo de defectos detectados por pruebas estáticas/dinámicas dividido por los módulos revisados (o KLOC). | Líder de Métricas, Escriba |
-| M-03 | **Tasa de pruebas que pasan** | Asegurar la madurez de la suite antes de integrar al SUT. | Evaluar de manera automatizada: (Pruebas exitosas / Pruebas ejecutadas) * 100 en GitHub Actions. | Líder Tecnológico, Analista de Pruebas |
-| M-04 | **Entradas inválidas controladas** | Evaluar la tolerancia a fallos ante inyecciones malformadas (Meta: ≥ 80%). | Enfoque de Caja Negra/Gris: Casos inválidos manejados sin excepción no controlada / casos inválidos probados. | Analista de Pruebas |
-| M-05 | **Operaciones con guarda de estado** | Prevenir estados inconsistentes y pérdida de atomicidad (Meta: ≥ 80%). | Revisión de caja blanca: Operaciones críticas con validación de precondición (ej. `@Transactional`) / operaciones totales. | Analista de Pruebas, Escriba |
+| M-01 | **Densidad de Defectos de Fiabilidad** | Cuantificar los defectos de diseño de fiabilidad por módulo crítico (Meta: ≤ 1.0 def/módulo). | Conteo de hallazgos del walkthrough y la auditoría estática dividido por los módulos críticos revisados. | Líder de Métricas, Escriba |
+| M-02 | **Cobertura de decisión/rama** | Evaluar la corrección de la lógica de negocio crítica (Meta: ≥ 70%). | Cálculo automático mediante JaCoCo y CI midiendo ramas ejercitadas / ramas totales en la suite de regresión. | Líder de Métricas, Líder Tecnológico |
+| M-03 | **Tasa de pruebas que pasan** | Asegurar la madurez de la suite antes de integrar al SUT. | Evaluación automatizada: (Pruebas exitosas / Pruebas ejecutadas) * 100 en GitHub Actions. | Líder Tecnológico, Analista de Pruebas |
+| M-04 | **Cobertura de instrucciones** | Verificar el alcance de ejecución del código bajo prueba (Meta: ≥ 30%). | Cálculo automático mediante JaCoCo y CI midiendo instrucciones ejercitadas / instrucciones totales en la suite de regresión. | Líder de Métricas, Líder Tecnológico |
+| M-05 | **Entradas Inválidas Controladas** | Evaluar la tolerancia a fallos ante inyecciones malformadas (Meta: ≥ 80%). | Enfoque de Caja Negra/Gris: casos inválidos manejados sin excepción no controlada / casos inválidos probados. | Analista de Pruebas |
+| M-06 | **Operaciones con Guarda de Estado** | Prevenir estados inconsistentes y pérdida de atomicidad (Meta: ≥ 80%). | Revisión de caja blanca: operaciones críticas con validación de precondición (ej. guarda de disponibilidad, `@Transactional`) / operaciones totales. | Analista de Pruebas, Escriba |
 
 ## 6. Cronograma de SQA
 
