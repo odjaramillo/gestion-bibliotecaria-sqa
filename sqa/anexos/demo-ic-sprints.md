@@ -107,7 +107,7 @@ git diff main...simulacion-desarrollo --stat | tail -1   # lineas del delta
 Lo que se está viendo:
 
 - **5 commits acumulativos hacia adelante**: S0 deja solo el skeleton + `ci-fiabilidad.yml`; cada commit subsiguiente suma componentes del SUT. El SUT en `main` queda intacto: la rama es declarativa.
-- **Cada mensaje declara honestidad**: en el cuerpo del commit está escrito *re-commit simulado del codigo de Equipo 58-1 para PP-FIAB-001 §5.2*, con la razón del re-commit y lo que NO se hace (no se rellena con código nuevo lo que el Equipo 58-1 no implementó).
+- **Cada mensaje declara su naturaleza simulada**: en el cuerpo del commit está escrito *re-commit simulado del codigo de Equipo 58-1 para PP-FIAB-001 §5.2*, con la razón del re-commit y lo que NO se hace (no se rellena con código nuevo lo que el Equipo 58-1 no implementó).
 - **El Controller entra monolítico en S4**: el diff de S4 lo muestra; no es un bug, es la forma del SUT del Equipo 58-1 — el plan asumía granularidad por dominio, el SUT no lo admite.
 
 El anexo [`simulacion-ic-sprints.md`](simulacion-ic-sprints.md) tiene la tabla formal Sprint → commit/tag/run/URL para llevarla impresa o en otra pestaña.
@@ -206,7 +206,7 @@ export PATH="$JAVA_HOME/bin:$PATH"
     -Djacoco.skip=true
 ```
 
-> **Lectura honesta del resultado.** El gate `regresion` debe pasar **en verde** (8 clases, 23 tests, 0 fallos, 0 errores). La suite `defecto-conocido` ejecuta pruebas que **fallan como esperan** (codifican defectos reales del SUT del Equipo 58-1 — WT-01, WT-04, TCOND-M6 — y eso es la señal, no un bug). El warning de JaCoCo sobre `com.biblioteca.service.PrestamoService: branches covered ratio is 0.60, but expected minimum is 0.70` es **informativo y esperado**: M-02 = 60.7% es la métrica real del SUT, no la planificada (≥ 70%). Ver `sqa/anexos/simulacion-ic-sprints.md` §4 desvio C.
+> **Cómo interpretar el resultado.** El gate `regresion` debe pasar **en verde** (8 clases, 23 tests, 0 fallos, 0 errores). La suite `defecto-conocido` ejecuta pruebas que **fallan como esperan** (codifican defectos reales del SUT del Equipo 58-1 — WT-01, WT-04, TCOND-M6 — y eso es la señal, no un bug). El warning de JaCoCo sobre `com.biblioteca.service.PrestamoService: branches covered ratio is 0.60, but expected minimum is 0.70` es **informativo y esperado**: M-02 = 60.7% es la métrica real del SUT, no la planificada (≥ 70%). Ver `sqa/anexos/simulacion-ic-sprints.md` §4 desvio C.
 
 ---
 
