@@ -24,7 +24,7 @@ Responde a dos exigencias formales:
 - **Enunciado F1**, L115 y L335: *«Debe haber un plan de revisiones y un informe de revisiones»* — *«Entregable: Documento PACS con el apéndice del informe de revisiones»*.
 - **Enunciado F2**, L53 (*Aspectos Complementarios*): *«El proyecto debe incluir el informe de revisión de requisitos correspondiente a la primera entrega. Este puede presentarse sin correcciones o con correcciones justificadas.»*
 
-## 2. Nota de honestidad sobre este documento
+## 2. Naturaleza y alcance de este documento
 
 Este informe **no es una revisión nueva**. La inspección se ejecutó en su momento: los 56 ítems aplicables fueron verificados contra los artefactos reales, con referencia de página, y los 17 defectos resultantes quedaron consignados en la tabla `RESUMEN DE DEFECTOS ENCONTRADOS` del instrumento.
 

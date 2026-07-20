@@ -24,7 +24,7 @@ La reflexión se apoya en evidencia verificable del repositorio —commits, work
 
 ## 2. El punto de partida: qué se construyó en Fase 1 y por qué se desmanteló
 
-Cualquier reflexión honesta sobre este ecosistema tiene que empezar por reconocer que **el ecosistema actual es el segundo**. El primero se abandonó.
+Cualquier reflexión sobre este ecosistema debe empezar por reconocer que **el ecosistema actual es el segundo**. El primero se abandonó.
 
 En Fase 1, el Equipo 11 construyó un sistema de agentes de IA sobre Gemini: siete workflows encadenados (`wf1_auditoria_requisitos`, `wf2_inspeccion_arquitectura`, `wf3_generacion_pruebas`, `wf4_orquestador` y un `wf7` que publicaba a Confluence con integración a Jira), respaldados por un paquete `scripts/` con clientes, prompts *few-shot* y una suite de 99 tests automatizados. Era una pieza de ingeniería considerable.
 
@@ -80,7 +80,7 @@ La decisión de borrarlo entero (`38b0069`, `a25fab4`) y migrar a un ecosistema 
 
 ## 4. Herramientas de IA en el proceso: cuáles, cómo, y qué se aprendió
 
-El enunciado pregunta explícitamente **qué herramientas de IA apoyan el proceso y cómo**. La respuesta honesta requiere distinguir tres usos con resultados muy distintos.
+El enunciado pregunta explícitamente **qué herramientas de IA apoyan el proceso y cómo**. La respuesta requiere distinguir tres usos con resultados muy distintos.
 
 ### 4.1 IA como agente autónomo — RETIRADA
 
@@ -133,7 +133,7 @@ Se enuncian sin atenuantes. Cada una tiene issue de seguimiento.
 |---|---|---|---|
 | L1 | **SonarCloud analiza sin datos de cobertura.** El scan corre en `ci-static.yml`, que compila sin ejecutar pruebas; el `jacoco.xml` nace en `ci-tests.yml`. Los dos insumos existen y nunca coinciden en el mismo job. | Cualquier Quality Gate basado en *coverage on new code* es hoy inaplicable. Riesgo de doble verdad si Sonar llegara a medir cobertura sobre un alcance distinto al de M-02. | [#31](https://github.com/odjaramillo/gestion-bibliotecaria-sqa/issues/31) |
 | L2 | **Pruebas de aceptación ausentes.** Único nivel dinámico sin implementar; unitario, integración y sistema están en ejecución. | El `PP-FIAB-001` declara cuatro niveles; se cubren tres. La perspectiva del usuario final no está verificada. | [#34](https://github.com/odjaramillo/gestion-bibliotecaria-sqa/issues/34) |
-| L3 | **M-01, M-05 y M-06 son valores declarados**, no medidos automáticamente, y sus umbrales siguen marcados `[PROP]` sin ratificación formal. | El dashboard es honesto al señalarlo, pero un tercio del marco de métricas no se auto-verifica. | [#24](https://github.com/odjaramillo/gestion-bibliotecaria-sqa/issues/24) |
+| L3 | **M-01, M-05 y M-06 son valores declarados**, no medidos automáticamente, y sus umbrales siguen marcados `[PROP]` sin ratificación formal. | El dashboard lo señala explícitamente, pero un tercio del marco de métricas no se auto-verifica. | [#24](https://github.com/odjaramillo/gestion-bibliotecaria-sqa/issues/24) |
 | L4 | **GitHub Pages admite un único deployment por repositorio**, hoy ocupado por el dashboard. Publicar los documentos exige integrarlos al mismo artefacto, no agregar un segundo workflow. | Restricción de plataforma, no de diseño. Condiciona cómo se publica la documentación SQA. | [#3](https://github.com/odjaramillo/gestion-bibliotecaria-sqa/issues/3) |
 | L5 | **Desvío de herramienta en el nivel de sistema**: se planificó Postman/RestAssured y se implementó MockMvc. El desvío está justificado y registrado (`PACS.md` §5.1), pero revela que la selección de herramientas se hizo **antes** de validar su encaje real en el pipeline. | Menor en el resultado; relevante como aprendizaje de proceso. | — |
 | L6 | **El SUT está congelado.** El Equipo 11 no puede corregir los defectos que encuentra: solo registrarlos. | El ciclo de aseguramiento queda abierto — se detecta, no se remedia. Es una restricción del encuadre académico, no una falla del ecosistema. | — |

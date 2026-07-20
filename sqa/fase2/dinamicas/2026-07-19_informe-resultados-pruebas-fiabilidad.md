@@ -202,7 +202,7 @@ Cadena completa **hallazgo → caso → clase de prueba → nivel → suite → 
 
 **Sobre la calidad del producto auditado, el veredicto es negativo y está sustentado.** La fiabilidad no fue integrada como característica intrínseca del Sistema de Gestión Bibliotecaria: las pruebas `defecto-conocido` confirmaron en ejecución los hallazgos de parsing de fecha (WT-01), pago sin validar (TCOND-M6), manejo async (WT-03) y ausencia de atomicidad transaccional (WT-04); y las métricas de producto M-05 (55.6%) y M-06 (75%) quedan por debajo de su umbral. La misma ejecución **adjudicó en contra** el riesgo de exposición de stacktrace por ausencia de `@RestControllerAdvice`, reclasificado de Alta a Menor (#52) — señal de que el proceso mide, no selecciona. Este resultado no es una falla del proceso de SQA — **es su hallazgo principal**: el proceso cumplió su función de diagnóstico, cuantificando y evidenciando la deuda de fiabilidad del SUT para su remediación por el Equipo 58-1 en iteraciones posteriores.
 
-El valor del ejercicio reside precisamente en esa distinción: una suite de pruebas madura (M-02/M-03/M-04 en verde) que mide con honestidad un producto deficiente (M-05/M-06 en rojo), sin ajustar la vara para maquillar el resultado.
+El valor del ejercicio reside precisamente en esa distinción: una suite de pruebas madura (M-02/M-03/M-04 en verde) que mide con rigor un producto deficiente (M-05/M-06 en rojo), sin ajustar la vara de medición al resultado.
 
 ---
 
