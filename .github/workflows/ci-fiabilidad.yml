@@ -1,0 +1,57 @@
+name: CI Fiabilidad — Simulacion Desarrollo
+
+# Workflow dedicado a la rama `simulacion-desarrollo` durante la simulacion
+# de sprints 0..4 declarada en PP-FIAB-001 §5.2/§5.3. La rama principal del
+# repositorio (`main`) sigue siendo cubierta por `ci-tests.yml`/`ci-static.yml`;
+# este workflow NO reemplaza esos checks, solo agrega el gate de Fiabilidad
+# para los commits del re-commit simulado del codigo del Equipo 58-1.
+
+on:
+  push:
+    branches: [simulacion-desarrollo]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-fiabilidad:
+    name: mvn verify -Dgroups=regresion (gate) + defecto-conocido (informativo)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Java 21 (temurin)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Cache Maven
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
+
+      - name: Ejecutar suite regresion (gate) con cobertura JaCoCo
+        run: ./mvnw verify -Dgroups=regresion -DfailIfNoTests=true --no-transfer-progress
+
+      - name: Ejecutar suite defecto-conocido (informativa, no bloquea)
+        continue-on-error: true
+        run: ./mvnw test -Dgroups=defecto-conocido -DfailIfNoTests=false jacoco:report --no-transfer-progress
+
+      - name: Publicar reporte JaCoCo como artefacto
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-coverage-report
+          path: target/site/jacoco/
+          retention-days: 30
+          if-no-files-found: ignore
