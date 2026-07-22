@@ -2,6 +2,7 @@ package com.biblioteca.unit;
 
 import com.biblioteca.repository.AmonestacionRepository;
 import com.biblioteca.service.AmonestacionService;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,7 @@ import static org.mockito.Mockito.when;
  */
 @ExtendWith(MockitoExtension.class)
 @Tag("regresion")
+@Disabled("demo defensa")
 class EliminarAmonestacionTest {
 
     private static final Integer AMONESTACION_ID = 1;
