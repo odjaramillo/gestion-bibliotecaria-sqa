@@ -2,7 +2,30 @@
 
 Sistema de gestión bibliotecaria desarrollado como proyecto académico de Ingenieria de Software. Incluye un backend en Java con Spring Boot y un frontend en Vue 3 para administrar usuarios, libros, préstamos, reseñas y pagos de amonestaciones
 
+## Ecosistema de calidad (SQA)
+
+Este fork es el proyecto de Aseguramiento de la Calidad de Software (UCAB). Sobre la
+aplicación construí un ecosistema de calidad automatizado en GitHub, con referencia a
+IEEE 730, ISO/IEC 12207 e ISO/IEC 25010.
+
+**Dashboard de métricas:** https://odjaramillo.github.io/gestion-bibliotecaria-sqa/
+
+| Pieza | Qué hace |
+| :--- | :--- |
+| `ci-static.yml` | Análisis estático del backend: compilación, Checkstyle y SpotBugs |
+| `ci-tests.yml` | Pruebas dinámicas separadas en regresión y defectos conocidos, con cobertura JaCoCo |
+| `ci-e2e.yml` | Pruebas de aceptación de punta a punta con Playwright |
+| `ci-metricas.yml` | Tests (pytest) de los scripts que calculan métricas y generan el sitio |
+| `pages-dashboard.yml` | Calcula los KPIs del proceso desde los issues y los reportes de JaCoCo y Surefire, y publica el dashboard; corre en cada push a `main` y cada lunes |
+| `pr-project.yml` | Agrega cada PR al tablero, le pone etiquetas y sincroniza su estado |
+| `sync-labels.yml` | Mantiene las etiquetas alineadas con `.github/labels.yml`, la taxonomía única de hallazgos, defectos y no conformidades |
+
+Los artefactos del proceso (checklists de inspección, informes de revisión, plan y
+estrategia de pruebas, informes de incidencias) viven en [`sqa/`](sqa/README.md). El plan
+de implementación del ecosistema está en [`PLAN_ECOSISTEMA_SQA.md`](PLAN_ECOSISTEMA_SQA.md).
+
 ## Tabla de contenido
+- [Ecosistema de calidad (SQA)](#ecosistema-de-calidad-sqa)
 - [Descripcion](#descripcion)
 - [Caracteristicas](#caracteristicas)
 - [Capturas](#capturas)
